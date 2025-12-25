@@ -1,0 +1,139 @@
+// Prisma Schema - HaberNexus Database
+// This file defines the database schema for the entire application
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./data.db"
+}
+
+// User roles enum
+enum Role {
+  ADMIN
+  AUTHOR
+  USER
+}
+
+// User model - All users in the system
+model User {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  name          String?
+  image         String?         // Profile image URL
+  role          Role            @default(USER)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  // Relations
+  articles      Article[]       // Articles assigned to this user (if AUTHOR)
+  authorProfile AuthorProfile?  // Author profile (if AUTHOR role)
+  bookmarks     Bookmark[]      // User's bookmarked articles
+  votes         ArticleVote[]   // User's votes on articles
+}
+
+// Author profile - Extended information for AUTHOR role users
+model AuthorProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  bio       String?  // Short biography
+  interests String   // Comma-separated interests/categories (e.g., "Teknoloji,Ekonomi")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Article model - Published content
+model Article {
+  id          String   @id @default(cuid())
+  title       String   // AI-generated title
+  slug        String   @unique
+  content     String   // AI-generated content (full article)
+  excerpt     String?  // Short summary
+  imageUrl    String   // AI-generated or downloaded image
+  videoUrl    String?  // Original news video (if available)
+  category    String   // AI-determined category
+  viewCount   Int      @default(0)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  author      User          @relation(fields: [authorId], references: [id])
+  authorId    String
+  bookmarks   Bookmark[]    // Users who bookmarked this article
+  votes       ArticleVote[] // Votes on this article
+  
+  @@index([category])
+  @@index([publishedAt])
+  @@index([viewCount])
+}
+
+// RSS Feed source model
+model RssFeed {
+  id        String   @id @default(cuid())
+  url       String   @unique
+  name      String   // Display name
+  category  String   // Default category for articles from this feed
+  isActive  Boolean  @default(true)
+  lastFetch DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([isActive])
+}
+
+// System settings model - For storing configuration
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique // e.g., "ai_model_content", "ai_model_image", "cron_schedule"
+  value     String   // Setting value
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Bookmark model - User's saved articles
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  articleId String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, articleId])
+  @@index([userId])
+}
+
+// Article vote model - User votes (helpful/not helpful)
+model ArticleVote {
+  id        String   @id @default(cuid())
+  userId    String
+  articleId String
+  isHelpful Boolean  // true = helpful, false = not helpful
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, articleId])
+  @@index([articleId])
+}
+
+// Newsletter subscription model
+model NewsletterSubscription {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([isActive])
+}

@@ -1,0 +1,70 @@
+# HaberNexus - Yeni Nesil AI Destekli Haber Platformu
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+**HaberNexus**, yapay zeka destekli, tam otomatik bir haber agregasyon ve içerik üretim platformudur. RSS kaynaklarından haberleri otomatik olarak toplayıp, Google Gemini AI ile özgün içerik üreterek yayınlar.
+
+## 🌟 Temel Özellikler
+
+- **Tam Otomatik İçerik Üretimi:** RSS kaynaklarından haberleri tarar, AI ile özgün içerik ve görsel üretir
+- **3 Seviyeli Kullanıcı Sistemi:** Admin, Yazar ve Kullanıcı rolleri
+- **Gelişmiş Admin Paneli:** RSS yönetimi, yazar yönetimi, AI model ayarları
+- **Akıllı Yazar Atama:** AI, kategoriye göre otomatik yazar atar
+- **Modern UI/UX:** Açık/koyu tema, okuma listesi, popüler makaleler
+- **Basit Mimari:** Docker'sız, sade Next.js + SQLite + PM2
+
+## 🚀 Hızlı Başlangıç
+
+### Gereksinimler
+
+- Node.js 18+
+- npm veya yarn
+- PM2 (production için)
+
+### Kurulum
+
+```bash
+# Projeyi klonlayın
+git clone https://github.com/sata2500/habernexus-nextjs.git
+cd habernexus-nextjs
+
+# Bağımlılıkları yükleyin
+npm install
+
+# Veritabanını oluşturun
+npx prisma migrate dev
+
+# Geliştirme sunucusunu başlatın
+npm run dev
+```
+
+Tarayıcınızda `http://localhost:3000` adresini açın.
+
+## 📚 Dokümantasyon
+
+- **[Katkıda Bulunma Rehberi](CONTRIBUTING.md)** - Geliştirme kuralları ve süreçleri
+- **[Yol Haritası](ROADMAP.md)** - Planlanan özellikler ve sürümler
+- **[GitHub Wiki](https://github.com/sata2500/habernexus-nextjs/wiki)** - Detaylı teknik dokümantasyon
+
+## 🤝 Katkıda Bulunma
+
+Katkılarınızı bekliyoruz! Lütfen önce [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun.
+
+## 📝 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+
+## 👤 Geliştirici
+
+**Salih TANRISEVEN**
+- Email: salihtanriseven25@gmail.com
+- GitHub: [@sata2500](https://github.com/sata2500)
+- Website: [habernexus.com](https://habernexus.com)
+
+## 🙏 Teşekkürler
+
+- [Next.js](https://nextjs.org/) - React framework
+- [Prisma](https://www.prisma.io/) - ORM
+- [Google Gemini](https://deepmind.google/technologies/gemini/) - AI modelleri
