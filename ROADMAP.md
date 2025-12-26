@@ -1,6 +1,6 @@
 # HaberNexus Geliştirme Yol Haritası
 
-Bu doküman, HaberNexus projesinin gelecek planlarını ve sürüm bazlı geliştirme hedeflerini içerir.
+Bu doküman, HaberNexus projesinin gelecek planlarını ve sürüm bazlı geliştirme hedeflerini içerir. Yol haritası, hem insan geliştiricilerin hem de AI ajanlarının katkılarını yönlendirmek için tasarlanmıştır.
 
 ## 🎯 Vizyon
 
@@ -14,63 +14,44 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 
 **Amaç:** Platformun tam otomatik içerik üreten temel işlevselliğini hayata geçirmek.
 
-**Özellikler:**
-
-- ✅ Sade Next.js mimarisi (Docker'sız)
-- ✅ SQLite veritabanı + Prisma ORM
-- ✅ 3 Seviyeli kullanıcı sistemi (Admin, Yazar, Kullanıcı)
-- ✅ Google OAuth ile kimlik doğrulama
-- ✅ Admin Dashboard
-  - RSS kaynak yönetimi
-  - Yazar yönetimi
-  - Sistem ayarları (Cron, AI modelleri)
-- ✅ Tam otomatik içerik üretim motoru
-  - RSS tarama
-  - AI ile içerik/başlık üretimi
-  - AI ile görsel üretimi
-  - Kategoriye göre yazar atama
-- ✅ Temel kullanıcı arayüzü
-  - Ana sayfa
-  - Makale detay sayfası
-  - Kategori ve yazar sayfaları
-
-**Tahmini Süre:** 3-4 hafta
+| Durum | Özellik | Geliştirici Notu |
+|---|---|---|
+| ✅ | Sade Next.js mimarisi (Docker'sız) | Temeller atıldı. |
+| ✅ | SQLite veritabanı + Prisma ORM | Veritabanı şeması hazır. |
+| ⏳ | 3 Seviyeli kullanıcı sistemi (Admin, Yazar, Kullanıcı) | Temel yapı hazır, rollerin yetkileri detaylandırılacak. |
+| ⏳ | Google OAuth ile kimlik doğrulama | Auth.js v5 entegrasyonu yapılacak. |
+| ⏳ | Admin Dashboard | Temel CRUD işlemleri (RSS, Kullanıcı). |
+| ⏳ | Tam otomatik içerik üretim motoru | Gemini API entegrasyonu yapılacak. |
+| ⏳ | Temel kullanıcı arayüzü | Ana sayfa, makale detay, kategori ve yazar sayfaları. |
 
 ---
 
-### v1.1: UX İyileştirmeleri - Q2 2026
+### v1.1: UX ve AI İyileştirmeleri - Q2 2026
 
-**Amaç:** Kullanıcı deneyimini zenginleştirmek ve sitede kalma süresini artırmak.
+**Amaç:** Kullanıcı deneyimini zenginleştirmek ve AI yeteneklerini derinleştirmek.
 
-**Özellikler:**
-
-- [ ] Açık/Koyu tema desteği
-- [ ] Okuma listesi (Yer işareti)
-- [ ] Okuma süresi göstergesi
-- [ ] İlgili makaleler bölümü
-- [ ] Popüler makaleler bölümü
-- [ ] Basit arama (Başlık ve içerik)
-- [ ] Otomatik SEO iyileştirmeleri
-- [ ] Sosyal medya paylaşım butonları
-
-**Tahmini Süre:** 1-2 hafta
+| Durum | Özellik | Geliştirici Notu |
+|---|---|---|
+| 🔲 | Açık/Koyu tema desteği | Kullanıcı arayüzü iyileştirmesi. |
+| 🔲 | Okuma listesi (Yer işareti) | Kullanıcıların makaleleri kaydetmesini sağlar. |
+| 🔲 | İlgili makaleler bölümü | AI destekli makale önerileri. |
+| 🔲 | Popüler makaleler bölümü | Okunma sayılarına göre sıralama. |
+| 🔲 | Basit arama (Başlık ve içerik) | Temel arama fonksiyonu. |
+| 🔲 | Otomatik SEO iyileştirmeleri | Meta etiketleri, sitemap.xml, robots.txt. |
+| 🔲 | AI Destekli Özetleme | Makaleler için kısa özetler oluşturma. |
 
 ---
 
-### v1.2: Topluluk ve Bülten - Q2 2026
+### v1.2: Topluluk ve Analitik - Q2 2026
 
-**Amaç:** Kullanıcılarla düzenli bir bağ kurmak ve topluluk oluşturmaya başlamak.
+**Amaç:** Kullanıcılarla etkileşimi artırmak ve veri odaklı kararlar almak.
 
-**Özellikler:**
-
-- [ ] E-posta bültenleri
-  - Abone olma sistemi
-  - Haftalık popüler haberler gönderimi
-- [ ] Makale oylama (Faydalı / Değil)
-- [ ] Sistem sağlığı paneli (Admin için)
-- [ ] Detaylı analitikler (Temel metrikler)
-
-**Tahmini Süre:** 1-2 hafta
+| Durum | Özellik | Geliştirici Notu |
+|---|---|---|
+| 🔲 | E-posta bültenleri | Haftalık popüler haberler gönderimi. |
+| 🔲 | Makale oylama (Faydalı / Değil) | Kullanıcı geri bildirimlerini toplama. |
+| 🔲 | Sistem sağlığı paneli (Admin için) | Cron job durumu, AI API kullanımı. |
+| 🔲 | Detaylı analitikler (Temel metrikler) | Ziyaretçi sayısı, en çok okunan makaleler. |
 
 ---
 
@@ -78,61 +59,20 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 
 **Amaç:** Platformu bir sonraki seviyeye taşıyarak daha akıllı ve kişiselleştirilmiş bir deneyim sunmak.
 
-**Özellikler:**
-
-- [ ] Kişiselleştirilebilir ana sayfa
-- [ ] PWA (Progressive Web App) desteği
-- [ ] Yorum sistemi (Moderasyonlu)
-- [ ] Duygu analizi (AI ile)
-- [ ] Detaylı analitikler (Grafikler ve raporlar)
-- [ ] Manuel makale yönetimi
-
-**Tahmini Süre:** 3-4 hafta
-
----
-
-### v2.1: Gelişmiş AI ve Teknik Mükemmellik - Q4 2026
-
-**Amaç:** Arka planı güçlendirerek platformu daha hızlı, daha akıllı ve daha kararlı hale getirmek.
-
-**Özellikler:**
-
-- [ ] Konu/Trend analizi ("Gündem" sayfası)
-- [ ] Gelişmiş görsel optimizasyonu (WebP/AVIF)
-- [ ] Gelişmiş önbellekleme (Redis ile)
-- [ ] Kaynak güvenilirlik skoru
-
-**Tahmini Süre:** 2-3 hafta
+| Durum | Özellik | Geliştirici Notu |
+|---|---|---|
+| 🔲 | Kişiselleştirilebilir ana sayfa | Kullanıcıların ilgi alanlarına göre makaleler. |
+| 🔲 | PWA (Progressive Web App) desteği | Mobil cihazlarda daha iyi bir deneyim. |
+| 🔲 | Yorum sistemi (Moderasyonlu) | Kullanıcıların makalelere yorum yapabilmesi. |
+| 🔲 | Duygu analizi (AI ile) | Makalelerin genel duygu tonunu belirleme. |
 
 ---
 
 ## 🔮 Gelecek Vizyonu (2027+)
 
-**Gelişmiş AI Özellikleri:**
-
-- Çoklu dil desteği
-- Video özetleme
-- Sesli haber okuma
-
-**Monetizasyon:**
-
-- Premium abonelik sistemi
-- Reklam alanları
-- Sponsorlu içerik
-
-**Topluluk:**
-
-- Kullanıcı profilleri
-- Takip sistemi
-- Bildirimler
-
----
-
-## 📊 İlerleme Takibi
-
-Her sürümün ilerlemesi GitHub Projects üzerinden takip edilir. Milestone'lar ve issue'lar ile detaylı görev yönetimi yapılır.
-
-**Güncel Durum:** v1.0 geliştirme aşamasında
+- **Gelişmiş AI Özellikleri:** Çoklu dil desteği, video özetleme, sesli haber okuma.
+- **Monetizasyon:** Premium abonelik sistemi, reklam alanları, sponsorlu içerik.
+- **Topluluk:** Kullanıcı profilleri, takip sistemi, bildirimler.
 
 ---
 
@@ -140,10 +80,10 @@ Her sürümün ilerlemesi GitHub Projects üzerinden takip edilir. Milestone'lar
 
 Bu yol haritasındaki özelliklere katkıda bulunmak isterseniz:
 
-1. İlgili sürümün milestone'ına bakın
-2. Çalışmak istediğiniz bir issue seçin
-3. [CONTRIBUTING.md](CONTRIBUTING.md) rehberini takip edin
+1. İlgili sürümün milestone'ına bakın.
+2. Çalışmak istediğiniz bir issue seçin.
+3. [CONTRIBUTING.md](CONTRIBUTING.md) rehberini takip edin.
 
 ---
 
-**Son Güncelleme:** 25 Aralık 2025
+**Son Güncelleme:** 26 Aralık 2025
