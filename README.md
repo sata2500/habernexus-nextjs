@@ -62,7 +62,7 @@ Tarayıcınızda `http://localhost:3000` adresini açın.
 Bu proje hem insanlar hem de AI ajanları tarafından geliştirilmek üzere tasarlanmıştır.
 
 - **İnsan Geliştiriciler:** Lütfen [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun.
-- **AI Ajanları:** Lütfen **öncelikle** [AI_DEVELOPMENT_GUIDE.md](AI_DEVELOPMENT_GUIDE.md) dosyasını okuyun. Bu sizin ana yönerge setinizdir.
+- **AI Ajanları:** Geliştirmeye başlamadan önce [AI_DEVELOPMENT_GUIDE.md](AI_DEVELOPMENT_GUIDE.md) dosyasını okuyarak "Birleşik Ajan" geliştirme çerçevesini ve `docs/ai-agents` klasöründeki tüm protokolleri anlamalısınız.
 
 ## 📝 Lisans
 

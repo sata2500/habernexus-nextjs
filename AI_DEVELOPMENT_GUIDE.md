@@ -1,6 +1,6 @@
-# HaberNexus AI-First Development Guide
+# HaberNexus AI Development Guide
 
-**Version:** 1.0
+**Version:** 2.0
 **Status:** Active
 
 ## 1. Core Philosophy: The Unified Agent
@@ -18,87 +18,45 @@ This project is designed to be developed by multiple, independent AI agents work
 
 ---
 
-## 2. The AI Agent Development Lifecycle
+## 2. The AI Agent Development Framework
 
-Every development task you undertake **MUST** follow this lifecycle. No steps may be skipped.
+To achieve the "Unified Agent" philosophy, a strict, 8-phase development framework has been established. Every development task you undertake **MUST** follow this framework. No phases may be skipped.
 
-### Step 1: Synchronization & Onboarding
+This guide provides a high-level overview. For detailed instructions, you **MUST** refer to the documents in the `docs/ai-agents/` directory.
 
-Before writing any code, you must synchronize with the project's current state.
+### The 8 Phases of Development
 
-1.  **Read `README.md`:** Understand the project's purpose and basic structure.
-2.  **Read `CONTRIBUTING.md`:** Understand the human-centric development rules (branching, commit formats, etc.).
-3.  **Read this `AI_DEVELOPMENT_GUIDE.md` (this file) in its entirety:** This is your primary instruction set.
-4.  **Review `ROADMAP.md`:** Understand the project's long-term vision and the current development stage.
-5.  **Crucially, study the AI Knowledge Base:**
-    *   `docs/ai-knowledge-base/decision_log.md`: Review architectural decisions and the reasoning behind them.
-    *   `docs/ai-knowledge-base/known_errors.md`: **This is mandatory.** Study past errors and their resolutions to avoid repeating them.
-
-### Step 2: Task Selection & Meticulous Planning
-
-1.  **Select a Task:** Choose an open issue from the GitHub Issues tab. Prioritize issues with the `good first issue` or `help wanted` labels. Assign the issue to yourself.
-2.  **Create a Development Plan:** This is a non-negotiable step. Create a new Markdown file for your plan at:
-    `docs/ai-plans/issue-{number}/{plan-name}.md` (e.g., `docs/ai-plans/issue-15/implement-dark-theme.md`)
-
-3.  **Plan Contents:** Your plan **MUST** include the following sections:
-    *   **Objective:** A clear statement of what the feature or fix will accomplish.
-    *   **Technology & Research:** List the technologies involved. Include a sub-step to perform web research on the *latest best practices* for implementing the solution with these technologies.
-    *   **Step-by-Step Implementation:** A detailed, sequential list of coding tasks.
-    *   **Testing Strategy:** A comprehensive plan to verify your code's correctness, including unit, integration, and end-to-end testing procedures.
-    *   **Documentation Impact:** A list of all project documents (README, Wiki, etc.) that will need to be created or updated.
-    *   **Error Log:** A section to log any errors encountered during development and their resolutions.
-
-### Step 3: Implementation
-
-1.  **Create a Branch:** Follow the naming convention in `CONTRIBUTING.md` (e.g., `feature/15-dark-theme`).
-2.  **Write Code:** Implement your plan, adhering strictly to the project's coding standards (ESLint, Prettier).
-3.  **Log Errors:** If you encounter a significant error, document it in your plan's **Error Log** section and, if it's a novel issue, add it to `docs/ai-knowledge-base/known_errors.md` after resolution.
-
-### Step 4: Rigorous & Verifiable Testing
-
-1.  **Execute Your Plan:** Perform all tests outlined in your testing strategy.
-2.  **Document Results:** Record the outcome of each test in your development plan file. This provides a verifiable record of quality assurance.
-
-### Step 5: Documentation & Knowledge Base Contribution
-
-1.  **Update Project Docs:** Modify all documents identified in your plan's **Documentation Impact** section.
-2.  **Update AI Knowledge Base:**
-    *   **Decision Log:** If you made a significant architectural choice (e.g., selected a new library), add an entry to `docs/ai-knowledge-base/decision_log.md` explaining your choice and the rationale.
-    *   **Known Errors:** If you encountered and solved a new, non-trivial bug, add a concise summary to `docs/ai-knowledge-base/known_errors.md`.
-
-### Step 6: Committing and Creating a Pull Request
-
-1.  **Commit Your Work:** Use the Conventional Commits format specified in `CONTRIBUTING.md`.
-2.  **Include Your Plan:** Your development plan file(s) in `docs/ai-plans/` **MUST** be included in your commit. This is essential for traceability and for other agents to learn from your process.
-3.  **Open a Pull Request:** Push your branch and open a PR against the `main` branch. Fill out the PR template completely.
+| Phase | Name | Description | Key Document |
+|---|---|---|---|
+| 1 | **Synchronization** | Onboard and align with the project's current state. | `docs/ai-agents/ONBOARDING.md` |
+| 2 | **Research** | Investigate technologies and best practices. | `docs/ai-agents/WORKFLOW.md` |
+| 3 | **Planning** | Create a detailed, verifiable development plan. | `docs/ai-plans/templates/PLAN_TEMPLATE.md` |
+| 4 | **Implementation** | Write clean, efficient, and well-documented code. | `CONTRIBUTING.md` |
+| 5 | **Verification** | Rigorously test your code to ensure quality. | `docs/ai-agents/QUALITY_CHECKLIST.md` |
+| 6 | **Publishing** | Submit your work for integration into the main branch. | `CONTRIBUTING.md` |
+| 7 | **Documentation** | Update all relevant project and knowledge base documents. | `docs/ai-knowledge-base/` |
+| 8 | **Cleanup** | Finalize your work and maintain a clean project state. | `docs/ai-agents/WORKFLOW.md` |
 
 ---
 
-## 3. Project Structure & File Organization
+## 3. The AI Agent Central Hub: `docs/ai-agents/`
 
-To maintain a clean and predictable environment, adhere to this structure.
+All core instructions, protocols, and checklists for AI agents are located in the `docs/ai-agents/` directory. You must familiarize yourself with all documents in this hub.
 
-*   `/app`: Core Next.js application logic.
-*   `/components`: Reusable React components.
-*   `/lib`: Shared utility functions, AI service clients, etc.
-*   `/prisma`: Database schema and migration files.
-*   `/public`: Static assets like images and fonts.
-*   `/docs`: **The central hub for all non-code artifacts.**
-    *   `/docs/ai-plans/`: Your detailed development plans.
-    *   `/docs/ai-knowledge-base/`: The shared brain of all AI agents.
-    *   `/docs/archive/`: Old plans and documents that are no longer relevant but are kept for historical context.
-
-**Never pollute the root directory with temporary files or personal notes.** Use the `/docs` structure.
+- **`ONBOARDING.md`**: Your first step. A checklist to ensure you have all the necessary context before starting any task.
+- **`WORKFLOW.md`**: A detailed, step-by-step guide for the entire development process from research to cleanup.
+- **`QUALITY_CHECKLIST.md`**: A non-negotiable checklist to verify the quality of your code and contributions before publishing.
+- **`COMMUNICATION_PROTOCOL.md`**: Guidelines on when and how to communicate with the human user.
 
 ---
 
-## 4. Error Handling and Learning Protocol
+## 4. The Shared Brain: `docs/ai-knowledge-base/`
 
-When you encounter an error:
+This is the most critical part of the Unified Agent system. It is the collective memory of all agents who have worked on this project.
 
-1.  **Consult `known_errors.md`:** Check if a similar error has been solved before.
-2.  **Isolate and Debug:** Understand the root cause.
-3.  **Document:** Log the error and your solution in your development plan.
-4.  **Share:** If the error is novel and significant, add it to `known_errors.md` so future agents can avoid it.
+- **`/decisions`**: Architectural Decision Records (ADRs). Understand *why* the system is built the way it is.
+- **`/errors`**: A log of all non-trivial errors encountered and their resolutions. **Mandatory reading.**
+- **`/learnings`**: General best practices, tips, and tricks learned by previous agents.
+- **`/tech-stack`**: Information about the project's technologies, including version requirements and approved libraries.
 
-By following this lifecycle, you contribute not just code, but a structured, traceable, and intelligent process that elevates the entire project and all future contributors, both human and AI.
+By strictly following this guide and its associated documents, you contribute not just code, but a structured, traceable, and intelligent process that elevates the entire project and all future contributors, both human and AI.

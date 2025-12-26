@@ -12,7 +12,7 @@ The primary goal of HaberNexus is to create a fully automated, high-performance 
 | **Ownership** | All data (database, media files) is stored locally on the user's server. No reliance on third-party databases or storage services. |
 | **Automation** | The entire content pipeline, from RSS fetching to AI-powered content generation and publishing, is designed to be 100% automated. |
 | **Performance** | Leverage modern web technologies (Next.js, Server-Side Rendering) to ensure a fast and responsive user experience. |
-| **Maintainability** | A clean codebase, comprehensive documentation, and a structured development process (especially for AI agents) are prioritized. |
+| **Maintainability** | A clean codebase and comprehensive documentation are prioritized. Maintainability is enforced through a strict, 8-phase development framework for AI agents, detailed in the `docs/ai-agents/` directory, ensuring a structured and traceable process. |
 
 ## 🏗️ Architectural Overview: The Self-Hosted Monolith
 
