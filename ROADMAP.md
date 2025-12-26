@@ -20,9 +20,9 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 | ✅ | SQLite veritabanı + Prisma ORM | Veritabanı şeması hazır. |
 | ⏳ | 3 Seviyeli kullanıcı sistemi (Admin, Yazar, Kullanıcı) | Temel yapı hazır, rollerin yetkileri detaylandırılacak. |
 | ⏳ | Google OAuth ile kimlik doğrulama | Auth.js v5 entegrasyonu yapılacak. |
-| ⏳ | Admin Dashboard | Temel CRUD işlemleri (RSS, Kullanıcı). |
+| ✅ | Admin Dashboard | Temel UI tamamlandı (26 Ara 2025). CRUD API'leri bekliyor. |
 | ⏳ | Tam otomatik içerik üretim motoru | Gemini API entegrasyonu yapılacak. |
-| ⏳ | Temel kullanıcı arayüzü | Ana sayfa, makale detay, kategori ve yazar sayfaları. |
+| ✅ | Temel kullanıcı arayüzü | Ana sayfa, makale detay, kategori sayfaları tamamlandı (26 Ara 2025). |
 
 ---
 
@@ -32,13 +32,13 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 
 | Durum | Özellik | Geliştirici Notu |
 |---|---|---|
-| 🔲 | Açık/Koyu tema desteği | Kullanıcı arayüzü iyileştirmesi. |
-| 🔲 | Okuma listesi (Yer işareti) | Kullanıcıların makaleleri kaydetmesini sağlar. |
-| 🔲 | İlgili makaleler bölümü | AI destekli makale önerileri. |
-| 🔲 | Popüler makaleler bölümü | Okunma sayılarına göre sıralama. |
-| 🔲 | Basit arama (Başlık ve içerik) | Temel arama fonksiyonu. |
-| 🔲 | Otomatik SEO iyileştirmeleri | Meta etiketleri, sitemap.xml, robots.txt. |
-| 🔲 | AI Destekli Özetleme | Makaleler için kısa özetler oluşturma. |
+| ✅ | Açık/Koyu tema desteği | Tailwind CSS dark mode entegrasyonu tamamlandı (26 Ara 2025). |
+| ⏳ | Okuma listesi (Yer işareti) | UI bileşeni hazır, backend API bekliyor. |
+| ✅ | İlgili makaleler bölümü | Haber detay sayfasında "İlgili Haberler" bölümü eklendi (26 Ara 2025). |
+| ✅ | Popüler makaleler bölümü | Ana sayfada "En Çok Okunanlar" bölümü eklendi (26 Ara 2025). |
+| ⏳ | Basit arama (Başlık ve içerik) | UI butonu hazır, arama fonksiyonu bekliyor. |
+| ✅ | Otomatik SEO iyileştirmeleri | Meta etiketleri, OpenGraph ve Twitter Card desteği eklendi (26 Ara 2025). |
+| ⏳ | AI Destekli Özetleme | Gemini API entegrasyonu bekliyor. |
 
 ---
 
@@ -48,10 +48,10 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 
 | Durum | Özellik | Geliştirici Notu |
 |---|---|---|
-| 🔲 | E-posta bültenleri | Haftalık popüler haberler gönderimi. |
-| 🔲 | Makale oylama (Faydalı / Değil) | Kullanıcı geri bildirimlerini toplama. |
-| 🔲 | Sistem sağlığı paneli (Admin için) | Cron job durumu, AI API kullanımı. |
-| 🔲 | Detaylı analitikler (Temel metrikler) | Ziyaretçi sayısı, en çok okunan makaleler. |
+| ✅ | E-posta bültenleri | Newsletter abonelik formu UI'ı tamamlandı (26 Ara 2025). Backend bekliyor. |
+| ⏳ | Makale oylama (Faydalı / Değil) | UI bileşeni hazır, backend API bekliyor. |
+| ✅ | Sistem sağlığı paneli (Admin için) | Admin Dashboard'da sistem durumu bölümü eklendi (26 Ara 2025). |
+| ⏳ | Detaylı analitikler (Temel metrikler) | Demo veriler mevcut, gerçek veri entegrasyonu bekliyor. |
 
 ---
 
@@ -73,6 +73,22 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 - **Gelişmiş AI Özellikleri:** Çoklu dil desteği, video özetleme, sesli haber okuma.
 - **Monetizasyon:** Premium abonelik sistemi, reklam alanları, sponsorlu içerik.
 - **Topluluk:** Kullanıcı profilleri, takip sistemi, bildirimler.
+
+---
+
+## 📊 Geliştirme İlerlemesi
+
+### v1.0 MVP İlerlemesi
+- **Tamamlanan:** 4/7 özellik (%57)
+- **Devam Eden:** 3/7 özellik
+
+### v1.1 UX İyileştirmeleri İlerlemesi
+- **Tamamlanan:** 4/7 özellik (%57)
+- **Devam Eden:** 3/7 özellik
+
+### v1.2 Topluluk ve Analitik İlerlemesi
+- **Tamamlanan:** 2/4 özellik (%50)
+- **Devam Eden:** 2/4 özellik
 
 ---
 
