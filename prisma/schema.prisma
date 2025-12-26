@@ -17,21 +17,68 @@ enum Role {
   USER
 }
 
-// User model - All users in the system
+// User model - All users in the system (Auth.js compatible)
 model User {
   id            String          @id @default(cuid())
   email         String          @unique
+  emailVerified DateTime?       // Required for Auth.js
   name          String?
   image         String?         // Profile image URL
   role          Role            @default(USER)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   
-  // Relations
+  // Auth.js relations
+  accounts      Account[]
+  sessions      Session[]
+  
+  // App relations
   articles      Article[]       // Articles assigned to this user (if AUTHOR)
   authorProfile AuthorProfile?  // Author profile (if AUTHOR role)
   bookmarks     Bookmark[]      // User's bookmarked articles
   votes         ArticleVote[]   // User's votes on articles
+}
+
+// Auth.js Account model - OAuth accounts linked to users
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// Auth.js Session model - User sessions
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+// Auth.js VerificationToken model - Email verification tokens
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  
+  @@unique([identifier, token])
 }
 
 // Author profile - Extended information for AUTHOR role users
