@@ -31,3 +31,35 @@ This is a critical document for the Unified Agent philosophy. Before starting de
 *   **Status:** Mitigated. The project is structured to allow for local installation.
 
 ---
+
+
+### ERR-003: Node.js Version Incompatibility with Next.js 16
+
+*   **Date:** 2025-12-26
+*   **Agent:** Manus AI (User-reported)
+*   **Symptom:** When running `npm run dev`, the error message appears: `You are using Node.js X.X.X. For Next.js, Node.js version ">=20.9.0" is required.` The development server fails to start.
+*   **Root Cause:** Next.js 16.x requires Node.js version 20.9.0 or higher. Many systems still have older LTS versions (like 18.x) installed by default.
+*   **Resolution:**
+    1.  **Install `nvm` (Node Version Manager):** This is the recommended approach for managing multiple Node.js versions.
+        ```bash
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+        ```
+        Close and reopen your terminal after installation.
+    2.  **Install the latest LTS version:**
+        ```bash
+        nvm install --lts
+        ```
+    3.  **Verify the version:**
+        ```bash
+        node -v  # Should output v20.9.0 or higher
+        ```
+    4.  **Clean and reinstall project dependencies:**
+        ```bash
+        rm -rf node_modules
+        npm install
+        npm run dev
+        ```
+*   **Prevention:** Always check the project's `package.json` for the required Node.js version before starting development. Use `nvm` to maintain version compatibility across projects.
+*   **Status:** Resolved. A dedicated guide (`NODE_JS_UPDATE_GUIDE.md`) has been added to the project root for user reference.
+
+---

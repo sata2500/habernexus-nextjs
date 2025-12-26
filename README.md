@@ -19,9 +19,11 @@
 
 ### Gereksinimler
 
-- Node.js 18+
+- **Node.js 20.9.0 veya üstü** (Next.js 16 gereksinimi)
 - npm veya yarn
 - PM2 (production için)
+
+> **⚠️ Önemli:** Eğer Node.js versiyonunuz 20.9.0'dan düşükse, lütfen [NODE_JS_UPDATE_GUIDE.md](NODE_JS_UPDATE_GUIDE.md) dosyasını okuyun.
 
 ### Kurulum
 
