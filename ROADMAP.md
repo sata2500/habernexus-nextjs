@@ -18,10 +18,10 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 |---|---|---|
 | ✅ | Sade Next.js mimarisi (Docker'sız) | Temeller atıldı. |
 | ✅ | SQLite veritabanı + Prisma ORM | Veritabanı şeması hazır. |
-| ⏳ | 3 Seviyeli kullanıcı sistemi (Admin, Yazar, Kullanıcı) | Temel yapı hazır, rollerin yetkileri detaylandırılacak. |
-| ⏳ | Google OAuth ile kimlik doğrulama | Auth.js v5 entegrasyonu yapılacak. |
-| ✅ | Admin Dashboard | Temel UI tamamlandı (26 Ara 2025). CRUD API'leri bekliyor. |
-| ⏳ | Tam otomatik içerik üretim motoru | Gemini API entegrasyonu yapılacak. |
+| ✅ | 3 Seviyeli kullanıcı sistemi (Admin, Yazar, Kullanıcı) | Auth.js v5 ile rol tabanlı erişim kontrolü tamamlandı (26 Ara 2025). |
+| ✅ | Google OAuth ile kimlik doğrulama | Auth.js v5 entegrasyonu tamamlandı (26 Ara 2025). |
+| ✅ | Admin Dashboard | Gerçek verilerle dinamik dashboard tamamlandı (26 Ara 2025). |
+| ✅ | Tam otomatik içerik üretim motoru | Gemini API entegrasyonu ve RSS parsing tamamlandı (26 Ara 2025). |
 | ✅ | Temel kullanıcı arayüzü | Ana sayfa, makale detay, kategori sayfaları tamamlandı (26 Ara 2025). |
 
 ---
@@ -38,7 +38,7 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 | ✅ | Popüler makaleler bölümü | Ana sayfada "En Çok Okunanlar" bölümü eklendi (26 Ara 2025). |
 | ⏳ | Basit arama (Başlık ve içerik) | UI butonu hazır, arama fonksiyonu bekliyor. |
 | ✅ | Otomatik SEO iyileştirmeleri | Meta etiketleri, OpenGraph ve Twitter Card desteği eklendi (26 Ara 2025). |
-| ⏳ | AI Destekli Özetleme | Gemini API entegrasyonu bekliyor. |
+| ⏳ | AI Destekli Özetleme | Gemini API entegrasyonu tamamlandı, UI entegrasyonu bekliyor. |
 
 ---
 
@@ -79,8 +79,8 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 ## 📊 Geliştirme İlerlemesi
 
 ### v1.0 MVP İlerlemesi
-- **Tamamlanan:** 4/7 özellik (%57)
-- **Devam Eden:** 3/7 özellik
+- **Tamamlanan:** 7/7 özellik (%100) ✅
+- **Devam Eden:** 0/7 özellik
 
 ### v1.1 UX İyileştirmeleri İlerlemesi
 - **Tamamlanan:** 4/7 özellik (%57)
