@@ -35,6 +35,11 @@ cd habernexus-nextjs
 # Bağımlılıkları yükleyin
 npm install
 
+# .env dosyasını oluşturun ve düzenleyin
+cp .env.example .env
+# .env dosyasını düzenleyip API anahtarlarını ekleyin
+# Detaylı bilgi için: ENV_SETUP_GUIDE.md
+
 # Veritabanını oluşturun
 npx prisma migrate dev
 
@@ -48,6 +53,8 @@ Tarayıcınızda `http://localhost:3000` adresini açın.
 
 - **[Katkıda Bulunma Rehberi](CONTRIBUTING.md)** - Geliştirme kuralları ve süreçleri
 - **[Yol Haritası](ROADMAP.md)** - Planlanan özellikler ve sürümler
+- **[Node.js Güncelleme Rehberi](NODE_JS_UPDATE_GUIDE.md)** - Node.js versiyon yükseltme
+- **[.env Kurulum Rehberi](ENV_SETUP_GUIDE.md)** - API anahtarlarını nasıl alırsınız
 - **[GitHub Wiki](https://github.com/sata2500/habernexus-nextjs/wiki)** - Detaylı teknik dokümantasyon
 
 ## 🤝 Katkıda Bulunma

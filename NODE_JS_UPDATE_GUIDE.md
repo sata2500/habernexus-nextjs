@@ -23,7 +23,17 @@ Eğer `nvm` yüklü değilse, aşağıdaki komutu terminalinizde çalıştırın
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 ```
 
-Kurulumdan sonra terminalinizi **kapatıp yeniden açın**.
+Kurulumdan sonra terminalinizi **kapatıp yeniden açın** veya şu komutu çalıştırın:
+
+```bash
+source ~/.bashrc
+```
+
+**Not:** Eğer `nvm` komutu hala bulunamazsa, `.bashrc` yerine `.zshrc` dosyasını kullanıyor olabilirsiniz:
+
+```bash
+source ~/.zshrc
+```
 
 ### Adım 2: Yeni Node.js Versiyonunu Yükleme
 
