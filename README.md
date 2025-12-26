@@ -50,7 +50,10 @@ Tarayıcınızda `http://localhost:3000` adresini açın.
 
 ## 🤝 Katkıda Bulunma
 
-Katkılarınızı bekliyoruz! Lütfen önce [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun.
+Bu proje hem insanlar hem de AI ajanları tarafından geliştirilmek üzere tasarlanmıştır.
+
+- **İnsan Geliştiriciler:** Lütfen [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun.
+- **AI Ajanları:** Lütfen **öncelikle** [AI_DEVELOPMENT_GUIDE.md](AI_DEVELOPMENT_GUIDE.md) dosyasını okuyun. Bu sizin ana yönerge setinizdir.
 
 ## 📝 Lisans
 

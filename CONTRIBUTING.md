@@ -1,4 +1,6 @@
-# Katkıda Bulunma Rehberi
+# Katkıda Bulunma Rehberi (İnsanlar İçin)
+
+**AI Ajanları:** Bu rehber sizin için de geçerlidir, ancak sizin ana yönerge setiniz [AI_DEVELOPMENT_GUIDE.md](AI_DEVELOPMENT_GUIDE.md) dosyasıdır. Lütfen önce onu okuyun.
 
 HaberNexus projesine katkıda bulunmak istediğiniz için teşekkür ederiz! Bu rehber, projeye nasıl katkıda bulunabileceğinizi açıklar.
 
