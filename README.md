@@ -23,7 +23,7 @@
 - npm veya yarn
 - PM2 (production için)
 
-> **⚠️ Önemli:** Eğer Node.js versiyonunuz 20.9.0'dan düşükse, lütfen [NODE_JS_UPDATE_GUIDE.md](NODE_JS_UPDATE_GUIDE.md) dosyasını okuyun.
+> **⚠️ Önemli:** Eğer Node.js versiyonunuz 20.9.0'dan düşükse, lütfen [Node.js Güncelleme Rehberi](docs/guides/NODE_JS_UPDATE_GUIDE.md) dosyasını okuyun.
 
 ### Kurulum
 
@@ -38,7 +38,7 @@ npm install
 # .env dosyasını oluşturun ve düzenleyin
 cp .env.example .env
 # .env dosyasını düzenleyip API anahtarlarını ekleyin
-# Detaylı bilgi için: ENV_SETUP_GUIDE.md
+# Detaylı bilgi için: docs/guides/ENV_SETUP_GUIDE.md
 
 # Veritabanını oluşturun
 npx prisma migrate dev
@@ -53,8 +53,8 @@ Tarayıcınızda `http://localhost:3000` adresini açın.
 
 - **[Katkıda Bulunma Rehberi](CONTRIBUTING.md)** - Geliştirme kuralları ve süreçleri
 - **[Yol Haritası](ROADMAP.md)** - Planlanan özellikler ve sürümler
-- **[Node.js Güncelleme Rehberi](NODE_JS_UPDATE_GUIDE.md)** - Node.js versiyon yükseltme
-- **[.env Kurulum Rehberi](ENV_SETUP_GUIDE.md)** - API anahtarlarını nasıl alırsınız
+- **[Node.js Güncelleme Rehberi](docs/guides/NODE_JS_UPDATE_GUIDE.md)** - Node.js versiyon yükseltme
+- **[.env Kurulum Rehberi](docs/guides/ENV_SETUP_GUIDE.md)** - API anahtarlarını nasıl alırsınız
 - **[GitHub Wiki](https://github.com/sata2500/habernexus-nextjs/wiki)** - Detaylı teknik dokümantasyon
 
 ## 🤝 Katkıda Bulunma
