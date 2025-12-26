@@ -1,4 +1,7 @@
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
+import { auth, signOut } from '@/auth'
 import { 
   LayoutDashboard, 
   Newspaper, 
@@ -19,11 +22,23 @@ const sidebarItems = [
   { name: 'Ayarlar', href: '/admin/ayarlar', icon: Settings },
 ]
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await auth()
+
+  // Check if user is authenticated
+  if (!session?.user) {
+    redirect('/auth/signin')
+  }
+
+  // Check if user has ADMIN role
+  if (session.user.role !== 'ADMIN') {
+    redirect('/?error=unauthorized')
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {/* Sidebar */}
@@ -60,21 +75,42 @@ export default function AdminLayout({
           {/* User Section */}
           <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3 px-4 py-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold">A</span>
-              </div>
+              {session.user.image ? (
+                <Image
+                  src={session.user.image}
+                  alt={session.user.name || 'Admin'}
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold">
+                    {session.user.name?.charAt(0) || 'A'}
+                  </span>
+                </div>
+              )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">Admin</p>
-                <p className="text-xs text-gray-500 truncate">admin@habernexus.com</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {session.user.name || 'Admin'}
+                </p>
+                <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
               </div>
             </div>
-            <Link
-              href="/"
-              className="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors mt-2"
+            <form
+              action={async () => {
+                'use server'
+                await signOut({ redirectTo: '/' })
+              }}
             >
-              <LogOut className="w-5 h-5 text-gray-500" />
-              <span className="font-medium">Çıkış Yap</span>
-            </Link>
+              <button
+                type="submit"
+                className="flex items-center space-x-3 w-full px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors mt-2"
+              >
+                <LogOut className="w-5 h-5 text-gray-500" />
+                <span className="font-medium">Çıkış Yap</span>
+              </button>
+            </form>
           </div>
         </div>
       </aside>
@@ -90,6 +126,9 @@ export default function AdminLayout({
               <span className="text-gray-900 dark:text-white font-medium">Dashboard</span>
             </div>
             <div className="flex items-center space-x-4">
+              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
+                {session.user.role}
+              </span>
               <Link
                 href="/"
                 className="text-sm text-gray-600 hover:text-blue-600"
