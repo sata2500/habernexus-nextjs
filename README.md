@@ -70,23 +70,38 @@ HaberNexus, RSS kaynaklarından haberleri otomatik olarak toplayıp, Google Gemi
 
 Detaylı kurulum adımları için **[Getting Started](https://github.com/sata2500/habernexus-nextjs/wiki/Getting-Started)** wiki sayfasını ziyaret edin.
 
+### Ön Koşullar
+
+- **Node.js** v20.9.0 veya üzeri
+- **npm** v10 veya üzeri
+
+### Kurulum Adımları
+
 ```bash
-# Projeyi klonlayın
+# 1. Projeyi klonlayın
 git clone https://github.com/sata2500/habernexus-nextjs.git
 cd habernexus-nextjs
 
-# Bağımlılıkları yükleyin
+# 2. Bağımlılıkları yükleyin (ÖNEMLİ!)
+# Bu adım tüm gerekli paketleri (lucide-react, clsx, tailwind-merge vb.) indirir
 npm install
 
-# .env dosyasını oluşturun ve API anahtarlarını ekleyin
+# 3. .env dosyasını oluşturun
 cp .env.example .env
 
-# Veritabanını oluşturun
-npx prisma migrate dev
+# 4. Prisma client'ı oluşturun
+npx prisma generate
 
-# Geliştirme sunucusunu başlatın
+# 5. Veritabanını oluşturun
+npx prisma db push
+
+# 6. Geliştirme sunucusunu başlatın
 npm run dev
 ```
+
+> ⚠️ **Önemli:** `npm install` komutu mutlaka çalıştırılmalıdır. Aksi takdirde "Module not found" hataları alırsınız.
+
+Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
 
 ---
 
