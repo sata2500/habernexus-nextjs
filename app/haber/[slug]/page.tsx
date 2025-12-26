@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+// import { notFound } from 'next/navigation' // Veritabanı entegrasyonunda kullanılacak
 import { Clock, Eye, Calendar, Share2, Bookmark, ThumbsUp, ThumbsDown, ArrowLeft } from 'lucide-react'
 import { formatDate, getReadingTime } from '@/lib/utils'
 import ArticleCard from '@/components/articles/ArticleCard'
@@ -79,7 +79,7 @@ const relatedArticles = [
   },
 ]
 
-export default function ArticlePage({ params }: { params: { slug: string } }) {
+export default function ArticlePage() {
   // Gerçek uygulamada veritabanından çekilecek
   const article = demoArticle
   const readingTime = getReadingTime(article.content)

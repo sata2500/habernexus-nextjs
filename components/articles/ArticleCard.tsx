@@ -4,7 +4,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Clock, Eye, Bookmark } from 'lucide-react'
 import { formatDateShort, getReadingTime, truncate } from '@/lib/utils'
-import { cn } from '@/lib/utils'
 
 interface ArticleCardProps {
   article: {

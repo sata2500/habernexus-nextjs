@@ -1,4 +1,4 @@
-import Image from 'next/image'
+// import Image from 'next/image' // Gelecekte kullanılacak
 import Link from 'next/link'
 import { 
   Sparkles, 
@@ -219,7 +219,7 @@ export default function AboutPage() {
               className="inline-flex items-center px-6 py-3 bg-white text-gray-900 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
             >
               <Github className="w-5 h-5 mr-2" />
-              GitHub'da Görüntüle
+              GitHub&apos;da Görüntüle
             </a>
             <Link
               href="/iletisim"

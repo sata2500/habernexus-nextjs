@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { TrendingUp, Eye, Clock } from 'lucide-react'
+import { TrendingUp, Eye } from 'lucide-react'
 import { formatDateShort } from '@/lib/utils'
 
 // Demo veriler - gerçek uygulamada veritabanından gelecek

@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { 
   Plus, 
   Search, 
-  MoreVertical, 
   Edit, 
   Trash2, 
   RefreshCw,
@@ -24,7 +23,7 @@ const demoFeeds = [
 ]
 
 export default function RssManagement() {
-  const [feeds, setFeeds] = useState(demoFeeds)
+  const [feeds] = useState(demoFeeds)
   const [searchQuery, setSearchQuery] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
 
