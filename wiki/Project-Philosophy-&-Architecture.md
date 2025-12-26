@@ -40,7 +40,7 @@ HaberNexus is designed as a **self-hosted, monolithic application** built with N
 | **Background Jobs** | [`node-cron`](https://www.npmjs.com/package/node-cron) | A lightweight, pure-JavaScript job scheduler that runs within the Next.js process. Avoids the need for external services like Redis and Celery. |
 | **Deployment** | [PM2](https://pm2.keymetrics.io/) | A production-grade process manager for Node.js applications. Ensures the app stays online, restarts on crashes, and handles logs. |
 | **AI Integration** | [Google Gemini API](https://ai.google.dev/) | Provides powerful models for content analysis, generation, and image creation. |
-| **Authentication** | [NextAuth.js](https://next-auth.js.org/) | A complete open-source authentication solution for Next.js applications, making Google OAuth integration straightforward. |
+| **Authentication** | [Auth.js (NextAuth.js v5)](https://authjs.dev/) | A complete open-source authentication solution for Next.js applications, making Google OAuth integration straightforward. |
 
 ## 🔄 Data & Process Flow
 

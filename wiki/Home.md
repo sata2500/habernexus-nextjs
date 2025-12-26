@@ -16,7 +16,7 @@ This Wiki provides in-depth documentation for the HaberNexus project. It is inte
 ### 2. [Getting Started](Getting-Started)
 - A comprehensive guide to setting up your local development environment, including Node.js version management and obtaining API keys.
 
-### 3. [Core Features](Core-Features)
+### 3. Core Features
 - Detailed explanations of the project's core functionalities:
   - [AI Content Engine](AI-Content-Engine)
   - [User & Role System](User-&-Role-System)
