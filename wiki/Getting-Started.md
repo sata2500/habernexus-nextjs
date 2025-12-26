@@ -2,14 +2,27 @@
 
 This guide provides a complete walkthrough for setting up your local development environment for HaberNexus.
 
-## 1. GitHub Repository Setup
+---
 
-### Cloning the Repository
+## Prerequisites
 
-First, clone the project from GitHub to your local machine:
+Before you begin, ensure you have the following installed:
+
+| Requirement | Minimum Version | Check Command |
+|-------------|-----------------|---------------|
+| Node.js | v20.9.0 | `node -v` |
+| npm | v10.0.0 | `npm -v` |
+| Git | Any recent version | `git --version` |
+
+---
+
+## 1. Clone the Repository
 
 ```bash
+# Clone the project
 git clone https://github.com/sata2500/habernexus-nextjs.git
+
+# Navigate to the project directory
 cd habernexus-nextjs
 ```
 
@@ -18,10 +31,10 @@ cd habernexus-nextjs
 Before you start, always make sure you have the latest version of the code:
 
 ```bash
-git pull origin main
+git pull origin master
 ```
 
-For more details, see the [GitHub Updates Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/guides/GIT_PULL_GUIDE.md).
+---
 
 ## 2. Node.js Version Management
 
@@ -45,55 +58,76 @@ node -v  # Should be v20.9.0 or higher
 
 For detailed troubleshooting, see the [Node.js Update Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/guides/NODE_JS_UPDATE_GUIDE.md).
 
-## 3. Environment Variables Setup
+---
 
-The project uses a `.env` file to manage secret keys and API credentials. 
+## 3. Install Dependencies
+
+> ⚠️ **CRITICAL STEP:** This step is mandatory. Skipping it will cause "Module not found" errors.
+
+```bash
+# Install all dependencies from package.json
+npm install
+```
+
+### Verify Installation
+
+After installation, verify that key packages are installed:
+
+```bash
+# Check if node_modules exists and has content
+ls node_modules | wc -l  # Should show a number > 100
+
+# Verify specific packages
+ls node_modules | grep -E "clsx|lucide-react|tailwind-merge"
+```
+
+If you see errors like `Module not found: Can't resolve 'clsx'`, run `npm install` again.
+
+---
+
+## 4. Environment Variables Setup
+
+The project uses a `.env` file to manage secret keys and API credentials.
 
 ### Create the `.env` File
-
-Copy the example file to create your own local configuration:
 
 ```bash
 cp .env.example .env
 ```
 
-### Obtain and Fill in the API Keys
+### Configure Environment Variables
 
-You will need to get API keys for Google OAuth and Google Gemini. Follow the detailed, step-by-step instructions in the guide below to get your keys and fill in your `.env` file:
+Open `.env` and fill in the required values. See the [.env Setup Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/guides/ENV_SETUP_GUIDE.md) for detailed instructions.
 
-➡️ **[Complete Guide: .env Setup Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/guides/ENV_SETUP_GUIDE.md)**
+---
 
-## 4. Installing Dependencies and Running the Project
+## 5. Database Setup
 
-Once your Node.js version is correct and your `.env` file is ready, you can install the project dependencies and start the development server.
+HaberNexus uses SQLite with Prisma ORM.
 
-### Install Dependencies
-
-This command reads the `package.json` file and installs all the necessary libraries.
+### Generate Prisma Client
 
 ```bash
-npm install
+npx prisma generate
 ```
 
-### Initialize the Database
-
-This command reads your `prisma/schema.prisma` file, creates the SQLite database (`data.db`), and generates the Prisma Client.
+### Create the Database
 
 ```bash
-npx prisma migrate dev --name init
+npx prisma db push
 ```
 
-### Start the Development Server
+This creates the SQLite database file (`prisma/data.db`) and applies the schema.
 
-This command starts the Next.js development server with Turbopack for fast performance.
+---
+
+## 6. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-## ✅ Success!
-
-If everything is set up correctly, you should see output similar to this:
+### Expected Output
 
 ```
 ▲ Next.js 16.1.1 (Turbopack)
@@ -101,7 +135,96 @@ If everything is set up correctly, you should see output similar to this:
 - Network:       http://your-local-ip:3000
 - Environments: .env
 
-✓ Ready in 5.4s
+✓ Ready in 2.7s
 ```
 
-You can now open your web browser and navigate to **[http://localhost:3000](http://localhost:3000)** to see the running application.
+Open your browser and navigate to **[http://localhost:3000](http://localhost:3000)**.
+
+---
+
+## Quick Setup (Copy & Paste)
+
+For experienced developers, here's the complete setup in one block:
+
+```bash
+# Clone and enter directory
+git clone https://github.com/sata2500/habernexus-nextjs.git
+cd habernexus-nextjs
+
+# Install dependencies (REQUIRED!)
+npm install
+
+# Setup environment
+cp .env.example .env
+
+# Setup database
+npx prisma generate
+npx prisma db push
+
+# Start development server
+npm run dev
+```
+
+---
+
+## Troubleshooting
+
+### Error: Module not found
+
+```
+Module not found: Can't resolve 'clsx'
+Module not found: Can't resolve 'lucide-react'
+Module not found: Can't resolve 'tailwind-merge'
+```
+
+**Solution:** Run `npm install` to install all dependencies.
+
+### Error: Prisma Client not generated
+
+```
+Error: @prisma/client did not initialize yet
+```
+
+**Solution:** Run `npx prisma generate`.
+
+### Error: Database not found
+
+```
+Error: The table `main.User` does not exist
+```
+
+**Solution:** Run `npx prisma db push`.
+
+### Error: Node.js version too old
+
+```
+error habernexus-nextjs@1.0.0: The engine "node" is incompatible
+```
+
+**Solution:** Update Node.js to v20.9.0 or higher using nvm.
+
+---
+
+## Verification Checklist
+
+Before starting development, verify:
+
+- [ ] `node -v` shows v20.9.0 or higher
+- [ ] `npm install` completed without errors
+- [ ] `.env` file exists
+- [ ] `npx prisma generate` completed
+- [ ] `npx prisma db push` completed
+- [ ] `npm run dev` starts without errors
+- [ ] http://localhost:3000 loads in browser
+
+---
+
+## Next Steps
+
+Once your development environment is set up:
+
+1. Read the [Project Philosophy & Architecture](./Project-Philosophy-&-Architecture.md)
+2. Review the [Development & Contribution](./Development-&-Contribution.md) guide
+3. Check the [ROADMAP.md](../ROADMAP.md) for current development goals
+
+For AI agents, proceed to [AI_DEVELOPMENT_GUIDE.md](../AI_DEVELOPMENT_GUIDE.md).
