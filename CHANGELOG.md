@@ -1,3 +1,13 @@
+## [1.1.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.0.0...v1.1.0) (2025-12-29)
+
+### ✨ Yeni Özellikler
+
+* **assets:** add logo, favicons, and fix ESLint warnings ([ac4bc85](https://github.com/sata2500/habernexus-nextjs/commit/ac4bc8577b80a8ba378ee45a7dc853b05fd62638))
+
+### 🔧 Bakım
+
+* update semantic-release to version 25.0.2 ([81f7c3a](https://github.com/sata2500/habernexus-nextjs/commit/81f7c3a9dcea78ca61431eb1e4728679edafb5e3))
+
 ## 1.0.0 (2025-12-26)
 
 ### ✨ Yeni Özellikler
