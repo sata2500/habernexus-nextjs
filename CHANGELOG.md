@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.1.0...v1.2.0) (2025-12-29)
+
+### ✨ Yeni Özellikler
+
+* **scripts:** add professional auto-install system v2.0 ([9348599](https://github.com/sata2500/habernexus-nextjs/commit/93485998913aca2e61cfba9220bac598143bd0b5))
+
 ## [1.1.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.0.0...v1.1.0) (2025-12-29)
 
 ### ✨ Yeni Özellikler
