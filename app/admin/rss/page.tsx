@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { 
   Plus, 
   Search, 
-  Edit, 
   Trash2, 
   RefreshCw,
   CheckCircle,
@@ -98,7 +97,7 @@ export default function RssManagement() {
       setFeeds(feeds.map(f => 
         f.id === feed.id ? { ...f, isActive: !f.isActive } : f
       ))
-    } catch (err) {
+    } catch {
       alert('Durum güncellenirken bir hata oluştu')
     }
   }
@@ -114,7 +113,7 @@ export default function RssManagement() {
       if (!response.ok) throw new Error('Failed to delete feed')
 
       setFeeds(feeds.filter(f => f.id !== id))
-    } catch (err) {
+    } catch {
       alert('Kaynak silinirken bir hata oluştu')
     }
   }

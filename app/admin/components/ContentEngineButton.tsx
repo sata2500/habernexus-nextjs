@@ -29,7 +29,7 @@ export default function ContentEngineButton() {
           window.location.reload()
         }, 2000)
       }
-    } catch (error) {
+    } catch {
       setResult({
         success: false,
         articlesCreated: 0,

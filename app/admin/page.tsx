@@ -1,13 +1,11 @@
 import { 
   Newspaper, 
   Users, 
-  Eye, 
-  TrendingUp,
+  Eye,
   Rss,
   Clock,
   CheckCircle,
-  AlertCircle,
-  Play
+  AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
