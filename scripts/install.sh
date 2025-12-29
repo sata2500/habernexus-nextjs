@@ -3,7 +3,7 @@
 # ╔═══════════════════════════════════════════════════════════════════════════╗
 # ║                                                                           ║
 # ║   HaberNexus - Profesyonel Otomatik Kurulum Sistemi                       ║
-# ║   Sürüm: 2.0.1                                                            ║
+# ║   Sürüm: 2.0.2                                                            ║
 # ║   Desteklenen Sistemler: Ubuntu 22.04 LTS, Ubuntu 24.04 LTS               ║
 # ║                                                                           ║
 # ║   Tek Satırlık Kurulum:                                                   ║
@@ -17,7 +17,7 @@ set -euo pipefail
 # YAPILANDIRMA DEĞİŞKENLERİ
 # ═══════════════════════════════════════════════════════════════════════════
 
-readonly SCRIPT_VERSION="2.0.1"
+readonly SCRIPT_VERSION="2.0.2"
 readonly GITHUB_REPO="https://github.com/sata2500/habernexus-nextjs.git"
 readonly INSTALL_DIR="/var/www/habernexus"
 readonly NODE_VERSION="22"
@@ -641,6 +641,16 @@ EOF
 configure_caddy() {
     print_header "CADDY YAPILANDIRILIYOR"
     
+    # Önce log dizinini oluştur ve izinleri ayarla
+    print_step "Log dizini hazırlanıyor..."
+    sudo mkdir -p /var/log/caddy
+    sudo chown caddy:caddy /var/log/caddy
+    sudo chmod 755 /var/log/caddy
+    # Log dosyasını önceden oluştur
+    sudo touch /var/log/caddy/habernexus.log
+    sudo chown caddy:caddy /var/log/caddy/habernexus.log
+    sudo chmod 644 /var/log/caddy/habernexus.log
+    
     print_step "Caddyfile oluşturuluyor..."
     
     sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
@@ -665,7 +675,10 @@ ${SITE_DOMAIN} {
     
     # Loglama
     log {
-        output file /var/log/caddy/habernexus.log
+        output file /var/log/caddy/habernexus.log {
+            roll_size 10mb
+            roll_keep 5
+        }
         format json
     }
 }
@@ -675,18 +688,43 @@ www.${SITE_DOMAIN} {
 }
 EOF
     
-    # Log dizini oluştur
-    sudo mkdir -p /var/log/caddy
-    sudo chown caddy:caddy /var/log/caddy
-    
     print_step "Caddy yapılandırması test ediliyor..."
-    sudo caddy validate --config /etc/caddy/Caddyfile >> "$LOG_FILE" 2>&1
+    if ! sudo caddy validate --config /etc/caddy/Caddyfile >> "$LOG_FILE" 2>&1; then
+        print_warning "Caddy yapılandırma hatası, basit yapılandırma deneniyor..."
+        # Basitleştirilmiş yapılandırma (log olmadan)
+        sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
+# HaberNexus Caddy Configuration (Simplified)
+
+${SITE_DOMAIN} {
+    reverse_proxy localhost:3000
+    
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    
+    encode gzip
+}
+
+www.${SITE_DOMAIN} {
+    redir https://${SITE_DOMAIN}{uri} permanent
+}
+EOF
+    fi
     
     print_step "Caddy yeniden başlatılıyor..."
     sudo systemctl restart caddy
     sudo systemctl enable caddy >> "$LOG_FILE" 2>&1
     
-    print_success "Caddy yapılandırıldı (SSL otomatik olarak alınacak)"
+    # Caddy durumunu kontrol et
+    if sudo systemctl is-active --quiet caddy; then
+        print_success "Caddy yapılandırıldı (SSL otomatik olarak alınacak)"
+    else
+        print_warning "Caddy başlatılamadı. Lütfen 'sudo systemctl status caddy' ile kontrol edin."
+    fi
 }
 
 configure_nginx() {
