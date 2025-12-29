@@ -3,6 +3,19 @@
 ### 🐛 Hata Düzeltmeleri
 
 * **install:** Caddy log dizini izin sorunu düzeltildi ([37edd1d](https://github.com/sata2500/habernexus-nextjs/commit/37edd1dd042d1357c3293b8667f931a4c99efbe0))
+  - Log dizini ve dosyası Caddyfile oluşturulmadan önce hazırlanıyor
+  - Dosya izinleri açıkça ayarlanıyor (755/644)
+  - Log rotation ayarları eklendi (roll_size: 10mb, roll_keep: 5)
+  - Yapılandırma hatası durumunda fallback mekanizması eklendi
+  - Caddy durumu kontrol edilerek kullanıcıya bilgi veriliyor
+
+### 📚 Dokümantasyon
+
+* **knowledge-base:** Hata kayıtları ve öğrenme dokümanları eklendi
+  - ERROR-001: Install script stdin pipe sorunu
+  - ERROR-002: Caddy log dizini izin sorunu
+  - LEARNING-001: Bash install script best practices
+* **reports:** AI Agent geliştirme raporu eklendi
 
 ## [1.2.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.0...v1.2.1) (2025-12-29)
 

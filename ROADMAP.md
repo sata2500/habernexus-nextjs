@@ -52,6 +52,7 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 | ⏳ | Makale oylama (Faydalı / Değil) | UI bileşeni hazır, backend API bekliyor. |
 | ✅ | Sistem sağlığı paneli (Admin için) | Admin Dashboard'da sistem durumu bölümü eklendi (26 Ara 2025). |
 | ⏳ | Detaylı analitikler (Temel metrikler) | Demo veriler mevcut, gerçek veri entegrasyonu bekliyor. |
+| ✅ | Profesyonel Otomatik Kurulum Sistemi | Install script v2.0.2 tamamlandı (29 Ara 2025). curl \| bash desteği. |
 
 ---
 
@@ -87,8 +88,8 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 - **Devam Eden:** 3/7 özellik
 
 ### v1.2 Topluluk ve Analitik İlerlemesi
-- **Tamamlanan:** 2/4 özellik (%50)
-- **Devam Eden:** 2/4 özellik
+- **Tamamlanan:** 3/5 özellik (%60)
+- **Devam Eden:** 2/5 özellik
 
 ---
 
@@ -102,4 +103,4 @@ Bu yol haritasındaki özelliklere katkıda bulunmak isterseniz:
 
 ---
 
-**Son Güncelleme:** 26 Aralık 2025
+**Son Güncelleme:** 29 Aralık 2025
