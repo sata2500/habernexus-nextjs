@@ -1,3 +1,9 @@
+## [1.2.2](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.1...v1.2.2) (2025-12-29)
+
+### 🐛 Hata Düzeltmeleri
+
+* **install:** Caddy log dizini izin sorunu düzeltildi ([37edd1d](https://github.com/sata2500/habernexus-nextjs/commit/37edd1dd042d1357c3293b8667f931a4c99efbe0))
+
 ## [1.2.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.0...v1.2.1) (2025-12-29)
 
 ### 🐛 Hata Düzeltmeleri
