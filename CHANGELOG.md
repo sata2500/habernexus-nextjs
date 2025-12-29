@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.0...v1.2.1) (2025-12-29)
+
+### 🐛 Hata Düzeltmeleri
+
+* **install:** pipe üzerinden çalıştırıldığında stdin sorunu düzeltildi ([545f142](https://github.com/sata2500/habernexus-nextjs/commit/545f142487a871fba9e4ebc5ab34250806137664))
+
 ## [1.2.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.1.0...v1.2.0) (2025-12-29)
 
 ### ✨ Yeni Özellikler
