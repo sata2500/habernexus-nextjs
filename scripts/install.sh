@@ -3,7 +3,7 @@
 # ╔═══════════════════════════════════════════════════════════════════════════╗
 # ║                                                                           ║
 # ║   HaberNexus - Profesyonel Otomatik Kurulum Sistemi                       ║
-# ║   Sürüm: 2.0.0                                                            ║
+# ║   Sürüm: 2.0.1                                                            ║
 # ║   Desteklenen Sistemler: Ubuntu 22.04 LTS, Ubuntu 24.04 LTS               ║
 # ║                                                                           ║
 # ║   Tek Satırlık Kurulum:                                                   ║
@@ -17,7 +17,7 @@ set -euo pipefail
 # YAPILANDIRMA DEĞİŞKENLERİ
 # ═══════════════════════════════════════════════════════════════════════════
 
-readonly SCRIPT_VERSION="2.0.0"
+readonly SCRIPT_VERSION="2.0.1"
 readonly GITHUB_REPO="https://github.com/sata2500/habernexus-nextjs.git"
 readonly INSTALL_DIR="/var/www/habernexus"
 readonly NODE_VERSION="22"
@@ -126,6 +126,55 @@ error_handler() {
 trap 'error_handler ${LINENO} $?' ERR
 
 # ═══════════════════════════════════════════════════════════════════════════
+# İNTERAKTİF GİRDİ FONKSİYONLARI
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Pipe üzerinden çalıştırıldığında bile kullanıcı girdisi almak için
+# /dev/tty'den okuma yapan fonksiyonlar
+
+# Kullanıcıdan metin girdisi al
+ask_input() {
+    local prompt="$1"
+    local var_name="$2"
+    local default="${3:-}"
+    local result
+    
+    if [[ -n "$default" ]]; then
+        printf "%s [%s]: " "$prompt" "$default" >/dev/tty
+    else
+        printf "%s: " "$prompt" >/dev/tty
+    fi
+    
+    read -r result </dev/tty
+    
+    if [[ -z "$result" && -n "$default" ]]; then
+        result="$default"
+    fi
+    
+    eval "$var_name=\"\$result\""
+}
+
+# Kullanıcıdan tek karakter girdisi al
+ask_char() {
+    local prompt="$1"
+    local var_name="$2"
+    local result
+    
+    printf "%s " "$prompt" >/dev/tty
+    read -r -n 1 result </dev/tty
+    echo "" >/dev/tty
+    
+    eval "$var_name=\"\$result\""
+}
+
+# Enter bekle
+wait_enter() {
+    local prompt="${1:-Devam etmek icin Enter tusuna basin...}"
+    printf "%s" "$prompt" >/dev/tty
+    read -r </dev/tty
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
 # BANNER
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -181,9 +230,9 @@ check_os() {
         print_warning "Bu script Ubuntu için optimize edilmiştir."
         print_info "Diğer dağıtımlarda sorun yaşayabilirsiniz."
         echo ""
-        read -p "Devam etmek istiyor musunuz? (e/h): " -n 1 -r
-        echo ""
-        if [[ ! $REPLY =~ ^[Ee]$ ]]; then
+        local reply
+        ask_char "Devam etmek istiyor musunuz? (e/h):" reply
+        if [[ ! $reply =~ ^[Ee]$ ]]; then
             exit 0
         fi
     fi
@@ -264,7 +313,7 @@ get_user_input() {
     echo -e "${CYAN}1. Site Domain${NC}"
     echo -e "${GRAY}   Örnek: habernexus.com (www olmadan)${NC}"
     while true; do
-        read -p "   Domain: " SITE_DOMAIN
+        ask_input "   Domain" SITE_DOMAIN
         if [[ -n "$SITE_DOMAIN" ]]; then
             # www. varsa kaldır
             SITE_DOMAIN="${SITE_DOMAIN#www.}"
@@ -279,8 +328,8 @@ get_user_input() {
     echo -e "${GRAY}   1) Caddy - Otomatik SSL, kolay yapılandırma (Önerilen)${NC}"
     echo -e "${GRAY}   2) Nginx - Klasik, daha fazla kontrol${NC}"
     while true; do
-        read -p "   Seçiminiz (1/2) [1]: " ws_choice
-        ws_choice=${ws_choice:-1}
+        local ws_choice
+        ask_input "   Seçiminiz (1/2)" ws_choice "1"
         if [[ "$ws_choice" == "1" ]]; then
             WEB_SERVER="caddy"
             break
@@ -297,8 +346,8 @@ get_user_input() {
     echo -e "${GRAY}   Google Cloud Console'dan alabilirsiniz:${NC}"
     echo -e "${GRAY}   https://console.cloud.google.com/apis/credentials${NC}"
     echo ""
-    read -p "   Google Client ID: " GOOGLE_CLIENT_ID
-    read -p "   Google Client Secret: " GOOGLE_CLIENT_SECRET
+    ask_input "   Google Client ID" GOOGLE_CLIENT_ID
+    ask_input "   Google Client Secret" GOOGLE_CLIENT_SECRET
     echo ""
     
     # Gemini API
@@ -306,13 +355,13 @@ get_user_input() {
     echo -e "${GRAY}   Google AI Studio'dan alabilirsiniz:${NC}"
     echo -e "${GRAY}   https://aistudio.google.com/app/apikey${NC}"
     echo ""
-    read -p "   Gemini API Key: " GEMINI_API_KEY
+    ask_input "   Gemini API Key" GEMINI_API_KEY
     echo ""
     
     # E-posta (SSL için)
     echo -e "${CYAN}5. E-posta Adresi${NC}"
     echo -e "${GRAY}   SSL sertifikası bildirimleri için kullanılacak${NC}"
-    read -p "   E-posta: " ADMIN_EMAIL
+    ask_input "   E-posta" ADMIN_EMAIL
     echo ""
     
     # Özet
@@ -323,8 +372,8 @@ get_user_input() {
     echo -e "  ${WHITE}Kurulum Yolu:${NC}  $INSTALL_DIR"
     echo ""
     
-    read -p "Bu ayarlarla devam etmek istiyor musunuz? (e/h) [e]: " confirm
-    confirm=${confirm:-e}
+    local confirm
+    ask_input "Bu ayarlarla devam etmek istiyor musunuz? (e/h)" confirm "e"
     if [[ ! $confirm =~ ^[Ee]$ ]]; then
         print_info "Kurulum iptal edildi."
         exit 0
@@ -860,7 +909,7 @@ main() {
     echo -e "${GRAY}Kurulum sırasında sizden bazı bilgiler istenecektir.${NC}"
     echo ""
     
-    read -p "Kuruluma başlamak için Enter'a basın (iptal için Ctrl+C)..."
+    wait_enter "Kuruluma başlamak için Enter'a basın (iptal için Ctrl+C)..."
     
     # Kurulum adımları
     run_system_checks
