@@ -1,201 +1,496 @@
 #!/bin/bash
 
-# ============================================
-# HaberNexus - Otomatik Kurulum Script'i
-# ============================================
-# Bu script, HaberNexus projesini Ubuntu sunucunuza
-# interaktif olarak kurar ve yapılandırır.
-# ============================================
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                                                                           ║
+# ║   HaberNexus - Profesyonel Otomatik Kurulum Sistemi                       ║
+# ║   Sürüm: 2.0.0                                                            ║
+# ║   Desteklenen Sistemler: Ubuntu 22.04 LTS, Ubuntu 24.04 LTS               ║
+# ║                                                                           ║
+# ║   Tek Satırlık Kurulum:                                                   ║
+# ║   curl -fsSL https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/scripts/install.sh | bash
+# ║                                                                           ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
 
-set -e
+set -euo pipefail
 
-# Renkler
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+# ═══════════════════════════════════════════════════════════════════════════
+# YAPILANDIRMA DEĞİŞKENLERİ
+# ═══════════════════════════════════════════════════════════════════════════
 
-# Banner
-print_banner() {
-    echo -e "${CYAN}"
-    echo "╔═══════════════════════════════════════════════════════════╗"
-    echo "║                                                           ║"
-    echo "║   ██╗  ██╗ █████╗ ██████╗ ███████╗██████╗                 ║"
-    echo "║   ██║  ██║██╔══██╗██╔══██╗██╔════╝██╔══██╗                ║"
-    echo "║   ███████║███████║██████╔╝█████╗  ██████╔╝                ║"
-    echo "║   ██╔══██║██╔══██║██╔══██╗██╔══╝  ██╔══██╗                ║"
-    echo "║   ██║  ██║██║  ██║██████╔╝███████╗██║  ██║                ║"
-    echo "║   ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝                ║"
-    echo "║                                                           ║"
-    echo "║   ███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗             ║"
-    echo "║   ████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝             ║"
-    echo "║   ██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗             ║"
-    echo "║   ██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║             ║"
-    echo "║   ██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║             ║"
-    echo "║   ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝             ║"
-    echo "║                                                           ║"
-    echo "║   AI Destekli Haber Platformu - Otomatik Kurulum          ║"
-    echo "║                                                           ║"
-    echo "╚═══════════════════════════════════════════════════════════╝"
-    echo -e "${NC}"
+readonly SCRIPT_VERSION="2.0.0"
+readonly GITHUB_REPO="https://github.com/sata2500/habernexus-nextjs.git"
+readonly INSTALL_DIR="/var/www/habernexus"
+readonly NODE_VERSION="22"
+readonly PM2_APP_NAME="habernexus"
+readonly LOG_FILE="/tmp/habernexus-install-$(date +%Y%m%d-%H%M%S).log"
+
+# Web sunucusu seçimi (caddy veya nginx)
+WEB_SERVER="caddy"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# RENK TANIMLARI
+# ═══════════════════════════════════════════════════════════════════════════
+
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly MAGENTA='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly WHITE='\033[1;37m'
+readonly GRAY='\033[0;90m'
+readonly NC='\033[0m'
+readonly BOLD='\033[1m'
+readonly DIM='\033[2m'
+
+# ═══════════════════════════════════════════════════════════════════════════
+# YARDIMCI FONKSİYONLAR
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Loglama
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG_FILE"
 }
 
-# Log fonksiyonları
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+# Ekrana yazdırma fonksiyonları
+print_header() {
+    echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}  $1${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
 }
 
-log_success() {
-    echo -e "${GREEN}[✓]${NC} $1"
+print_step() {
+    echo -e "${BLUE}▶${NC} ${WHITE}$1${NC}"
+    log "STEP: $1"
 }
 
-log_warning() {
-    echo -e "${YELLOW}[!]${NC} $1"
+print_success() {
+    echo -e "${GREEN}✓${NC} $1"
+    log "SUCCESS: $1"
 }
 
-log_error() {
-    echo -e "${RED}[✗]${NC} $1"
+print_warning() {
+    echo -e "${YELLOW}⚠${NC} $1"
+    log "WARNING: $1"
 }
 
-# Spinner
+print_error() {
+    echo -e "${RED}✗${NC} $1"
+    log "ERROR: $1"
+}
+
+print_info() {
+    echo -e "${GRAY}  ℹ${NC} ${DIM}$1${NC}"
+    log "INFO: $1"
+}
+
+# İlerleme çubuğu
+progress_bar() {
+    local current=$1
+    local total=$2
+    local width=50
+    local percentage=$((current * 100 / total))
+    local completed=$((width * current / total))
+    local remaining=$((width - completed))
+    
+    printf "\r${CYAN}["
+    printf "%${completed}s" | tr ' ' '█'
+    printf "%${remaining}s" | tr ' ' '░'
+    printf "] ${percentage}%%${NC}"
+}
+
+# Spinner animasyonu
 spinner() {
     local pid=$1
-    local delay=0.1
-    local spinstr='|/-\'
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-        local temp=${spinstr#?}
-        printf " [%c]  " "$spinstr"
-        local spinstr=$temp${spinstr%"$temp"}
-        sleep $delay
-        printf "\b\b\b\b\b\b"
+    local message=$2
+    local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    
+    while kill -0 $pid 2>/dev/null; do
+        i=$(( (i+1) % 10 ))
+        printf "\r${CYAN}${spin:$i:1}${NC} ${message}"
+        sleep 0.1
     done
-    printf "    \b\b\b\b"
+    printf "\r"
 }
 
-# Sistem kontrolü
-check_system() {
-    log_info "Sistem gereksinimleri kontrol ediliyor..."
+# Hata yakalama
+error_handler() {
+    local line_no=$1
+    local error_code=$2
+    print_error "Hata oluştu (satır: $line_no, kod: $error_code)"
+    print_info "Detaylı log: $LOG_FILE"
+    exit 1
+}
+
+trap 'error_handler ${LINENO} $?' ERR
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BANNER
+# ═══════════════════════════════════════════════════════════════════════════
+
+print_banner() {
+    clear
+    echo -e "${CYAN}"
+    cat << 'EOF'
     
-    # Ubuntu kontrolü
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        if [ "$ID" != "ubuntu" ]; then
-            log_warning "Bu script Ubuntu için optimize edilmiştir. Diğer dağıtımlarda sorun yaşayabilirsiniz."
-        fi
+    ██╗  ██╗ █████╗ ██████╗ ███████╗██████╗ ███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
+    ██║  ██║██╔══██╗██╔══██╗██╔════╝██╔══██╗████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
+    ███████║███████║██████╔╝█████╗  ██████╔╝██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
+    ██╔══██║██╔══██║██╔══██╗██╔══╝  ██╔══██╗██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
+    ██║  ██║██║  ██║██████╔╝███████╗██║  ██║██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║
+    ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+    
+EOF
+    echo -e "${NC}"
+    echo -e "${WHITE}                    AI Destekli Haber Platformu${NC}"
+    echo -e "${GRAY}                    Profesyonel Kurulum Sistemi v${SCRIPT_VERSION}${NC}"
+    echo ""
+    echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SİSTEM KONTROL FONKSİYONLARI
+# ═══════════════════════════════════════════════════════════════════════════
+
+check_root() {
+    if [[ $EUID -eq 0 ]]; then
+        print_error "Bu script root olarak çalıştırılmamalıdır!"
+        print_info "Sudo yetkisi olan normal bir kullanıcı ile çalıştırın."
+        exit 1
     fi
-    
-    # Root kontrolü
-    if [ "$EUID" -eq 0 ]; then
-        log_error "Bu script root olarak çalıştırılmamalıdır. Normal kullanıcı ile çalıştırın."
+}
+
+check_sudo() {
+    if ! sudo -n true 2>/dev/null; then
+        print_warning "Sudo şifresi gerekebilir..."
+        sudo true
+    fi
+}
+
+check_os() {
+    if [[ ! -f /etc/os-release ]]; then
+        print_error "Desteklenmeyen işletim sistemi!"
         exit 1
     fi
     
-    log_success "Sistem kontrolü tamamlandı"
-}
-
-# Bağımlılıkları yükle
-install_dependencies() {
-    log_info "Sistem bağımlılıkları kontrol ediliyor..."
+    source /etc/os-release
     
-    # Node.js kontrolü
-    if ! command -v node &> /dev/null; then
-        log_info "Node.js kuruluyor..."
-        curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - > /dev/null 2>&1
-        sudo apt-get install -y nodejs > /dev/null 2>&1
-        log_success "Node.js kuruldu: $(node -v)"
-    else
-        NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-        if [ "$NODE_VERSION" -lt 20 ]; then
-            log_warning "Node.js sürümünüz eski. Güncelleniyor..."
-            curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - > /dev/null 2>&1
-            sudo apt-get install -y nodejs > /dev/null 2>&1
+    if [[ "$ID" != "ubuntu" ]]; then
+        print_warning "Bu script Ubuntu için optimize edilmiştir."
+        print_info "Diğer dağıtımlarda sorun yaşayabilirsiniz."
+        echo ""
+        read -p "Devam etmek istiyor musunuz? (e/h): " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Ee]$ ]]; then
+            exit 0
         fi
-        log_success "Node.js mevcut: $(node -v)"
     fi
     
-    # Git kontrolü
-    if ! command -v git &> /dev/null; then
-        log_info "Git kuruluyor..."
-        sudo apt-get install -y git > /dev/null 2>&1
-        log_success "Git kuruldu"
-    else
-        log_success "Git mevcut: $(git --version)"
+    local version_id="${VERSION_ID:-0}"
+    if [[ "${version_id%%.*}" -lt 22 ]]; then
+        print_warning "Ubuntu 22.04 veya üzeri önerilir."
     fi
     
-    # PM2 kontrolü
-    if ! command -v pm2 &> /dev/null; then
-        log_info "PM2 kuruluyor..."
-        sudo npm install -g pm2 > /dev/null 2>&1
-        log_success "PM2 kuruldu"
+    print_success "İşletim sistemi: $PRETTY_NAME"
+}
+
+check_memory() {
+    local total_mem=$(free -m | awk '/^Mem:/{print $2}')
+    
+    if [[ $total_mem -lt 1024 ]]; then
+        print_warning "Düşük RAM tespit edildi: ${total_mem}MB"
+        print_info "En az 1GB RAM önerilir."
     else
-        log_success "PM2 mevcut"
+        print_success "RAM: ${total_mem}MB"
     fi
 }
 
-# Projeyi klonla
-clone_project() {
-    log_info "Proje klonlanıyor..."
+check_disk() {
+    local available=$(df -BG / | awk 'NR==2 {print $4}' | tr -d 'G')
     
-    if [ -d "habernexus-nextjs" ]; then
-        log_warning "Proje dizini zaten mevcut. Güncelleniyor..."
-        cd habernexus-nextjs
-        git pull origin master > /dev/null 2>&1
-    else
-        git clone https://github.com/sata2500/habernexus-nextjs.git > /dev/null 2>&1
-        cd habernexus-nextjs
+    if [[ $available -lt 5 ]]; then
+        print_error "Yetersiz disk alanı: ${available}GB"
+        print_info "En az 5GB boş alan gereklidir."
+        exit 1
     fi
     
-    log_success "Proje hazır"
+    print_success "Kullanılabilir disk: ${available}GB"
 }
 
-# Bağımlılıkları yükle
-install_npm_packages() {
-    log_info "NPM paketleri yükleniyor..."
-    npm ci > /dev/null 2>&1 &
-    spinner $!
-    log_success "NPM paketleri yüklendi"
+check_ports() {
+    local ports_in_use=""
+    
+    for port in 80 443 3000; do
+        if ss -tuln | grep -q ":$port "; then
+            ports_in_use+="$port "
+        fi
+    done
+    
+    if [[ -n "$ports_in_use" ]]; then
+        print_warning "Kullanımda olan portlar: $ports_in_use"
+        print_info "Bu portlar kurulum sırasında yeniden yapılandırılacak."
+    else
+        print_success "Gerekli portlar kullanılabilir (80, 443, 3000)"
+    fi
 }
 
-# Environment yapılandırması
-configure_environment() {
+run_system_checks() {
+    print_header "SİSTEM KONTROLLERİ"
+    
+    check_root
+    check_sudo
+    check_os
+    check_memory
+    check_disk
+    check_ports
+    
     echo ""
-    echo -e "${CYAN}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${CYAN}              ENVIRONMENT YAPILANDIRMASI                    ${NC}"
-    echo -e "${CYAN}═══════════════════════════════════════════════════════════${NC}"
-    echo ""
+    print_success "Tüm sistem kontrolleri başarılı!"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# İNTERAKTİF YAPILANDIRMA
+# ═══════════════════════════════════════════════════════════════════════════
+
+get_user_input() {
+    print_header "YAPILANDIRMA"
     
-    # AUTH_SECRET oluştur
-    AUTH_SECRET=$(openssl rand -base64 32)
+    echo -e "${WHITE}Lütfen aşağıdaki bilgileri girin:${NC}"
+    echo ""
     
     # Domain
-    echo -e "${YELLOW}Site domain'inizi girin (örn: habernexus.com):${NC}"
-    read -p "> " SITE_DOMAIN
-    SITE_DOMAIN=${SITE_DOMAIN:-localhost}
+    echo -e "${CYAN}1. Site Domain${NC}"
+    echo -e "${GRAY}   Örnek: habernexus.com (www olmadan)${NC}"
+    while true; do
+        read -p "   Domain: " SITE_DOMAIN
+        if [[ -n "$SITE_DOMAIN" ]]; then
+            # www. varsa kaldır
+            SITE_DOMAIN="${SITE_DOMAIN#www.}"
+            break
+        fi
+        print_warning "Domain boş olamaz!"
+    done
+    echo ""
+    
+    # Web sunucusu seçimi
+    echo -e "${CYAN}2. Web Sunucusu Seçimi${NC}"
+    echo -e "${GRAY}   1) Caddy - Otomatik SSL, kolay yapılandırma (Önerilen)${NC}"
+    echo -e "${GRAY}   2) Nginx - Klasik, daha fazla kontrol${NC}"
+    while true; do
+        read -p "   Seçiminiz (1/2) [1]: " ws_choice
+        ws_choice=${ws_choice:-1}
+        if [[ "$ws_choice" == "1" ]]; then
+            WEB_SERVER="caddy"
+            break
+        elif [[ "$ws_choice" == "2" ]]; then
+            WEB_SERVER="nginx"
+            break
+        fi
+        print_warning "Geçersiz seçim!"
+    done
+    echo ""
     
     # Google OAuth
+    echo -e "${CYAN}3. Google OAuth 2.0 Bilgileri${NC}"
+    echo -e "${GRAY}   Google Cloud Console'dan alabilirsiniz:${NC}"
+    echo -e "${GRAY}   https://console.cloud.google.com/apis/credentials${NC}"
     echo ""
-    echo -e "${YELLOW}Google OAuth bilgilerini girin:${NC}"
-    echo -e "${BLUE}(Google Cloud Console'dan alabilirsiniz: https://console.cloud.google.com/apis/credentials)${NC}"
+    read -p "   Google Client ID: " GOOGLE_CLIENT_ID
+    read -p "   Google Client Secret: " GOOGLE_CLIENT_SECRET
     echo ""
-    read -p "Google Client ID: " GOOGLE_CLIENT_ID
-    read -p "Google Client Secret: " GOOGLE_CLIENT_SECRET
     
     # Gemini API
+    echo -e "${CYAN}4. Gemini AI API Anahtarı${NC}"
+    echo -e "${GRAY}   Google AI Studio'dan alabilirsiniz:${NC}"
+    echo -e "${GRAY}   https://aistudio.google.com/app/apikey${NC}"
     echo ""
-    echo -e "${YELLOW}Gemini API anahtarını girin:${NC}"
-    echo -e "${BLUE}(Google AI Studio'dan alabilirsiniz: https://aistudio.google.com/app/apikey)${NC}"
+    read -p "   Gemini API Key: " GEMINI_API_KEY
     echo ""
-    read -p "Gemini API Key: " GEMINI_API_KEY
     
-    # .env dosyasını oluştur
+    # E-posta (SSL için)
+    echo -e "${CYAN}5. E-posta Adresi${NC}"
+    echo -e "${GRAY}   SSL sertifikası bildirimleri için kullanılacak${NC}"
+    read -p "   E-posta: " ADMIN_EMAIL
+    echo ""
+    
+    # Özet
+    print_header "YAPILANDIRMA ÖZETİ"
+    echo -e "  ${WHITE}Domain:${NC}        $SITE_DOMAIN"
+    echo -e "  ${WHITE}Web Sunucusu:${NC}  $WEB_SERVER"
+    echo -e "  ${WHITE}E-posta:${NC}       $ADMIN_EMAIL"
+    echo -e "  ${WHITE}Kurulum Yolu:${NC}  $INSTALL_DIR"
+    echo ""
+    
+    read -p "Bu ayarlarla devam etmek istiyor musunuz? (e/h) [e]: " confirm
+    confirm=${confirm:-e}
+    if [[ ! $confirm =~ ^[Ee]$ ]]; then
+        print_info "Kurulum iptal edildi."
+        exit 0
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# KURULUM FONKSİYONLARI
+# ═══════════════════════════════════════════════════════════════════════════
+
+install_system_packages() {
+    print_header "SİSTEM PAKETLERİ KURULUYOR"
+    
+    print_step "Paket listesi güncelleniyor..."
+    sudo apt-get update -qq >> "$LOG_FILE" 2>&1
+    print_success "Paket listesi güncellendi"
+    
+    print_step "Temel paketler kuruluyor..."
+    sudo apt-get install -y -qq \
+        curl \
+        wget \
+        git \
+        unzip \
+        build-essential \
+        software-properties-common \
+        apt-transport-https \
+        ca-certificates \
+        gnupg \
+        lsb-release >> "$LOG_FILE" 2>&1
+    print_success "Temel paketler kuruldu"
+}
+
+install_nodejs() {
+    print_header "NODE.JS KURULUYOR"
+    
+    if command -v node &> /dev/null; then
+        local current_version=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+        if [[ $current_version -ge 20 ]]; then
+            print_success "Node.js zaten kurulu: $(node -v)"
+            return
+        fi
+        print_warning "Node.js sürümü eski, güncelleniyor..."
+    fi
+    
+    print_step "NodeSource deposu ekleniyor..."
+    curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash - >> "$LOG_FILE" 2>&1
+    
+    print_step "Node.js kuruluyor..."
+    sudo apt-get install -y -qq nodejs >> "$LOG_FILE" 2>&1
+    
+    print_success "Node.js kuruldu: $(node -v)"
+    print_success "npm kuruldu: $(npm -v)"
+}
+
+install_pm2() {
+    print_header "PM2 KURULUYOR"
+    
+    if command -v pm2 &> /dev/null; then
+        print_success "PM2 zaten kurulu"
+        return
+    fi
+    
+    print_step "PM2 global olarak kuruluyor..."
+    sudo npm install -g pm2 >> "$LOG_FILE" 2>&1
+    
+    print_step "PM2 startup yapılandırılıyor..."
+    pm2 startup systemd -u $USER --hp $HOME 2>/dev/null | grep -E "^sudo" | bash >> "$LOG_FILE" 2>&1 || true
+    
+    print_success "PM2 kuruldu"
+}
+
+install_caddy() {
+    print_header "CADDY WEB SUNUCUSU KURULUYOR"
+    
+    if command -v caddy &> /dev/null; then
+        print_success "Caddy zaten kurulu: $(caddy version)"
+        return
+    fi
+    
+    print_step "Caddy deposu ekleniyor..."
+    sudo apt-get install -y -qq debian-keyring debian-archive-keyring >> "$LOG_FILE" 2>&1
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg 2>/dev/null
+    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list >> "$LOG_FILE" 2>&1
+    
+    print_step "Caddy kuruluyor..."
+    sudo apt-get update -qq >> "$LOG_FILE" 2>&1
+    sudo apt-get install -y -qq caddy >> "$LOG_FILE" 2>&1
+    
+    print_success "Caddy kuruldu: $(caddy version)"
+}
+
+install_nginx() {
+    print_header "NGINX WEB SUNUCUSU KURULUYOR"
+    
+    if command -v nginx &> /dev/null; then
+        print_success "Nginx zaten kurulu"
+        return
+    fi
+    
+    print_step "Nginx kuruluyor..."
+    sudo apt-get install -y -qq nginx >> "$LOG_FILE" 2>&1
+    
+    print_step "Certbot kuruluyor..."
+    sudo apt-get install -y -qq certbot python3-certbot-nginx >> "$LOG_FILE" 2>&1
+    
+    print_success "Nginx kuruldu"
+}
+
+clone_project() {
+    print_header "PROJE KLONLANIYOR"
+    
+    print_step "Kurulum dizini hazırlanıyor..."
+    sudo mkdir -p "$INSTALL_DIR"
+    sudo chown -R $USER:$USER "$INSTALL_DIR"
+    
+    if [[ -d "$INSTALL_DIR/.git" ]]; then
+        print_warning "Mevcut kurulum tespit edildi, güncelleniyor..."
+        cd "$INSTALL_DIR"
+        git fetch origin master >> "$LOG_FILE" 2>&1
+        git reset --hard origin/master >> "$LOG_FILE" 2>&1
+    else
+        print_step "Proje klonlanıyor..."
+        rm -rf "$INSTALL_DIR"/* 2>/dev/null || true
+        git clone "$GITHUB_REPO" "$INSTALL_DIR" >> "$LOG_FILE" 2>&1
+    fi
+    
+    cd "$INSTALL_DIR"
+    print_success "Proje hazır: $INSTALL_DIR"
+}
+
+install_dependencies() {
+    print_header "NPM BAĞIMLILIKLARI KURULUYOR"
+    
+    cd "$INSTALL_DIR"
+    
+    print_step "Bağımlılıklar yükleniyor (bu birkaç dakika sürebilir)..."
+    
+    npm ci --production=false >> "$LOG_FILE" 2>&1 &
+    local pid=$!
+    spinner $pid "Paketler yükleniyor..."
+    wait $pid
+    
+    print_success "Bağımlılıklar yüklendi"
+}
+
+create_env_file() {
+    print_header "ENVIRONMENT DOSYASI OLUŞTURULUYOR"
+    
+    cd "$INSTALL_DIR"
+    
+    # AUTH_SECRET oluştur
+    local auth_secret=$(openssl rand -base64 32)
+    
+    print_step ".env dosyası oluşturuluyor..."
+    
     cat > .env << EOF
-# Database
+# ═══════════════════════════════════════════════════════════════════════════
+# HaberNexus Environment Configuration
+# Oluşturulma Tarihi: $(date '+%Y-%m-%d %H:%M:%S')
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Database (SQLite)
 DATABASE_URL="file:./data.db"
 
 # Auth.js v5
-AUTH_SECRET="${AUTH_SECRET}"
+AUTH_SECRET="${auth_secret}"
 AUTH_TRUST_HOST=true
 
 # Google OAuth 2.0
@@ -213,53 +508,149 @@ NEXT_PUBLIC_SITE_NAME="HaberNexus"
 NODE_ENV="production"
 EOF
     
-    log_success "Environment dosyası oluşturuldu"
+    chmod 600 .env
+    print_success "Environment dosyası oluşturuldu"
 }
 
-# Veritabanı ve build
+setup_database() {
+    print_header "VERİTABANI HAZIRLANIYOR"
+    
+    cd "$INSTALL_DIR"
+    
+    print_step "Prisma Client oluşturuluyor..."
+    npx prisma generate >> "$LOG_FILE" 2>&1
+    
+    print_step "Veritabanı şeması uygulanıyor..."
+    npx prisma db push >> "$LOG_FILE" 2>&1
+    
+    print_success "Veritabanı hazır"
+}
+
 build_project() {
-    log_info "Veritabanı hazırlanıyor..."
-    npx prisma generate > /dev/null 2>&1
-    npx prisma db push > /dev/null 2>&1
-    log_success "Veritabanı hazır"
+    print_header "PROJE BUILD EDİLİYOR"
     
-    log_info "Proje build ediliyor (bu birkaç dakika sürebilir)..."
-    npm run build > /dev/null 2>&1 &
-    spinner $!
-    log_success "Build tamamlandı"
+    cd "$INSTALL_DIR"
+    
+    print_step "Production build alınıyor (bu birkaç dakika sürebilir)..."
+    
+    npm run build >> "$LOG_FILE" 2>&1 &
+    local pid=$!
+    spinner $pid "Build işlemi devam ediyor..."
+    wait $pid
+    
+    print_success "Build tamamlandı"
 }
 
-# PM2 ile başlat
-start_with_pm2() {
-    log_info "Uygulama başlatılıyor..."
+configure_pm2() {
+    print_header "PM2 YAPILANDIRILIYOR"
     
-    # Mevcut instance varsa durdur
-    pm2 delete habernexus > /dev/null 2>&1 || true
+    cd "$INSTALL_DIR"
+    
+    # PM2 ecosystem dosyası oluştur
+    print_step "PM2 ecosystem dosyası oluşturuluyor..."
+    
+    cat > ecosystem.config.js << EOF
+module.exports = {
+  apps: [{
+    name: '${PM2_APP_NAME}',
+    script: 'npm',
+    args: 'start',
+    cwd: '${INSTALL_DIR}',
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000
+    },
+    error_file: '${INSTALL_DIR}/logs/pm2-error.log',
+    out_file: '${INSTALL_DIR}/logs/pm2-out.log',
+    log_file: '${INSTALL_DIR}/logs/pm2-combined.log',
+    time: true
+  }]
+};
+EOF
+    
+    # Log dizini oluştur
+    mkdir -p logs
+    
+    # Mevcut instance'ı durdur
+    print_step "Mevcut uygulama durduruluyor..."
+    pm2 delete "$PM2_APP_NAME" >> "$LOG_FILE" 2>&1 || true
     
     # Yeni instance başlat
-    pm2 start npm --name "habernexus" -- start > /dev/null 2>&1
-    pm2 save > /dev/null 2>&1
+    print_step "Uygulama başlatılıyor..."
+    pm2 start ecosystem.config.js >> "$LOG_FILE" 2>&1
     
-    log_success "Uygulama başlatıldı"
+    # PM2 kaydet
+    pm2 save >> "$LOG_FILE" 2>&1
+    
+    print_success "PM2 yapılandırıldı ve uygulama başlatıldı"
 }
 
-# Nginx yapılandırması
-configure_nginx() {
-    echo ""
-    echo -e "${YELLOW}Nginx yapılandırması yapmak ister misiniz? (e/h)${NC}"
-    read -p "> " CONFIGURE_NGINX
+configure_caddy() {
+    print_header "CADDY YAPILANDIRILIYOR"
     
-    if [ "$CONFIGURE_NGINX" = "e" ] || [ "$CONFIGURE_NGINX" = "E" ]; then
-        # Nginx kurulumu
-        if ! command -v nginx &> /dev/null; then
-            log_info "Nginx kuruluyor..."
-            sudo apt-get install -y nginx > /dev/null 2>&1
-        fi
-        
-        # Nginx yapılandırması
-        sudo tee /etc/nginx/sites-available/habernexus > /dev/null << EOF
+    print_step "Caddyfile oluşturuluyor..."
+    
+    sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
+# HaberNexus Caddy Configuration
+# Otomatik SSL ile reverse proxy
+
+${SITE_DOMAIN} {
+    # Reverse proxy to Next.js
+    reverse_proxy localhost:3000
+    
+    # Güvenlik başlıkları
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    
+    # Gzip sıkıştırma
+    encode gzip
+    
+    # Loglama
+    log {
+        output file /var/log/caddy/habernexus.log
+        format json
+    }
+}
+
+www.${SITE_DOMAIN} {
+    redir https://${SITE_DOMAIN}{uri} permanent
+}
+EOF
+    
+    # Log dizini oluştur
+    sudo mkdir -p /var/log/caddy
+    sudo chown caddy:caddy /var/log/caddy
+    
+    print_step "Caddy yapılandırması test ediliyor..."
+    sudo caddy validate --config /etc/caddy/Caddyfile >> "$LOG_FILE" 2>&1
+    
+    print_step "Caddy yeniden başlatılıyor..."
+    sudo systemctl restart caddy
+    sudo systemctl enable caddy >> "$LOG_FILE" 2>&1
+    
+    print_success "Caddy yapılandırıldı (SSL otomatik olarak alınacak)"
+}
+
+configure_nginx() {
+    print_header "NGINX YAPILANDIRILIYOR"
+    
+    print_step "Nginx site yapılandırması oluşturuluyor..."
+    
+    sudo tee /etc/nginx/sites-available/habernexus > /dev/null << EOF
+# HaberNexus Nginx Configuration
+
 server {
     listen 80;
+    listen [::]:80;
     server_name ${SITE_DOMAIN} www.${SITE_DOMAIN};
 
     location / {
@@ -272,88 +663,237 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_cache_bypass \$http_upgrade;
+        proxy_read_timeout 86400;
     }
 }
 EOF
+    
+    # Site'ı etkinleştir
+    sudo ln -sf /etc/nginx/sites-available/habernexus /etc/nginx/sites-enabled/
+    sudo rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
+    
+    print_step "Nginx yapılandırması test ediliyor..."
+    sudo nginx -t >> "$LOG_FILE" 2>&1
+    
+    print_step "Nginx yeniden başlatılıyor..."
+    sudo systemctl restart nginx
+    sudo systemctl enable nginx >> "$LOG_FILE" 2>&1
+    
+    print_success "Nginx yapılandırıldı"
+    
+    # SSL kurulumu
+    print_step "SSL sertifikası alınıyor..."
+    sudo certbot --nginx \
+        -d ${SITE_DOMAIN} \
+        -d www.${SITE_DOMAIN} \
+        --non-interactive \
+        --agree-tos \
+        --email ${ADMIN_EMAIL} \
+        --redirect >> "$LOG_FILE" 2>&1 || {
+            print_warning "SSL sertifikası alınamadı. DNS kayıtlarını kontrol edin."
+            print_info "Daha sonra manuel olarak çalıştırabilirsiniz:"
+            print_info "sudo certbot --nginx -d ${SITE_DOMAIN} -d www.${SITE_DOMAIN}"
+        }
+    
+    print_success "Nginx ve SSL yapılandırıldı"
+}
+
+setup_firewall() {
+    print_header "GÜVENLİK DUVARI YAPILANDIRILIYOR"
+    
+    if command -v ufw &> /dev/null; then
+        print_step "UFW kuralları ekleniyor..."
+        sudo ufw allow 22/tcp >> "$LOG_FILE" 2>&1 || true
+        sudo ufw allow 80/tcp >> "$LOG_FILE" 2>&1 || true
+        sudo ufw allow 443/tcp >> "$LOG_FILE" 2>&1 || true
         
-        sudo ln -sf /etc/nginx/sites-available/habernexus /etc/nginx/sites-enabled/
-        sudo nginx -t > /dev/null 2>&1
-        sudo systemctl restart nginx
-        
-        log_success "Nginx yapılandırıldı"
-        
-        # SSL
-        echo ""
-        echo -e "${YELLOW}SSL sertifikası kurmak ister misiniz? (Let's Encrypt) (e/h)${NC}"
-        read -p "> " CONFIGURE_SSL
-        
-        if [ "$CONFIGURE_SSL" = "e" ] || [ "$CONFIGURE_SSL" = "E" ]; then
-            log_info "Certbot kuruluyor..."
-            sudo apt-get install -y certbot python3-certbot-nginx > /dev/null 2>&1
-            
-            log_info "SSL sertifikası alınıyor..."
-            sudo certbot --nginx -d ${SITE_DOMAIN} -d www.${SITE_DOMAIN} --non-interactive --agree-tos -m admin@${SITE_DOMAIN}
-            
-            log_success "SSL sertifikası kuruldu"
+        if ! sudo ufw status | grep -q "Status: active"; then
+            print_info "UFW aktif değil. Etkinleştirmek için: sudo ufw enable"
+        else
+            print_success "Güvenlik duvarı kuralları eklendi"
         fi
+    else
+        print_info "UFW bulunamadı, güvenlik duvarı yapılandırması atlandı"
     fi
 }
 
-# Özet
+create_management_scripts() {
+    print_header "YÖNETİM SCRIPTLERI OLUŞTURULUYOR"
+    
+    cd "$INSTALL_DIR"
+    
+    # Hızlı komut scripti
+    print_step "Yönetim scripti oluşturuluyor..."
+    
+    cat > habernexus << 'SCRIPT_EOF'
+#!/bin/bash
+
+# HaberNexus Yönetim Aracı
+# Kullanım: habernexus [komut]
+
+INSTALL_DIR="/var/www/habernexus"
+PM2_APP="habernexus"
+
+case "$1" in
+    start)
+        pm2 start $PM2_APP
+        ;;
+    stop)
+        pm2 stop $PM2_APP
+        ;;
+    restart)
+        pm2 restart $PM2_APP
+        ;;
+    status)
+        pm2 status $PM2_APP
+        ;;
+    logs)
+        pm2 logs $PM2_APP --lines ${2:-100}
+        ;;
+    update)
+        cd $INSTALL_DIR && bash scripts/update.sh
+        ;;
+    backup)
+        cd $INSTALL_DIR && bash scripts/backup.sh
+        ;;
+    *)
+        echo "HaberNexus Yönetim Aracı"
+        echo ""
+        echo "Kullanım: habernexus [komut]"
+        echo ""
+        echo "Komutlar:"
+        echo "  start    - Uygulamayı başlat"
+        echo "  stop     - Uygulamayı durdur"
+        echo "  restart  - Uygulamayı yeniden başlat"
+        echo "  status   - Durum bilgisi"
+        echo "  logs     - Logları görüntüle (logs [satır sayısı])"
+        echo "  update   - Güncelleme yap"
+        echo "  backup   - Yedekleme al"
+        ;;
+esac
+SCRIPT_EOF
+    
+    chmod +x habernexus
+    sudo ln -sf "$INSTALL_DIR/habernexus" /usr/local/bin/habernexus
+    
+    print_success "Yönetim scripti oluşturuldu: habernexus"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# KURULUM ÖZETİ
+# ═══════════════════════════════════════════════════════════════════════════
+
 print_summary() {
     echo ""
-    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${GREEN}              KURULUM TAMAMLANDI!                          ${NC}"
-    echo -e "${GREEN}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}"
+    cat << 'EOF'
+    ╔═══════════════════════════════════════════════════════════════════════════╗
+    ║                                                                           ║
+    ║   ██╗  ██╗██╗   ██╗██████╗ ██╗   ██╗██╗     ██╗   ██╗███╗   ███╗██╗       ║
+    ║   ██║ ██╔╝██║   ██║██╔══██╗██║   ██║██║     ██║   ██║████╗ ████║██║       ║
+    ║   █████╔╝ ██║   ██║██████╔╝██║   ██║██║     ██║   ██║██╔████╔██║██║       ║
+    ║   ██╔═██╗ ██║   ██║██╔══██╗██║   ██║██║     ██║   ██║██║╚██╔╝██║╚═╝       ║
+    ║   ██║  ██╗╚██████╔╝██║  ██║╚██████╔╝███████╗╚██████╔╝██║ ╚═╝ ██║██╗       ║
+    ║   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝       ║
+    ║                                                                           ║
+    ║                    KURULUM BAŞARIYLA TAMAMLANDI!                          ║
+    ║                                                                           ║
+    ╚═══════════════════════════════════════════════════════════════════════════╝
+EOF
+    echo -e "${NC}"
+    
     echo ""
-    echo -e "${CYAN}Uygulama Bilgileri:${NC}"
-    echo -e "  • URL: https://${SITE_DOMAIN}"
-    echo -e "  • Port: 3000"
-    echo -e "  • PM2 Adı: habernexus"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}  UYGULAMA BİLGİLERİ${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
-    echo -e "${CYAN}Faydalı Komutlar:${NC}"
-    echo -e "  • Durumu görüntüle: ${YELLOW}pm2 status${NC}"
-    echo -e "  • Logları görüntüle: ${YELLOW}pm2 logs habernexus${NC}"
-    echo -e "  • Yeniden başlat: ${YELLOW}pm2 restart habernexus${NC}"
-    echo -e "  • Durdur: ${YELLOW}pm2 stop habernexus${NC}"
+    echo -e "  ${WHITE}Site URL:${NC}        https://${SITE_DOMAIN}"
+    echo -e "  ${WHITE}Admin Panel:${NC}     https://${SITE_DOMAIN}/admin"
+    echo -e "  ${WHITE}Kurulum Yolu:${NC}    ${INSTALL_DIR}"
+    echo -e "  ${WHITE}Web Sunucusu:${NC}    ${WEB_SERVER}"
+    echo -e "  ${WHITE}Log Dosyası:${NC}     ${LOG_FILE}"
     echo ""
-    echo -e "${CYAN}Sonraki Adımlar:${NC}"
-    echo -e "  1. Google Cloud Console'da OAuth callback URL'ini ayarlayın:"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}  HIZLI KOMUTLAR${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "  ${YELLOW}habernexus status${NC}   - Uygulama durumunu görüntüle"
+    echo -e "  ${YELLOW}habernexus logs${NC}     - Logları görüntüle"
+    echo -e "  ${YELLOW}habernexus restart${NC}  - Uygulamayı yeniden başlat"
+    echo -e "  ${YELLOW}habernexus update${NC}   - Güncelleme yap"
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${WHITE}  SONRAKİ ADIMLAR${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo -e "  ${WHITE}1.${NC} Google Cloud Console'da OAuth callback URL'ini ekleyin:"
     echo -e "     ${YELLOW}https://${SITE_DOMAIN}/api/auth/callback/google${NC}"
-    echo -e "  2. Admin paneline erişin: ${YELLOW}https://${SITE_DOMAIN}/admin${NC}"
-    echo -e "  3. RSS kaynakları ekleyin ve AI motorunu çalıştırın"
+    echo ""
+    echo -e "  ${WHITE}2.${NC} Admin paneline giriş yapın:"
+    echo -e "     ${YELLOW}https://${SITE_DOMAIN}/admin${NC}"
+    echo ""
+    echo -e "  ${WHITE}3.${NC} RSS kaynakları ekleyin ve AI motorunu çalıştırın"
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo -e "${GREEN}İyi çalışmalar! 🚀${NC}"
     echo ""
 }
 
-# Ana fonksiyon
+# ═══════════════════════════════════════════════════════════════════════════
+# ANA FONKSİYON
+# ═══════════════════════════════════════════════════════════════════════════
+
 main() {
+    # Log dosyası başlat
+    echo "HaberNexus Kurulum Logu - $(date)" > "$LOG_FILE"
+    
+    # Banner
     print_banner
     
-    echo -e "${YELLOW}HaberNexus kurulumuna hoş geldiniz!${NC}"
-    echo -e "Bu script, projeyi otomatik olarak kuracak ve yapılandıracaktır."
+    # Hoş geldin mesajı
+    echo -e "${WHITE}HaberNexus Profesyonel Kurulum Sistemine hoş geldiniz!${NC}"
     echo ""
-    echo -e "${YELLOW}Devam etmek istiyor musunuz? (e/h)${NC}"
-    read -p "> " CONTINUE
+    echo -e "Bu script, HaberNexus'u sunucunuza otomatik olarak kuracak ve"
+    echo -e "yapılandıracaktır. Kurulum yaklaşık 5-10 dakika sürecektir."
+    echo ""
+    echo -e "${GRAY}Kurulum sırasında sizden bazı bilgiler istenecektir.${NC}"
+    echo ""
     
-    if [ "$CONTINUE" != "e" ] && [ "$CONTINUE" != "E" ]; then
-        echo "Kurulum iptal edildi."
-        exit 0
+    read -p "Kuruluma başlamak için Enter'a basın (iptal için Ctrl+C)..."
+    
+    # Kurulum adımları
+    run_system_checks
+    get_user_input
+    install_system_packages
+    install_nodejs
+    install_pm2
+    
+    if [[ "$WEB_SERVER" == "caddy" ]]; then
+        install_caddy
+    else
+        install_nginx
     fi
     
-    echo ""
-    
-    check_system
-    install_dependencies
     clone_project
-    install_npm_packages
-    configure_environment
+    install_dependencies
+    create_env_file
+    setup_database
     build_project
-    start_with_pm2
-    configure_nginx
+    configure_pm2
+    
+    if [[ "$WEB_SERVER" == "caddy" ]]; then
+        configure_caddy
+    else
+        configure_nginx
+    fi
+    
+    setup_firewall
+    create_management_scripts
+    
+    # Özet
     print_summary
 }
 
 # Script'i çalıştır
-main
+main "$@"

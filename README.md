@@ -68,14 +68,49 @@ HaberNexus, RSS kaynaklarından haberleri otomatik olarak toplayıp, Google Gemi
 
 ## 🚀 Hızlı Başlangıç
 
+### 🌟 Tek Satırlık Kurulum (Ubuntu 22.04/24.04)
+
+Temiz bir Ubuntu sunucusunda aşağıdaki komutu çalıştırın:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/scripts/install.sh | bash
+```
+
+Bu komut otomatik olarak:
+- ✅ Node.js 22 kurulumu
+- ✅ PM2 process manager kurulumu
+- ✅ Caddy web sunucusu (otomatik SSL)
+- ✅ Proje klonlama ve yapılandırma
+- ✅ Veritabanı kurulumu
+- ✅ Production build
+- ✅ Servis olarak başlatma
+
+**Kurulum yaklaşık 5-10 dakika sürer.**
+
+### Yönetim Komutları
+
+Kurulum sonrası `habernexus` komutu ile uygulamayı yönetebilirsiniz:
+
+```bash
+habernexus status    # Durum görüntüleme
+habernexus logs      # Logları izleme
+habernexus restart   # Yeniden başlatma
+habernexus update    # Güncelleme
+habernexus backup    # Yedekleme
+```
+
+---
+
+### Manuel Kurulum (Geliştirme Ortamı)
+
 Detaylı kurulum adımları için **[Getting Started](https://github.com/sata2500/habernexus-nextjs/wiki/Getting-Started)** wiki sayfasını ziyaret edin.
 
-### Ön Koşullar
+#### Ön Koşullar
 
 - **Node.js** v20.9.0 veya üzeri
 - **npm** v10 veya üzeri
 
-### Kurulum Adımları
+#### Kurulum Adımları
 
 ```bash
 # 1. Projeyi klonlayın
