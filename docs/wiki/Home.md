@@ -20,20 +20,24 @@ wget -qO- https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/sc
 
 ### Kullanım
 
-- [Admin Panel Kullanımı](ADMIN_PANEL.md) - Yönetim paneli rehberi
-- [RSS Kaynakları](RSS_FEEDS.md) - Haber kaynakları ekleme
-- [AI İçerik Motoru](AI_CONTENT_ENGINE.md) - Otomatik içerik üretimi
+> 📝 **NOT:** Aşağıdaki belgeler henüz oluşturulmamıştır ve ROADMAP'ta planlanmaktadır.
+
+- Admin Panel Kullanımı - Yönetim paneli rehberi (yakında)
+- RSS Kaynakları - Haber kaynakları ekleme (yakında)
+- AI İçerik Motoru - Otomatik içerik üretimi (yakında)
 
 ### Geliştirme
 
-- [Katkıda Bulunma](https://github.com/sata2500/habernexus-nextjs/blob/main/CONTRIBUTING.md) - Geliştirici rehberi
-- [AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md) - AI ajanları için rehber
-- [Tech Stack](TECH_STACK.md) - Kullanılan teknolojiler
+- [Katkıda Bulunma](https://github.com/sata2500/habernexus-nextjs/blob/master/CONTRIBUTING.md) - Geliştirici rehberi
+- [AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md) - AI ajanları için rehber
+- [Documentation Protocol](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/DOCUMENTATION_PROTOCOL.md) - Wiki ve dokümantasyon kuralları
 
 ### Sorun Giderme
 
-- [Sık Sorulan Sorular](FAQ.md)
-- [Bilinen Sorunlar](KNOWN_ISSUES.md)
+> 📝 **NOT:** Aşağıdaki belgeler henüz oluşturulmamıştır.
+
+- Sık Sorulan Sorular (yakında)
+- Bilinen Sorunlar (yakında)
 
 ## Destek
 

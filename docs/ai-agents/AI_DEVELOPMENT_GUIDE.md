@@ -1,7 +1,7 @@
 # HaberNexus AI Development Guide
 
-**Version:** 3.0  
-**Last Updated:** 26 December 2025  
+**Version:** 3.1  
+**Last Updated:** 07 January 2026  
 **Status:** Active
 
 ---
@@ -44,7 +44,7 @@ To achieve the "Unified Agent" philosophy, a strict, 8-phase development framewo
 | 4 | **Implementation** | Write code incrementally with verification after each step. | `docs/ai-agents/WORKFLOW.md` |
 | 5 | **Verification** | Rigorously test your code to ensure quality. | `docs/ai-agents/QUALITY_CHECKLIST.md` |
 | 6 | **Publishing** | Submit your work for integration into the main branch. | `CONTRIBUTING.md` |
-| 7 | **Documentation** | Update all relevant project and knowledge base documents. | `docs/ai-knowledge-base/` |
+| 7 | **Documentation** | Update all relevant project and knowledge base documents. | `docs/ai-agents/DOCUMENTATION_PROTOCOL.md` |
 | 8 | **Cleanup** | Finalize your work and maintain a clean project state. | `docs/ai-agents/WORKFLOW.md` |
 
 ---
@@ -80,7 +80,6 @@ Each implementation should be broken into micro-steps:
 | Too Large | 5+ files | 20+ min | **Break it down!** |
 
 ### What Happens If You Skip Verification
-
 ```
 Without verification:
   Change 1 → Change 2 → Change 3 → Change 4 → Build fails
@@ -103,6 +102,7 @@ All core instructions, protocols, and checklists for AI agents are located in th
 | `WORKFLOW.md` | Step-by-step development process | During every task |
 | `QUALITY_CHECKLIST.md` | Verification requirements | After every change |
 | `COMMUNICATION_PROTOCOL.md` | How to communicate with users | When reporting progress |
+| `DOCUMENTATION_PROTOCOL.md` | Wiki sync and documentation rules | When updating docs |
 
 ---
 
@@ -131,7 +131,33 @@ docs/ai-knowledge-base/
 
 ---
 
-## 6. Quick Reference
+## 6. Documentation & Wiki System
+
+### Automatic Wiki Synchronization
+
+The `wiki/` folder in the repository is automatically synchronized with GitHub Wiki when changes are pushed to `master`.
+
+```
+wiki/                    →  GitHub Wiki
+├── Home.md             →  Home page
+├── Getting-Started.md  →  Getting Started page
+└── ...                 →  Other pages
+```
+
+### Documentation Responsibilities
+
+After completing any development task:
+
+1. **Update ROADMAP.md** - Mark completed features with ✅
+2. **Update Knowledge Base** - Add errors, learnings, decisions
+3. **Update Wiki** - For user-facing features, update `wiki/` folder
+4. **Follow Protocol** - See `docs/ai-agents/DOCUMENTATION_PROTOCOL.md`
+
+> 📝 **IMPORTANT:** All documentation rules and wiki sync details are in `DOCUMENTATION_PROTOCOL.md`
+
+---
+
+## 7. Quick Reference
 
 ### Verification Commands
 
@@ -164,6 +190,7 @@ Example: feat(auth): add Google OAuth login
 
 ### Common Errors and Solutions
 
+
 | Error | Cause | Solution |
 |-------|-------|----------|
 | `Module not found` | Dependencies not installed | Run `npm install` |
@@ -173,7 +200,7 @@ Example: feat(auth): add Google OAuth login
 
 ---
 
-## 7. Development Workflow Summary
+## 8. Development Workflow Summary
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -197,7 +224,8 @@ Example: feat(auth): add Google OAuth login
 │  4. DOCUMENT                                                    │
 │     ├─ Update ROADMAP.md                                        │
 │     ├─ Add to Knowledge Base                                    │
-│     └─ Update README if needed                                  │
+│     ├─ Update wiki/ if user-facing feature                      │
+│     └─ Follow DOCUMENTATION_PROTOCOL.md                         │
 │                                                                 │
 │  5. REPORT                                                      │
 │     └─ Inform user of progress and any issues                   │
@@ -207,13 +235,28 @@ Example: feat(auth): add Google OAuth login
 
 ---
 
-## 8. Final Reminders
+## 9. Essential Documents Checklist
+
+Before starting any task, ensure you have read:
+
+- [ ] This guide (`AI_DEVELOPMENT_GUIDE.md`)
+- [ ] `ONBOARDING.md` - Environment setup
+- [ ] `WORKFLOW.md` - 8-phase process details
+- [ ] `QUALITY_CHECKLIST.md` - Verification requirements
+- [ ] `DOCUMENTATION_PROTOCOL.md` - Wiki and docs rules
+- [ ] `docs/ai-knowledge-base/errors/` - Past errors
+- [ ] `ROADMAP.md` - Current development goals
+
+---
+
+## 10. Final Reminders
 
 1. **Never skip verification.** It takes 30 seconds and saves hours.
 2. **Read the Knowledge Base.** Past agents have solved your problems.
 3. **Document your work.** Future agents will thank you.
-4. **Ask for help.** If stuck after 2 attempts, ask the user.
-5. **Small commits.** One change, one commit, one verification.
+4. **Update the Wiki.** User-facing features need documentation.
+5. **Ask for help.** If stuck after 2 attempts, ask the user.
+6. **Small commits.** One change, one commit, one verification.
 
 ---
 

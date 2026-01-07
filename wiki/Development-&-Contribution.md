@@ -235,5 +235,6 @@ npm run dev          # Development server
 ---
 
 For more information, please refer to:
-- [CONTRIBUTING.md](https://github.com/sata2500/habernexus-nextjs/blob/main/CONTRIBUTING.md)
-- [AI_DEVELOPMENT_GUIDE.md](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)
+- [CONTRIBUTING.md](https://github.com/sata2500/habernexus-nextjs/blob/master/CONTRIBUTING.md)
+- [AI_DEVELOPMENT_GUIDE.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)
+- [DOCUMENTATION_PROTOCOL.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/DOCUMENTATION_PROTOCOL.md)

@@ -124,6 +124,12 @@ npm run dev
 - [ ] **Learnings Recorded:** New best practices are added to `docs/ai-knowledge-base/learnings/`
 - [ ] **Decisions Recorded:** Architectural decisions are documented as ADRs
 
+### 5.4 Wiki & Documentation Updates
+
+- [ ] **Wiki Updated:** User-facing features are documented in `wiki/` folder
+- [ ] **ROADMAP Updated:** Completed features are marked with ✅
+- [ ] **Protocol Followed:** Documentation follows `docs/ai-agents/DOCUMENTATION_PROTOCOL.md`
+
 ---
 
 ## 6. Git & Version Control
