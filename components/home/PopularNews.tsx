@@ -2,62 +2,38 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { TrendingUp, Eye } from 'lucide-react'
 import { formatDateShort } from '@/lib/utils'
+import { prisma } from '@/lib/prisma'
 
-// Demo veriler - gerçek uygulamada veritabanından gelecek
-const popularArticles = [
-  {
-    id: '1',
-    rank: 1,
-    title: 'Yapay Zeka Teknolojisinde Yeni Bir Dönem: 2025 Yılının En Büyük Gelişmeleri',
-    slug: 'yapay-zeka-teknolojisinde-yeni-bir-donem-2025',
-    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&auto=format&fit=crop&q=60',
-    category: 'Teknoloji',
-    viewCount: 15420,
-    publishedAt: new Date('2025-12-26'),
-  },
-  {
-    id: '2',
-    rank: 2,
-    title: 'Ekonomide Son Durum: Merkez Bankası Faiz Kararını Açıkladı',
-    slug: 'ekonomide-son-durum-merkez-bankasi-faiz-karari',
-    imageUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&auto=format&fit=crop&q=60',
-    category: 'Ekonomi',
-    viewCount: 12350,
-    publishedAt: new Date('2025-12-25'),
-  },
-  {
-    id: '3',
-    rank: 3,
-    title: 'Bilim Dünyasından Heyecan Verici Keşif: Mars\'ta Su İzleri Bulundu',
-    slug: 'bilim-dunyasindan-heyecan-verici-kesif-marsta-su-izleri',
-    imageUrl: 'https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=400&auto=format&fit=crop&q=60',
-    category: 'Bilim',
-    viewCount: 11200,
-    publishedAt: new Date('2025-12-24'),
-  },
-  {
-    id: '4',
-    rank: 4,
-    title: 'Dünya Liderleri İklim Zirvesi\'nde Buluştu: Tarihi Anlaşma İmzalandı',
-    slug: 'dunya-liderleri-iklim-zirvesinde-bulustu-tarihi-anlasma',
-    imageUrl: 'https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=400&auto=format&fit=crop&q=60',
-    category: 'Dünya',
-    viewCount: 9450,
-    publishedAt: new Date('2025-12-23'),
-  },
-  {
-    id: '5',
-    rank: 5,
-    title: 'Süper Lig\'de Heyecan Dorukta: Şampiyonluk Yarışı Kızışıyor',
-    slug: 'super-ligde-heyecan-dorukta-sampiyonluk-yarisi',
-    imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&auto=format&fit=crop&q=60',
-    category: 'Spor',
-    viewCount: 8920,
-    publishedAt: new Date('2025-12-25'),
-  },
-]
+// En çok okunan makaleleri veritabanından çek
+async function getPopularArticles() {
+  const articles = await prisma.article.findMany({
+    take: 5,
+    orderBy: { viewCount: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      imageUrl: true,
+      category: true,
+      viewCount: true,
+      publishedAt: true,
+    },
+  })
 
-export default function PopularNews() {
+  return articles.map((article, index) => ({
+    ...article,
+    rank: index + 1,
+  }))
+}
+
+export default async function PopularNews() {
+  const popularArticles = await getPopularArticles()
+
+  // Eğer hiç makale yoksa bileşeni gösterme
+  if (popularArticles.length === 0) {
+    return null
+  }
+
   return (
     <section className="py-12">
       <div className="container mx-auto px-4">
