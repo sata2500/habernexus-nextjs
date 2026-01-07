@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, CheckCircle, Loader2 } from 'lucide-react'
+import { Mail, CheckCircle, Loader2, AlertCircle } from 'lucide-react'
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('')
@@ -11,13 +11,31 @@ export default function NewsletterSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('loading')
+    setMessage('')
 
-    // Simüle edilmiş API çağrısı
-    setTimeout(() => {
-      setStatus('success')
-      setMessage('Bültenimize başarıyla abone oldunuz!')
-      setEmail('')
-    }, 1000)
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setStatus('success')
+        setMessage(data.message || 'Bültenimize başarıyla abone oldunuz!')
+        setEmail('')
+      } else {
+        setStatus('error')
+        setMessage(data.error || 'Bir hata oluştu')
+      }
+    } catch {
+      setStatus('error')
+      setMessage('Bağlantı hatası. Lütfen tekrar deneyin.')
+    }
   }
 
   return (
@@ -41,6 +59,19 @@ export default function NewsletterSection() {
             <div className="flex items-center justify-center space-x-2 text-white bg-white/10 rounded-xl p-4">
               <CheckCircle className="w-6 h-6 text-green-400" />
               <span>{message}</span>
+            </div>
+          ) : status === 'error' ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-center space-x-2 text-white bg-red-500/20 rounded-xl p-4">
+                <AlertCircle className="w-6 h-6 text-red-300" />
+                <span>{message}</span>
+              </div>
+              <button
+                onClick={() => setStatus('idle')}
+                className="text-sm text-blue-200 hover:text-white underline"
+              >
+                Tekrar dene
+              </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">

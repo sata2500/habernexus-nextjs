@@ -1,8 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Clock, Eye, Bookmark } from 'lucide-react'
+import { Clock, Eye, Bookmark, Loader2 } from 'lucide-react'
 import { formatDateShort, getReadingTime, truncate } from '@/lib/utils'
 
 interface ArticleCardProps {
@@ -22,10 +23,57 @@ interface ArticleCardProps {
     }
   }
   variant?: 'default' | 'featured' | 'compact'
+  initialBookmarked?: boolean
 }
 
-export default function ArticleCard({ article, variant = 'default' }: ArticleCardProps) {
+export default function ArticleCard({ article, variant = 'default', initialBookmarked = false }: ArticleCardProps) {
+  const [isBookmarked, setIsBookmarked] = useState(initialBookmarked)
+  const [isLoading, setIsLoading] = useState(false)
   const readingTime = getReadingTime(article.content)
+
+  const handleBookmark = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (isLoading) return
+    setIsLoading(true)
+
+    try {
+      if (isBookmarked) {
+        // Bookmark'ı kaldır
+        const response = await fetch(`/api/bookmarks/${article.id}`, {
+          method: 'DELETE',
+        })
+        
+        if (response.ok) {
+          setIsBookmarked(false)
+        } else if (response.status === 401) {
+          // Giriş yapılmamış, yönlendir
+          window.location.href = '/auth/signin'
+        }
+      } else {
+        // Bookmark ekle
+        const response = await fetch('/api/bookmarks', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ articleId: article.id }),
+        })
+        
+        if (response.ok) {
+          setIsBookmarked(true)
+        } else if (response.status === 401) {
+          // Giriş yapılmamış, yönlendir
+          window.location.href = '/auth/signin'
+        }
+      }
+    } catch (error) {
+      console.error('Bookmark error:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   if (variant === 'featured') {
     return (
@@ -118,14 +166,20 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
             </span>
           </div>
           <button
-            className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-gray-600 hover:text-blue-600 hover:bg-white transition-colors"
-            onClick={(e) => {
-              e.preventDefault()
-              // Bookmark functionality
-            }}
-            aria-label="Kaydet"
+            className={`absolute top-3 right-3 p-2 backdrop-blur-sm rounded-full transition-colors ${
+              isBookmarked 
+                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                : 'bg-white/90 text-gray-600 hover:text-blue-600 hover:bg-white'
+            }`}
+            onClick={handleBookmark}
+            disabled={isLoading}
+            aria-label={isBookmarked ? 'Kaydedilenlerden çıkar' : 'Kaydet'}
           >
-            <Bookmark className="w-4 h-4" />
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
+            )}
           </button>
         </div>
       </Link>

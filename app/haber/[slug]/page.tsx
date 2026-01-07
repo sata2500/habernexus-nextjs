@@ -1,9 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Clock, Eye, Calendar, Share2, Bookmark, ThumbsUp, ThumbsDown, ArrowLeft } from 'lucide-react'
+import { Clock, Eye, Calendar, ArrowLeft } from 'lucide-react'
 import { formatDate, getReadingTime } from '@/lib/utils'
 import ArticleCard from '@/components/articles/ArticleCard'
+import ArticleActions from '@/components/articles/ArticleActions'
 import { prisma } from '@/lib/prisma'
 
 // Makaleyi veritabanından çek
@@ -138,14 +139,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <Bookmark className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <Share2 className="w-5 h-5" />
-              </button>
-            </div>
+            {/* Header Actions - Client Component içinde */}
+            <ArticleActions 
+              articleId={article.id}
+              articleTitle={article.title}
+              articleUrl={`https://habernexus.com/haber/${article.slug}`}
+            />
           </div>
         </header>
 
@@ -168,27 +167,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
-
-          {/* Article Actions */}
-          <div className="flex items-center justify-between mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Bu makale faydalı mıydı?</span>
-              <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                <ThumbsUp className="w-5 h-5" />
-                <span>Evet</span>
-              </button>
-              <button className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                <ThumbsDown className="w-5 h-5" />
-                <span>Hayır</span>
-              </button>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <Share2 className="w-4 h-4" />
-                <span>Paylaş</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Related Articles */}
