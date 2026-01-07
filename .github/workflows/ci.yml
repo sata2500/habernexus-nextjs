@@ -27,13 +27,18 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Setup Test Database
+        run: npx prisma db push --skip-generate
+        env:
+          DATABASE_URL: "file:./test.db"
+
       - name: TypeScript Check
         run: npx tsc --noEmit
 
       - name: Build
         run: npm run build
         env:
-          # Dummy values for build (not used at runtime)
+          # CI build environment variables
           DATABASE_URL: "file:./test.db"
           AUTH_SECRET: "test-secret-for-ci-build-only"
           AUTH_URL: "http://localhost:3000"

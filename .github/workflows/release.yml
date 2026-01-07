@@ -30,8 +30,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Setup Test Database
+        run: npx prisma db push --skip-generate
+        env:
+          DATABASE_URL: "file:./test.db"
+
       - name: Build
         run: npm run build
+        env:
+          # CI build environment variables
+          DATABASE_URL: "file:./test.db"
+          AUTH_SECRET: "test-secret-for-ci-build-only"
+          AUTH_URL: "http://localhost:3000"
+          NEXTAUTH_URL: "http://localhost:3000"
+          NEXTAUTH_SECRET: "test-secret-for-ci-build-only"
 
       - name: Semantic Release
         env:
