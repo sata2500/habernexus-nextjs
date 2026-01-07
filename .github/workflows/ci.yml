@@ -36,6 +36,9 @@ jobs:
           # Dummy values for build (not used at runtime)
           DATABASE_URL: "file:./test.db"
           AUTH_SECRET: "test-secret-for-ci-build-only"
+          AUTH_URL: "http://localhost:3000"
+          NEXTAUTH_URL: "http://localhost:3000"
+          NEXTAUTH_SECRET: "test-secret-for-ci-build-only"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
