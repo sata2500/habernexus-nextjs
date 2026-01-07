@@ -145,7 +145,7 @@ Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
 Bu proje, insanlar ve AI ajanlarının **birlikte** ve **uyum içinde** çalışması için tasarlanmıştır. Amacımız, tüm geliştiricilerin, kim olursa olsun, tek bir birleşik geliştirici gibi hareket etmesini sağlamaktır.
 
 - **İnsan Geliştiriciler:** Lütfen [CONTRIBUTING.md](CONTRIBUTING.md) dosyasını okuyun.
-- **AI Ajanları:** Geliştirmeye başlamadan önce [AI_DEVELOPMENT_GUIDE.md](AI_DEVELOPMENT_GUIDE.md) dosyasını okuyarak "Birleşik Ajan" geliştirme çerçevesini ve `docs/ai-agents` klasöründeki tüm protokolleri anlamalısınız.
+- **AI Ajanları:** Geliştirmeye başlamadan önce [AI_DEVELOPMENT_GUIDE.md](docs/ai-agents/AI_DEVELOPMENT_GUIDE.md) dosyasını okuyarak "Birleşik Ajan" geliştirme çerçevesini ve `docs/ai-agents` klasöründeki tüm protokolleri anlamalısınız.
 
 ---
 

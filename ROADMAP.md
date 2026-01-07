@@ -8,82 +8,99 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 
 ---
 
+## ⚡ Geliştirme Hızı Hakkında
+
+Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel geliştirme süreçlerine kıyasla çok daha hızlı ilerleme kaydedilmektedir. Aşağıdaki tahmini süreler AI destekli geliştirme hızını yansıtmaktadır.
+
+---
+
 ## 📅 Sürüm Planı
 
-### v1.0: MVP (Minimum Viable Product) - Q1 2026
+### v1.0: MVP (Minimum Viable Product) ✅
 
+**Durum:** Tamamlandı  
 **Amaç:** Platformun tam otomatik içerik üreten temel işlevselliğini hayata geçirmek.
 
 | Durum | Özellik | Geliştirici Notu |
 |---|---|---|
 | ✅ | Sade Next.js mimarisi (Docker'sız) | Temeller atıldı. |
 | ✅ | SQLite veritabanı + Prisma ORM | Veritabanı şeması hazır. |
-| ✅ | 3 Seviyeli kullanıcı sistemi (Admin, Yazar, Kullanıcı) | Auth.js v5 ile rol tabanlı erişim kontrolü tamamlandı (26 Ara 2025). |
-| ✅ | Google OAuth ile kimlik doğrulama | Auth.js v5 entegrasyonu tamamlandı (26 Ara 2025). |
-| ✅ | Admin Dashboard | Gerçek verilerle dinamik dashboard tamamlandı (26 Ara 2025). |
-| ✅ | Tam otomatik içerik üretim motoru | Gemini API entegrasyonu ve RSS parsing tamamlandı (26 Ara 2025). |
-| ✅ | Temel kullanıcı arayüzü | Ana sayfa, makale detay, kategori sayfaları tamamlandı (26 Ara 2025). |
-| ✅ | İlk kullanıcı otomatik admin rolü | İlk kayıt olan kullanıcı otomatik ADMIN rolü alır (07 Oca 2026). |
-| ✅ | Google profil fotoğrafı desteği | next.config.js domain yapılandırması tamamlandı (07 Oca 2026). |
+| ✅ | 3 Seviyeli kullanıcı sistemi (Admin, Yazar, Kullanıcı) | Auth.js v5 ile rol tabanlı erişim kontrolü tamamlandı. |
+| ✅ | Google OAuth ile kimlik doğrulama | Auth.js v5 entegrasyonu tamamlandı. |
+| ✅ | Admin Dashboard | Gerçek verilerle dinamik dashboard tamamlandı. |
+| ✅ | Tam otomatik içerik üretim motoru | Gemini API entegrasyonu ve RSS parsing tamamlandı. |
+| ✅ | Temel kullanıcı arayüzü | Ana sayfa, makale detay, kategori sayfaları tamamlandı. |
+| ✅ | İlk kullanıcı otomatik admin rolü | İlk kayıt olan kullanıcı otomatik ADMIN rolü alır. |
+| ✅ | Google profil fotoğrafı desteği | next.config.js domain yapılandırması tamamlandı. |
 
 ---
 
-### v1.1: Veri Entegrasyonu ve Temel İşlevsellik - Q1 2026
+### v1.1: Veri Entegrasyonu ve Temel İşlevsellik
 
+**Durum:** Devam Ediyor  
+**Tahmini Süre:** 1-2 gün  
 **Amaç:** Demo verilerden gerçek veritabanı entegrasyonuna geçiş ve temel kullanıcı etkileşimlerini aktif hale getirmek.
 
-| Durum | Özellik | Geliştirici Notu |
-|---|---|---|
-| ⏳ | Haber detay sayfası veri entegrasyonu | Demo veri yerine veritabanından çekme. `app/haber/[slug]/page.tsx` dosyası güncellenmeli. |
-| ⏳ | Kategori sayfası veri entegrasyonu | Demo veri yerine veritabanından çekme. Sayfalama desteği eklenmeli. |
-| ⏳ | Okuma listesi (Bookmark) API | UI bileşeni hazır, backend API eksik. Prisma'da `Bookmark` modeli mevcut. |
-| ⏳ | Makale oylama API | UI bileşeni hazır, backend API eksik. Prisma'da `ArticleVote` modeli mevcut. |
-| ⏳ | Görüntülenme sayacı API | `viewCount` artırma mekanizması. Duplicate prevention gerekli. |
+| Durum | Özellik | Geliştirici Notu | Tahmini Süre |
+|---|---|---|---|
+| ⏳ | Haber detay sayfası veri entegrasyonu | Demo veri yerine veritabanından çekme. | ~2 saat |
+| ⏳ | Kategori sayfası veri entegrasyonu | Demo veri yerine veritabanından çekme. Sayfalama desteği. | ~2 saat |
+| ⏳ | Okuma listesi (Bookmark) API | UI bileşeni hazır, backend API eksik. | ~3 saat |
+| ⏳ | Makale oylama API | UI bileşeni hazır, backend API eksik. | ~2 saat |
+| ⏳ | Görüntülenme sayacı API | viewCount artırma mekanizması. | ~1 saat |
 
 ---
 
-### v1.2: Admin Panel Tamamlama - Q1 2026
+### v1.2: Admin Panel Tamamlama
 
+**Durum:** Bekliyor  
+**Tahmini Süre:** 2-3 gün  
 **Amaç:** Admin panelindeki tüm sayfaları işlevsel hale getirmek.
 
-| Durum | Özellik | Geliştirici Notu |
-|---|---|---|
-| ⏳ | Admin Kullanıcı Yönetimi | `/admin/kullanicilar` sayfası eksik. Rol değiştirme, kullanıcı silme özellikleri. |
-| ⏳ | Admin Makale Yönetimi | `/admin/makaleler` sayfası eksik. Düzenleme, silme, yayın durumu yönetimi. |
-| ⏳ | Admin Ayarlar Sayfası | `/admin/ayarlar` sayfası eksik. `SystemSetting` modeli mevcut. |
-| ⏳ | Admin Analitik Sayfası | `/admin/analitik` sayfası eksik. Gerçek metrikler ile dashboard. |
+| Durum | Özellik | Geliştirici Notu | Tahmini Süre |
+|---|---|---|---|
+| ⏳ | Admin Kullanıcı Yönetimi | `/admin/kullanicilar` - Rol değiştirme, silme. | ~4 saat |
+| ⏳ | Admin Makale Yönetimi | `/admin/makaleler` - Düzenleme, silme, yayın durumu. | ~5 saat |
+| ⏳ | Admin Ayarlar Sayfası | `/admin/ayarlar` - Sistem ayarları yönetimi. | ~3 saat |
+| ⏳ | Admin Analitik Sayfası | `/admin/analitik` - Gerçek metrikler. | ~4 saat |
 
 ---
 
-### v1.3: UX ve Arama İyileştirmeleri - Q2 2026
+### v1.3: UX ve Arama İyileştirmeleri
 
+**Durum:** Kısmen Tamamlandı  
+**Tahmini Süre:** 1-2 gün  
 **Amaç:** Kullanıcı deneyimini zenginleştirmek ve arama işlevselliğini eklemek.
 
-| Durum | Özellik | Geliştirici Notu |
-|---|---|---|
-| ✅ | Açık/Koyu tema desteği | Tailwind CSS dark mode entegrasyonu tamamlandı (26 Ara 2025). |
-| ✅ | İlgili makaleler bölümü | Haber detay sayfasında "İlgili Haberler" bölümü eklendi (26 Ara 2025). |
-| ✅ | Popüler makaleler bölümü | Ana sayfada "En Çok Okunanlar" bölümü eklendi (26 Ara 2025). |
-| ⏳ | Basit arama (Başlık ve içerik) | UI butonu hazır, arama fonksiyonu bekliyor. |
-| ✅ | Otomatik SEO iyileştirmeleri | Meta etiketleri, OpenGraph ve Twitter Card desteği eklendi (26 Ara 2025). |
-| ⏳ | AI Destekli Özetleme UI | Gemini API entegrasyonu tamamlandı, UI entegrasyonu bekliyor. |
+| Durum | Özellik | Geliştirici Notu | Tahmini Süre |
+|---|---|---|---|
+| ✅ | Açık/Koyu tema desteği | Tailwind CSS dark mode entegrasyonu tamamlandı. | - |
+| ✅ | İlgili makaleler bölümü | Haber detay sayfasında "İlgili Haberler" bölümü eklendi. | - |
+| ✅ | Popüler makaleler bölümü | Ana sayfada "En Çok Okunanlar" bölümü eklendi. | - |
+| ⏳ | Basit arama (Başlık ve içerik) | UI butonu hazır, arama fonksiyonu bekliyor. | ~3 saat |
+| ✅ | Otomatik SEO iyileştirmeleri | Meta etiketleri, OpenGraph ve Twitter Card desteği eklendi. | - |
+| ⏳ | AI Destekli Özetleme UI | Gemini API entegrasyonu tamamlandı, UI entegrasyonu bekliyor. | ~2 saat |
 
 ---
 
-### v1.4: Topluluk ve İletişim - Q2 2026
+### v1.4: Topluluk ve İletişim
 
+**Durum:** Kısmen Tamamlandı  
+**Tahmini Süre:** 1 gün  
 **Amaç:** Kullanıcılarla etkileşimi artırmak ve iletişim kanallarını açmak.
 
-| Durum | Özellik | Geliştirici Notu |
-|---|---|---|
-| ⏳ | Newsletter abonelik API | UI formu hazır, backend API eksik. `NewsletterSubscription` modeli mevcut. |
-| ⏳ | Paylaşım butonları işlevselliği | UI butonları hazır, paylaşım fonksiyonu eksik. |
-| ✅ | Profesyonel Otomatik Kurulum Sistemi | Install script v2.0.2 tamamlandı (29 Ara 2025). curl \| bash desteği. |
+| Durum | Özellik | Geliştirici Notu | Tahmini Süre |
+|---|---|---|---|
+| ⏳ | Newsletter abonelik API | UI formu hazır, backend API eksik. | ~2 saat |
+| ⏳ | Paylaşım butonları işlevselliği | UI butonları hazır, paylaşım fonksiyonu eksik. | ~1 saat |
+| ✅ | Profesyonel Otomatik Kurulum Sistemi | Install script v2.0.2 tamamlandı. | - |
 
 ---
 
-### v2.0: Genişleme ve Kişiselleştirme - Q3 2026
+### v2.0: Genişleme ve Kişiselleştirme
 
+**Durum:** Planlandı  
+**Tahmini Süre:** 1-2 hafta  
 **Amaç:** Platformu bir sonraki seviyeye taşıyarak daha akıllı ve kişiselleştirilmiş bir deneyim sunmak.
 
 | Durum | Özellik | Geliştirici Notu |
@@ -95,7 +112,7 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 
 ---
 
-## 🔮 Gelecek Vizyonu (2027+)
+## 🔮 Gelecek Vizyonu
 
 - **Gelişmiş AI Özellikleri:** Çoklu dil desteği, video özetleme, sesli haber okuma.
 - **Monetizasyon:** Premium abonelik sistemi, reklam alanları, sponsorlu içerik.
@@ -107,27 +124,28 @@ HaberNexus'u, herkesin kendi akıllı, tam otomatik ve yönetilebilir haber plat
 
 ### v1.0 MVP İlerlemesi
 - **Tamamlanan:** 9/9 özellik (%100) ✅
-- **Devam Eden:** 0/9 özellik
 
 ### v1.1 Veri Entegrasyonu İlerlemesi
 - **Tamamlanan:** 0/5 özellik (%0)
-- **Devam Eden:** 5/5 özellik
+- **Tahmini Toplam Süre:** ~10 saat
 
 ### v1.2 Admin Panel İlerlemesi
 - **Tamamlanan:** 0/4 özellik (%0)
-- **Devam Eden:** 4/4 özellik
+- **Tahmini Toplam Süre:** ~16 saat
 
 ### v1.3 UX İyileştirmeleri İlerlemesi
 - **Tamamlanan:** 4/6 özellik (%67)
-- **Devam Eden:** 2/6 özellik
+- **Tahmini Kalan Süre:** ~5 saat
 
 ### v1.4 Topluluk İlerlemesi
 - **Tamamlanan:** 1/3 özellik (%33)
-- **Devam Eden:** 2/3 özellik
+- **Tahmini Kalan Süre:** ~3 saat
 
 ---
 
 ## 🎯 v1 Tam İşlevsellik Hedefi
+
+**Tahmini Tamamlanma Süresi:** ~1 hafta (AI destekli geliştirme ile)
 
 v1'in tam işlevsel kabul edilmesi için aşağıdaki kriterlerin karşılanması gerekmektedir:
 
@@ -150,7 +168,7 @@ Bu yol haritasındaki özelliklere katkıda bulunmak isterseniz:
 
 1. İlgili sürümün özelliklerinden birini seçin
 2. GitHub'da ilgili issue'yu oluşturun veya mevcut bir issue'yu alın
-3. [CONTRIBUTING.md](CONTRIBUTING.md) ve [AI_DEVELOPMENT_GUIDE.md](AI_DEVELOPMENT_GUIDE.md) rehberlerini takip edin
+3. [CONTRIBUTING.md](CONTRIBUTING.md) ve [docs/ai-agents/AI_DEVELOPMENT_GUIDE.md](docs/ai-agents/AI_DEVELOPMENT_GUIDE.md) rehberlerini takip edin
 4. `docs/ai-plans/active/` klasöründe kendi planınızı oluşturun
 
 ---
