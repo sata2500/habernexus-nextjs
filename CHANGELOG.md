@@ -1,3 +1,13 @@
+## [1.2.3](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.2...v1.2.3) (2026-01-07)
+
+### 🐛 Hata Düzeltmeleri
+
+* **auth:** add AUTH_URL to env config and improve port management ([f1df61b](https://github.com/sata2500/habernexus-nextjs/commit/f1df61b6013d18f9c7b694e1488d489c127c9cd4))
+
+### 📚 Dokümantasyon
+
+* add Knowledge Base entries and update documentation ([fe5f97e](https://github.com/sata2500/habernexus-nextjs/commit/fe5f97e66fbe7e4dae6394663ef1d4c4f01efb2b))
+
 ## [1.2.2](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.1...v1.2.2) (2025-12-29)
 
 ### 🐛 Hata Düzeltmeleri
