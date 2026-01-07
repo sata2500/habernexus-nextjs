@@ -6,7 +6,7 @@ This Wiki provides in-depth documentation for the HaberNexus project. It is inte
 
 - **[Project Roadmap](https://github.com/sata2500/habernexus-nextjs/blob/main/ROADMAP.md)**
 - **[Contribution Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/CONTRIBUTING.md)**
-- **[AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/AI_DEVELOPMENT_GUIDE.md)**
+- **[AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)**
 
 ## 📚 Main Sections
 
@@ -30,7 +30,7 @@ This Wiki provides in-depth documentation for the HaberNexus project. It is inte
 
 ## 🤖 For AI Agents
 
-AI agents **MUST** follow the complete framework outlined in the [AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/AI_DEVELOPMENT_GUIDE.md). Your primary sources of truth are the protocols in `docs/ai-agents/` and the shared brain in `docs/ai-knowledge-base/`. This Wiki serves as a supplementary resource for deeper architectural context.
+AI agents **MUST** follow the complete framework outlined in the [AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md). Your primary sources of truth are the protocols in `docs/ai-agents/` and the shared brain in `docs/ai-knowledge-base/`. This Wiki serves as a supplementary resource for deeper architectural context.
 
 ## 🤝 How to Contribute to the Wiki
 
