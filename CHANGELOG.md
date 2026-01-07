@@ -1,3 +1,17 @@
+## [1.3.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.3...v1.3.0) (2026-01-07)
+
+### ✨ Yeni Özellikler
+
+* **auth:** auto-assign ADMIN role to first user ([2282eef](https://github.com/sata2500/habernexus-nextjs/commit/2282eef90c80f848eb271a0f927e7a521cc7edab))
+
+### 🐛 Hata Düzeltmeleri
+
+* **config:** add Google profile image domains to next.config.js ([306b636](https://github.com/sata2500/habernexus-nextjs/commit/306b6367b5b3db59d418b75ca8bba6bd6db09f0e))
+
+### 📚 Dokümantasyon
+
+* **knowledge-base:** add learnings for Google OAuth images and first-user admin ([0485753](https://github.com/sata2500/habernexus-nextjs/commit/04857531a2dff4fe31add72e4f71793dd4ac0a97))
+
 ## [1.2.3](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.2...v1.2.3) (2026-01-07)
 
 ### 🐛 Hata Düzeltmeleri
