@@ -1,87 +1,69 @@
 import Image from 'next/image'
 import Link from 'next/link'
-// import { notFound } from 'next/navigation' // Veritabanı entegrasyonunda kullanılacak
+import { notFound } from 'next/navigation'
 import { Clock, Eye, Calendar, Share2, Bookmark, ThumbsUp, ThumbsDown, ArrowLeft } from 'lucide-react'
 import { formatDate, getReadingTime } from '@/lib/utils'
 import ArticleCard from '@/components/articles/ArticleCard'
+import { prisma } from '@/lib/prisma'
 
-// Demo veri - gerçek uygulamada veritabanından gelecek
-const demoArticle = {
-  id: '1',
-  title: 'Yapay Zeka Teknolojisinde Yeni Bir Dönem: 2025 Yılının En Büyük Gelişmeleri',
-  slug: 'yapay-zeka-teknolojisinde-yeni-bir-donem-2025',
-  excerpt: 'Yapay zeka alanında yaşanan son gelişmeler, teknoloji dünyasını derinden etkiliyor. İşte 2025 yılının en önemli AI haberleri.',
-  content: `
-    <p>Yapay zeka teknolojisi, son yıllarda inanılmaz bir hızla gelişmeye devam ediyor. 2025 yılı, bu alanda pek çok yeniliğe sahne oldu. Büyük dil modelleri, görüntü işleme ve otonom sistemler gibi alanlarda önemli ilerlemeler kaydedildi.</p>
+// Makaleyi veritabanından çek
+async function getArticle(slug: string) {
+  const article = await prisma.article.findUnique({
+    where: { slug },
+    include: {
+      author: {
+        select: {
+          name: true,
+          image: true,
+        },
+      },
+      _count: {
+        select: {
+          bookmarks: true,
+          votes: true,
+        },
+      },
+    },
+  })
 
-    <h2>Büyük Dil Modellerinde Devrim</h2>
-    <p>2025 yılında büyük dil modelleri, daha önce hiç görülmemiş seviyelere ulaştı. Yeni nesil modeller, insan benzeri metin üretme yeteneklerinin yanı sıra, karmaşık mantıksal çıkarımlar yapabilme kapasitesine de sahip oldu. Bu gelişmeler, eğitimden sağlığa, finanstan hukuka kadar pek çok sektörde köklü değişikliklere yol açtı.</p>
-
-    <h2>Görüntü ve Video Üretimi</h2>
-    <p>Yapay zeka destekli görüntü ve video üretim araçları, 2025 yılında profesyonel kalitede içerikler üretebilir hale geldi. Film yapımcıları, reklamcılar ve içerik üreticileri, bu araçları yaratıcı süreçlerinde aktif olarak kullanmaya başladı.</p>
-
-    <h2>Otonom Sistemler</h2>
-    <p>Otonom araçlar ve robotik sistemler, 2025 yılında önemli bir olgunluk seviyesine ulaştı. Sürücüsüz taksi hizmetleri birçok büyük şehirde yaygınlaşırken, depo ve lojistik operasyonlarında robotik sistemlerin kullanımı standart hale geldi.</p>
-
-    <h2>Etik ve Düzenleme Tartışmaları</h2>
-    <p>Yapay zekanın hızlı gelişimi, beraberinde önemli etik soruları da getirdi. Veri gizliliği, algoritmik önyargı ve iş gücü üzerindeki etkileri gibi konular, 2025 yılında yoğun bir şekilde tartışıldı. Birçok ülke, yapay zeka kullanımını düzenleyen yeni yasalar çıkardı.</p>
-
-    <h2>Geleceğe Bakış</h2>
-    <p>Uzmanlar, yapay zeka teknolojisinin önümüzdeki yıllarda daha da hızlı bir şekilde gelişeceğini öngörüyor. Genel yapay zeka (AGI) hedefine doğru atılan adımlar, teknoloji dünyasının en heyecan verici gelişmeleri arasında yer alıyor.</p>
-  `,
-  imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&auto=format&fit=crop&q=80',
-  category: 'Teknoloji',
-  viewCount: 15420,
-  publishedAt: new Date('2025-12-26'),
-  author: {
-    name: 'HaberNexus AI',
-    image: null,
-    bio: 'HaberNexus yapay zeka editörü'
-  }
+  return article
 }
 
-const relatedArticles = [
-  {
-    id: '2',
-    title: 'Ekonomide Son Durum: Merkez Bankası Faiz Kararını Açıkladı',
-    slug: 'ekonomide-son-durum-merkez-bankasi-faiz-karari',
-    excerpt: 'Merkez Bankası, beklenen faiz kararını açıkladı.',
-    content: 'Merkez Bankası, aylık para politikası toplantısının ardından faiz kararını açıkladı.',
-    imageUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60',
-    category: 'Ekonomi',
-    viewCount: 12350,
-    publishedAt: new Date('2025-12-25'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-  {
-    id: '3',
-    title: 'Bilim Dünyasından Heyecan Verici Keşif: Mars\'ta Su İzleri Bulundu',
-    slug: 'bilim-dunyasindan-heyecan-verici-kesif-marsta-su-izleri',
-    excerpt: 'NASA\'nın Mars keşif aracı, gezegende su izlerine dair yeni kanıtlar buldu.',
-    content: 'NASA\'nın Mars\'taki keşif aracı Perseverance, gezegen yüzeyinde su izlerine dair önemli kanıtlar elde etti.',
-    imageUrl: 'https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=800&auto=format&fit=crop&q=60',
-    category: 'Bilim',
-    viewCount: 11200,
-    publishedAt: new Date('2025-12-24'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-  {
-    id: '4',
-    title: 'Süper Lig\'de Heyecan Dorukta: Şampiyonluk Yarışı Kızışıyor',
-    slug: 'super-ligde-heyecan-dorukta-sampiyonluk-yarisi',
-    excerpt: 'Süper Lig\'de şampiyonluk yarışı son haftalara girerken heyecan doruk noktasına ulaştı.',
-    content: 'Türkiye Süper Ligi\'nde şampiyonluk yarışı her geçen hafta daha da heyecanlı bir hal alıyor.',
-    imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=60',
-    category: 'Spor',
-    viewCount: 8920,
-    publishedAt: new Date('2025-12-25'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-]
+// İlgili makaleleri çek (aynı kategoriden)
+async function getRelatedArticles(category: string, excludeSlug: string) {
+  const articles = await prisma.article.findMany({
+    where: {
+      category,
+      slug: { not: excludeSlug },
+    },
+    take: 3,
+    orderBy: { publishedAt: 'desc' },
+    include: {
+      author: {
+        select: {
+          name: true,
+          image: true,
+        },
+      },
+    },
+  })
 
-export default function ArticlePage() {
-  // Gerçek uygulamada veritabanından çekilecek
-  const article = demoArticle
+  return articles
+}
+
+interface ArticlePageProps {
+  params: Promise<{ slug: string }>
+}
+
+export default async function ArticlePage({ params }: ArticlePageProps) {
+  const { slug } = await params
+  const article = await getArticle(slug)
+
+  if (!article) {
+    notFound()
+  }
+
+  const relatedArticles = await getRelatedArticles(article.category, slug)
   const readingTime = getReadingTime(article.content)
 
   return (
@@ -116,18 +98,32 @@ export default function ArticlePage() {
             {article.title}
           </h1>
 
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
-            {article.excerpt}
-          </p>
+          {article.excerpt && (
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
+              {article.excerpt}
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">H</span>
+                {article.author.image ? (
+                  <Image
+                    src={article.author.image}
+                    alt={article.author.name || 'Yazar'}
+                    width={48}
+                    height={48}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <span className="text-white font-bold text-lg">
+                    {article.author.name?.charAt(0) || 'H'}
+                  </span>
+                )}
               </div>
               <div>
                 <p className="font-semibold text-gray-900 dark:text-white">
-                  {article.author.name}
+                  {article.author.name || 'HaberNexus AI'}
                 </p>
                 <div className="flex items-center space-x-3 text-sm text-gray-500">
                   <span className="flex items-center">
@@ -196,16 +192,18 @@ export default function ArticlePage() {
         </div>
 
         {/* Related Articles */}
-        <section className="max-w-6xl mx-auto mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-            İlgili Haberler
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {relatedArticles.map((article) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
-        </section>
+        {relatedArticles.length > 0 && (
+          <section className="max-w-6xl mx-auto mt-16">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+              İlgili Haberler
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {relatedArticles.map((relatedArticle) => (
+                <ArticleCard key={relatedArticle.id} article={relatedArticle} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </article>
   )
