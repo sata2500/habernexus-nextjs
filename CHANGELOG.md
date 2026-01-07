@@ -1,3 +1,32 @@
+## [1.4.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.3.0...v1.4.0) (2026-01-07)
+
+### ✨ Yeni Özellikler
+
+* **api:** bookmark API endpoint'leri ekle ([04a6737](https://github.com/sata2500/habernexus-nextjs/commit/04a6737cbdeeceeb53ffa679ec5cda6ba486bb23))
+* **api:** görüntülenme sayacı API endpoint'i ekle ([b47b123](https://github.com/sata2500/habernexus-nextjs/commit/b47b1239243fddea2719b0bbdb5ca9dd43de203e))
+* **api:** makale oylama API endpoint'i ekle ([46833a5](https://github.com/sata2500/habernexus-nextjs/commit/46833a5fbf98558415d0d43b0883877065fa4e7e))
+* **api:** newsletter abonelik API endpoint'i ekle ([f300ffd](https://github.com/sata2500/habernexus-nextjs/commit/f300ffdfaec46ab14baaf4f60e3cb10aeea8a31d))
+* **haber:** haber detay sayfasını veritabanı entegrasyonu ile güncelle ([6a6e742](https://github.com/sata2500/habernexus-nextjs/commit/6a6e742499b1e042d1ba47fe5fce4be27e8a8268))
+* **home:** ana sayfa bileşenlerini veritabanı entegrasyonu ile güncelle ([7bb103d](https://github.com/sata2500/habernexus-nextjs/commit/7bb103db9394e53934e7f94e155ec483fb975ed1))
+* **kategori:** kategori sayfasını veritabanı entegrasyonu ve sayfalama ile güncelle ([16a26e3](https://github.com/sata2500/habernexus-nextjs/commit/16a26e31d4029e34cd2ccd8d0af01b29394c1675))
+* **ui:** API entegrasyonlarını UI bileşenlerine bağla ([f91fa83](https://github.com/sata2500/habernexus-nextjs/commit/f91fa83bcc6a82a0357acbd7368b4aa4ba9c6cd4))
+
+### 🐛 Hata Düzeltmeleri
+
+* **ci:** CI ve Release workflow'larına test veritabanı kurulumu ekle ([a09d02b](https://github.com/sata2500/habernexus-nextjs/commit/a09d02b15823b10b2c8ad344ba8f5c6c6dd0f23d))
+* **ci:** CI workflow'unda AUTH_URL ve env variables'ları ekle, seed script'ini kaldır ([2fa506a](https://github.com/sata2500/habernexus-nextjs/commit/2fa506a001653a2c54fad69009cf77ac82d44c7c))
+
+### 📚 Dokümantasyon
+
+* Complete documentation integration and fix all broken links ([274ac4c](https://github.com/sata2500/habernexus-nextjs/commit/274ac4c854105ceabb8d504b944e27011a1d346d))
+* **roadmap:** update roadmap with v1.1-v1.4 milestones and missing features ([b43b980](https://github.com/sata2500/habernexus-nextjs/commit/b43b9807275cec46ca4ca0cdff91fcb80373b62a))
+* v1.1 tamamlandı olarak ROADMAP ve plan dosyalarını güncelle ([e11df7f](https://github.com/sata2500/habernexus-nextjs/commit/e11df7f4c64eba59ae18becd0a6f4a6e989dd8f8))
+
+### 🔧 Bakım
+
+* fix broken links and add wiki sync automation ([2a68274](https://github.com/sata2500/habernexus-nextjs/commit/2a6827406980ac54e40d807e7bb3b30039037bb2))
+* organize project structure and update roadmap timelines ([f0cf64b](https://github.com/sata2500/habernexus-nextjs/commit/f0cf64b08f5acdc99d9d31e55365467edcc87982))
+
 ## [1.3.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.2.3...v1.3.0) (2026-01-07)
 
 ### ✨ Yeni Özellikler
