@@ -541,6 +541,7 @@ DATABASE_URL="file:./data.db"
 # Auth.js v5
 AUTH_SECRET="${auth_secret}"
 AUTH_TRUST_HOST=true
+AUTH_URL="https://${SITE_DOMAIN}"
 
 # Google OAuth 2.0
 GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}"

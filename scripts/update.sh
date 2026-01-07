@@ -240,6 +240,18 @@ stop_application() {
     print_step "PM2 uygulaması durduruluyor..."
     pm2 stop "$PM2_APP_NAME" >> "$LOG_FILE" 2>&1 || true
     
+    # Port 3000'i kullanan processleri temizle
+    print_step "Port 3000 temizleniyor..."
+    if command -v fuser &> /dev/null; then
+        fuser -k 3000/tcp >> "$LOG_FILE" 2>&1 || true
+    fi
+    
+    # Node processlerini temizle
+    pkill -f "next-server" >> "$LOG_FILE" 2>&1 || true
+    
+    # Portun serbest kalması için bekle
+    sleep 2
+    
     print_success "Uygulama durduruldu"
 }
 
@@ -327,11 +339,27 @@ start_application() {
     
     cd "$INSTALL_DIR"
     
+    # Başlamadan önce port 3000'in boş olduğundan emin ol
+    print_step "Port 3000 kontrol ediliyor..."
+    if command -v fuser &> /dev/null; then
+        if fuser 3000/tcp >> "$LOG_FILE" 2>&1; then
+            print_warning "Port 3000 kullanımda, temizleniyor..."
+            fuser -k 3000/tcp >> "$LOG_FILE" 2>&1 || true
+            sleep 2
+        fi
+    fi
+    
     print_step "PM2 uygulaması başlatılıyor..."
-    pm2 restart "$PM2_APP_NAME" >> "$LOG_FILE" 2>&1
+    
+    # PM2 process'i yoksa yeni başlat, varsa restart yap
+    if pm2 show "$PM2_APP_NAME" >> "$LOG_FILE" 2>&1; then
+        pm2 restart "$PM2_APP_NAME" --update-env >> "$LOG_FILE" 2>&1
+    else
+        pm2 start npm --name "$PM2_APP_NAME" -- start >> "$LOG_FILE" 2>&1
+    fi
     
     # Uygulamanın başlamasını bekle
-    sleep 3
+    sleep 5
     
     # Durum kontrolü
     if pm2 show "$PM2_APP_NAME" | grep -q "online"; then
