@@ -227,4 +227,4 @@ Once your development environment is set up:
 2. Review the [Development & Contribution](./Development-&-Contribution.md) guide
 3. Check the [ROADMAP.md](../ROADMAP.md) for current development goals
 
-For AI agents, proceed to [AI_DEVELOPMENT_GUIDE.md](../AI_DEVELOPMENT_GUIDE.md).
+For AI agents, proceed to [AI_DEVELOPMENT_GUIDE.md](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md).

@@ -69,6 +69,7 @@ If any of these commands fail, **STOP** and resolve the issue before proceeding.
     - [ ] `WORKFLOW.md` - **Pay special attention to the Incremental Development process**
     - [ ] `QUALITY_CHECKLIST.md` - **Memorize the verification commands**
     - [ ] `COMMUNICATION_PROTOCOL.md`
+    - [ ] `DOCUMENTATION_PROTOCOL.md` - **Wiki ve dokümantasyon kuralları**
 
 ### Key Concepts to Understand
 

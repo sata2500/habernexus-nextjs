@@ -227,13 +227,19 @@ npm run dev
     *   **Decisions:** If you made a significant architectural choice, create a new ADR file.
     *   **Errors:** Move any novel error documentation to `docs/ai-knowledge-base/errors/`.
     *   **Learnings:** Add any new best practices to `docs/ai-knowledge-base/learnings/`.
+4.  **Update Wiki (if needed):**
+    *   Kullanıcı-facing özellikler için `wiki/` klasöründeki ilgili sayfayı güncelle
+    *   Yeni özellik için gerekirse yeni wiki sayfası oluştur
+    *   `wiki/` klasöründeki değişiklikler otomatik olarak GitHub Wiki'ye senkronize edilir
+
+> 📝 **NOT:** Detaylı dokümantasyon kuralları için `docs/ai-agents/DOCUMENTATION_PROTOCOL.md` dosyasına bak.
 
 ### Checkpoint ✓
 
 - [ ] README.md updated (if needed)
 - [ ] ROADMAP.md updated
 - [ ] Knowledge Base updated
-- [ ] Wiki updated (if needed)
+- [ ] Wiki updated (if needed) - `wiki/` klasöründe
 
 ---
 

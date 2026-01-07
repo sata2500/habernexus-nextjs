@@ -26,8 +26,8 @@ wget -qO- https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/sc
 
 ### Geliştirme
 
-- [Katkıda Bulunma](../CONTRIBUTING.md) - Geliştirici rehberi
-- [AI Development Guide](../AI_DEVELOPMENT_GUIDE.md) - AI ajanları için rehber
+- [Katkıda Bulunma](https://github.com/sata2500/habernexus-nextjs/blob/main/CONTRIBUTING.md) - Geliştirici rehberi
+- [AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md) - AI ajanları için rehber
 - [Tech Stack](TECH_STACK.md) - Kullanılan teknolojiler
 
 ### Sorun Giderme

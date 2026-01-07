@@ -87,7 +87,6 @@ type(scope): description
 ```
 
 ### Commit Types
-
 | Type | Description | Example |
 |------|-------------|---------|
 | `feat` | A new feature | `feat(auth): add Google OAuth login` |
@@ -176,6 +175,7 @@ npm run dev  # Test manually
 
 ### Step 4: Create Pull Request
 
+
 1. Push your branch to GitHub
 2. Create a Pull Request against `master`
 3. Fill out the PR template completely
@@ -197,10 +197,10 @@ Once approved, your PR will be merged into `master`.
 
 AI agents must follow additional protocols defined in:
 
-- [AI_DEVELOPMENT_GUIDE.md](../AI_DEVELOPMENT_GUIDE.md) - Main guide
-- [docs/ai-agents/WORKFLOW.md](../docs/ai-agents/WORKFLOW.md) - Detailed workflow
-- [docs/ai-agents/QUALITY_CHECKLIST.md](../docs/ai-agents/QUALITY_CHECKLIST.md) - Quality requirements
-- [docs/ai-agents/ONBOARDING.md](../docs/ai-agents/ONBOARDING.md) - Onboarding checklist
+- [AI_DEVELOPMENT_GUIDE.md](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md) - Main guide
+- [WORKFLOW.md](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/WORKFLOW.md) - Detailed workflow
+- [QUALITY_CHECKLIST.md](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/QUALITY_CHECKLIST.md) - Quality requirements
+- [ONBOARDING.md](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/ONBOARDING.md) - Onboarding checklist
 
 ### Key AI Agent Requirements
 
@@ -236,4 +236,4 @@ npm run dev          # Development server
 
 For more information, please refer to:
 - [CONTRIBUTING.md](https://github.com/sata2500/habernexus-nextjs/blob/main/CONTRIBUTING.md)
-- [AI_DEVELOPMENT_GUIDE.md](https://github.com/sata2500/habernexus-nextjs/blob/main/AI_DEVELOPMENT_GUIDE.md)
+- [AI_DEVELOPMENT_GUIDE.md](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)
