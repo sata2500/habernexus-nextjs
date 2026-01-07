@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { CATEGORIES } from '@/lib/constants'
 import ArticleCard from '@/components/articles/ArticleCard'
-import { Newspaper, TrendingUp, Cpu, Trophy, Heart, Palette, FlaskConical, Globe } from 'lucide-react'
+import { Newspaper, TrendingUp, Cpu, Trophy, Heart, Palette, FlaskConical, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
 
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
   Newspaper,
@@ -14,88 +16,61 @@ const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = 
   Globe,
 }
 
-// Demo veriler - gerçek uygulamada veritabanından gelecek
-const demoArticles = [
-  {
-    id: '1',
-    title: 'Yapay Zeka Teknolojisinde Yeni Bir Dönem: 2025 Yılının En Büyük Gelişmeleri',
-    slug: 'yapay-zeka-teknolojisinde-yeni-bir-donem-2025',
-    excerpt: 'Yapay zeka alanında yaşanan son gelişmeler, teknoloji dünyasını derinden etkiliyor.',
-    content: 'Yapay zeka teknolojisi, son yıllarda inanılmaz bir hızla gelişmeye devam ediyor.',
-    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&auto=format&fit=crop&q=60',
-    category: 'Teknoloji',
-    viewCount: 15420,
-    publishedAt: new Date('2025-12-26'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-  {
-    id: '2',
-    title: 'Yeni Nesil Akıllı Telefonlar: 2025\'in En İyi Modelleri',
-    slug: 'yeni-nesil-akilli-telefonlar-2025',
-    excerpt: '2025 yılının en çok beklenen akıllı telefon modelleri ve özellikleri.',
-    content: 'Akıllı telefon pazarı, her yıl olduğu gibi 2025\'te de heyecan verici yeniliklerle dolu.',
-    imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=60',
-    category: 'Teknoloji',
-    viewCount: 8750,
-    publishedAt: new Date('2025-12-25'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-  {
-    id: '3',
-    title: 'Siber Güvenlik Trendleri: Şirketler Nasıl Korunmalı?',
-    slug: 'siber-guvenlik-trendleri-2025',
-    excerpt: 'Artan siber tehditler karşısında şirketlerin alması gereken önlemler.',
-    content: 'Siber güvenlik, dijital çağda her zamankinden daha kritik bir öneme sahip.',
-    imageUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&auto=format&fit=crop&q=60',
-    category: 'Teknoloji',
-    viewCount: 6320,
-    publishedAt: new Date('2025-12-24'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-  {
-    id: '4',
-    title: 'Elektrikli Araç Pazarı Büyümeye Devam Ediyor',
-    slug: 'elektrikli-arac-pazari-buyuyor',
-    excerpt: 'Elektrikli araç satışları rekor seviyelere ulaştı.',
-    content: 'Elektrikli araç pazarı, çevre bilincinin artmasıyla birlikte hızla büyüyor.',
-    imageUrl: 'https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&auto=format&fit=crop&q=60',
-    category: 'Teknoloji',
-    viewCount: 5890,
-    publishedAt: new Date('2025-12-23'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-  {
-    id: '5',
-    title: 'Metaverse Teknolojisinde Son Gelişmeler',
-    slug: 'metaverse-teknolojisinde-son-gelismeler',
-    excerpt: 'Sanal gerçeklik ve metaverse dünyasında neler oluyor?',
-    content: 'Metaverse kavramı, teknoloji dünyasının en çok tartışılan konularından biri olmaya devam ediyor.',
-    imageUrl: 'https://images.unsplash.com/photo-1617802690992-15d93263d3a9?w=800&auto=format&fit=crop&q=60',
-    category: 'Teknoloji',
-    viewCount: 4560,
-    publishedAt: new Date('2025-12-22'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-  {
-    id: '6',
-    title: 'Blockchain Teknolojisi ve Finans Sektörü',
-    slug: 'blockchain-teknolojisi-finans-sektoru',
-    excerpt: 'Blockchain teknolojisi finans sektörünü nasıl dönüştürüyor?',
-    content: 'Blockchain teknolojisi, finans sektöründe devrim niteliğinde değişikliklere yol açıyor.',
-    imageUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60',
-    category: 'Teknoloji',
-    viewCount: 3980,
-    publishedAt: new Date('2025-12-21'),
-    author: { name: 'HaberNexus AI', image: null }
-  },
-]
+const ARTICLES_PER_PAGE = 9
 
-export default function CategoryPage({ params }: { params: { slug: string } }) {
-  const category = CATEGORIES.find((c) => c.slug === params.slug)
+// Kategorideki makaleleri veritabanından çek
+async function getArticlesByCategory(categorySlug: string, page: number = 1) {
+  // Kategori adını bul (slug'dan)
+  const category = CATEGORIES.find((c) => c.slug === categorySlug)
+  if (!category) return { articles: [], total: 0 }
+
+  const skip = (page - 1) * ARTICLES_PER_PAGE
+
+  const [articles, total] = await Promise.all([
+    prisma.article.findMany({
+      where: {
+        category: category.name,
+      },
+      skip,
+      take: ARTICLES_PER_PAGE,
+      orderBy: { publishedAt: 'desc' },
+      include: {
+        author: {
+          select: {
+            name: true,
+            image: true,
+          },
+        },
+      },
+    }),
+    prisma.article.count({
+      where: {
+        category: category.name,
+      },
+    }),
+  ])
+
+  return { articles, total }
+}
+
+interface CategoryPageProps {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ page?: string }>
+}
+
+export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
+  const { slug } = await params
+  const { page: pageParam } = await searchParams
+  
+  const category = CATEGORIES.find((c) => c.slug === slug)
 
   if (!category) {
     notFound()
   }
+
+  const currentPage = pageParam ? parseInt(pageParam, 10) : 1
+  const { articles, total } = await getArticlesByCategory(slug, currentPage)
+  const totalPages = Math.ceil(total / ARTICLES_PER_PAGE)
 
   const Icon = iconMap[category.icon] || Newspaper
 
@@ -130,31 +105,114 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             </select>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            {demoArticles.length} haber bulundu
+            {total} haber bulundu
           </p>
         </div>
 
         {/* Articles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {demoArticles.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
-        </div>
+        {articles.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {articles.map((article) => (
+              <ArticleCard key={article.id} article={article} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+              <Newspaper className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Henüz haber yok
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Bu kategoride henüz haber bulunmuyor.
+            </p>
+          </div>
+        )}
 
         {/* Pagination */}
-        <div className="flex items-center justify-center mt-12 space-x-2">
-          <button className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50" disabled>
-            Önceki
-          </button>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">1</button>
-          <button className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">2</button>
-          <button className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">3</button>
-          <span className="px-2 text-gray-400">...</span>
-          <button className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">10</button>
-          <button className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-            Sonraki
-          </button>
-        </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center mt-12 space-x-2">
+            {/* Previous Button */}
+            {currentPage > 1 ? (
+              <Link
+                href={`/kategori/${slug}?page=${currentPage - 1}`}
+                className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Önceki
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="flex items-center px-4 py-2 text-gray-400 cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Önceki
+              </button>
+            )}
+
+            {/* Page Numbers */}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum: number
+              if (totalPages <= 5) {
+                pageNum = i + 1
+              } else if (currentPage <= 3) {
+                pageNum = i + 1
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i
+              } else {
+                pageNum = currentPage - 2 + i
+              }
+
+              return (
+                <Link
+                  key={pageNum}
+                  href={`/kategori/${slug}?page=${pageNum}`}
+                  className={`px-4 py-2 rounded-lg transition-colors ${
+                    pageNum === currentPage
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  {pageNum}
+                </Link>
+              )
+            })}
+
+            {/* Show ellipsis and last page if needed */}
+            {totalPages > 5 && currentPage < totalPages - 2 && (
+              <>
+                <span className="px-2 text-gray-400">...</span>
+                <Link
+                  href={`/kategori/${slug}?page=${totalPages}`}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  {totalPages}
+                </Link>
+              </>
+            )}
+
+            {/* Next Button */}
+            {currentPage < totalPages ? (
+              <Link
+                href={`/kategori/${slug}?page=${currentPage + 1}`}
+                className="flex items-center px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Sonraki
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="flex items-center px-4 py-2 text-gray-400 cursor-not-allowed"
+              >
+                Sonraki
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
