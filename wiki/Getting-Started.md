@@ -223,8 +223,8 @@ Before starting development, verify:
 
 Once your development environment is set up:
 
-1. Read the [Project Philosophy & Architecture](./Project-Philosophy-&-Architecture.md)
-2. Review the [Development & Contribution](./Development-&-Contribution.md) guide
-3. Check the [ROADMAP.md](../ROADMAP.md) for current development goals
+1. Read the [Project Philosophy & Architecture](Project-Philosophy-&-Architecture)
+2. Review the [Development & Contribution](Development-&-Contribution) guide
+3. Check the [ROADMAP.md](https://github.com/sata2500/habernexus-nextjs/blob/master/ROADMAP.md) for current development goals
 
-For AI agents, proceed to [AI_DEVELOPMENT_GUIDE.md](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md).
+For AI agents, proceed to [AI_DEVELOPMENT_GUIDE.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md).

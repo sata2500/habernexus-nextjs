@@ -1,4 +1,4 @@
-_# AI Agent Communication Protocol
+# AI Agent Communication Protocol
 
 **Objective:** To establish clear guidelines on when and how AI agents should communicate with the human user, ensuring efficient collaboration and minimizing unnecessary interruptions.
 
@@ -59,3 +59,11 @@ _# AI Agent Communication Protocol
 - **To ask for permission to start a task:** Just start.
 - **To give minor status updates:** Only communicate at major milestones or when blocked.
 - **To ask a question you can answer yourself:** Do your research first.
+
+---
+
+## Related Documents
+
+- [AI_DEVELOPMENT_GUIDE.md](AI_DEVELOPMENT_GUIDE.md) - Main development guide
+- [WORKFLOW.md](WORKFLOW.md) - Step-by-step development process
+- [DOCUMENTATION_PROTOCOL.md](DOCUMENTATION_PROTOCOL.md) - Wiki and documentation rules

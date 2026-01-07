@@ -4,9 +4,9 @@ This Wiki provides in-depth documentation for the HaberNexus project. It is inte
 
 ## 🚀 Quick Links
 
-- **[Project Roadmap](https://github.com/sata2500/habernexus-nextjs/blob/main/ROADMAP.md)**
-- **[Contribution Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/CONTRIBUTING.md)**
-- **[AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)**
+- **[Project Roadmap](https://github.com/sata2500/habernexus-nextjs/blob/master/ROADMAP.md)**
+- **[Contribution Guide](https://github.com/sata2500/habernexus-nextjs/blob/master/CONTRIBUTING.md)**
+- **[AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)**
 
 ## 📚 Main Sections
 
@@ -30,8 +30,23 @@ This Wiki provides in-depth documentation for the HaberNexus project. It is inte
 
 ## 🤖 For AI Agents
 
-AI agents **MUST** follow the complete framework outlined in the [AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/main/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md). Your primary sources of truth are the protocols in `docs/ai-agents/` and the shared brain in `docs/ai-knowledge-base/`. This Wiki serves as a supplementary resource for deeper architectural context.
+AI agents **MUST** follow the complete framework outlined in the [AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md). Your primary sources of truth are the protocols in `docs/ai-agents/` and the shared brain in `docs/ai-knowledge-base/`. This Wiki serves as a supplementary resource for deeper architectural context.
+
+### Essential AI Agent Documents
+
+| Document | Purpose |
+|----------|---------|
+| [ONBOARDING.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/ONBOARDING.md) | Environment setup and project familiarization |
+| [WORKFLOW.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/WORKFLOW.md) | Step-by-step development process |
+| [QUALITY_CHECKLIST.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/QUALITY_CHECKLIST.md) | Verification requirements |
+| [DOCUMENTATION_PROTOCOL.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/DOCUMENTATION_PROTOCOL.md) | Wiki and documentation rules |
 
 ## 🤝 How to Contribute to the Wiki
 
-This Wiki is a living document. If you find any information that is outdated or unclear, please feel free to edit it or open an issue.
+This Wiki is automatically synchronized from the `wiki/` folder in the repository. To contribute:
+
+1. Edit files in the `wiki/` folder
+2. Commit and push to `master` branch
+3. GitHub Action will sync changes to this Wiki
+
+For detailed instructions, see [DOCUMENTATION_PROTOCOL.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/DOCUMENTATION_PROTOCOL.md).
