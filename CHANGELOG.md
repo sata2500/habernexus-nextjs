@@ -1,5 +1,11 @@
 ## [1.6.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.6.0...v1.6.1) (2026-01-10)
 
+### 📚 Dokümantasyon
+
+* **docs:** GitHub Actions Secrets yapılandırması için detaylı adım adım talimatlar eklendi
+* **install:** Kurulum scripti sonundaki webhook talimatları genişletildi
+* **wiki:** Auto-Deployment rehberi daha açıklayıcı hale getirildi
+
 ### 🐛 Hata Düzeltmeleri
 
 * **install:** fix readonly variable error in auto-deploy setup ([0df45d8](https://github.com/sata2500/habernexus-nextjs/commit/0df45d8fe678aaddcdef839e2268e658d1ec9cda))
