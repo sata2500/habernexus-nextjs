@@ -118,3 +118,14 @@ sudo apt install certbot python3-certbot-nginx
 ```bash
 sudo certbot --nginx -d your_domain.com
 ```
+
+
+---
+
+## 6. Otomatik Deployment (CI/CD)
+
+Manuel olarak `habernexus update` komutunu çalıştırmak yerine, GitHub'a her kod gönderdiğinizde projenin otomatik olarak güncellenmesini sağlayabilirsiniz.
+
+Bu CI/CD (Sürekli Entegrasyon/Sürekli Dağıtım) sistemi, geliştirme sürecinizi hızlandırır ve hataları azaltır.
+
+Detaylı kurulum ve yapılandırma adımları için **[Otomatik Deployment (CI/CD)](Auto-Deployment)** rehberini inceleyin.

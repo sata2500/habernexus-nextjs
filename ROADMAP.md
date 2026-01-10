@@ -86,6 +86,12 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 
 ---
 
+### v1.5: Geliştirici Araçları ve Otomasyon
+
+- [✅] **Otomatik Deployment (CI/CD):** GitHub Actions ile sunucuya otomatik deployment sistemi. (10 Ocak 2026)
+
+---
+
 ### v1.4: Topluluk ve İletişim
 
 **Durum:** Kısmen Tamamlandı  
@@ -138,6 +144,9 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 ### v1.3 UX İyileştirmeleri İlerlemesi
 - **Tamamlanan:** 4/6 özellik (%67)
 - **Tahmini Kalan Süre:** ~5 saat
+
+### v1.5 Geliştirici Araçları İlerlemesi
+- **Tamamlanan:** 1/1 özellik (%100) ✅
 
 ### v1.4 Topluluk İlerlemesi
 - **Tamamlanan:** 3/3 özellik (%100) ✅

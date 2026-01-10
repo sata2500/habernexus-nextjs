@@ -103,7 +103,7 @@ habernexus backup    # Yedekleme
 
 ### Manuel Kurulum (Geliştirme Ortamı)
 
-Detaylı kurulum adımları için **[Getting Started](https://github.com/sata2500/habernexus-nextjs/wiki/Getting-Started)** wiki sayfasını ziyaret edin.
+Detaylı kurulum adımları için **[Getting Started](https://github.com/sata2500/habernexus-nextjs/wiki/Getting-Started)**, otomatik deployment için ise **[Auto-Deployment (CI/CD)](https://github.com/sata2500/habernexus-nextjs/wiki/Auto-Deployment)** wiki sayfasını ziyaret edin.
 
 #### Ön Koşullar
 
