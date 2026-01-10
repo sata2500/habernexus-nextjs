@@ -8,7 +8,45 @@ This guide provides detailed instructions on how to deploy the HaberNexus applic
 - Node.js version 20.9.0 or higher installed on the server.
 - PM2 installed globally on the server.
 
-## 2. Installation
+---
+
+## Otomatik Kurulum (Tavsiye Edilen)
+
+HaberNexus'u tek komutla kurabilirsiniz. Bu yöntem tüm bağımlılıkları, web sunucusunu ve SSL sertifikasını otomatik olarak yapılandırır.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/scripts/install.sh | bash
+```
+
+### Kurulum Sırasında Sorulacak Bilgiler
+
+| Bilgi | Açıklama | Örnek |
+|-------|----------|-------|
+| Domain | Sitenizin domain adı | `habernexus.com` |
+| Web Sunucusu | Caddy (otomatik SSL) veya Nginx | `1` (Caddy) |
+| Google Client ID | Google OAuth için | `xxx.apps.googleusercontent.com` |
+| Google Client Secret | Google OAuth için | `GOCSPX-xxx` |
+| Gemini API Key | AI içerik üretimi için | `AIzaSy...` |
+| E-posta | SSL sertifikası bildirimleri için | `admin@example.com` |
+| Otomatik Güncelleme | GitHub'a push yapıldığında otomatik güncelleme | `e` veya `h` |
+
+### Otomatik Güncelleme (Auto-Deploy) Özelliği
+
+Kurulum sırasında "Otomatik güncellemeyi etkinleştirmek istiyor musunuz?" sorusuna `e` cevabı verirseniz:
+
+1. Webhook sunucusu otomatik olarak kurulur ve başlatılır
+2. Web sunucusu (Caddy/Nginx) webhook proxy olarak yapılandırılır
+3. Firewall kuralları otomatik güncellenir
+4. Kurulum sonunda size:
+   - Webhook URL
+   - Webhook Secret
+   - GitHub repository ayarları talimatları verilir
+
+Detaylı bilgi için: **[Otomatik Deployment (CI/CD)](Auto-Deployment)**
+
+---
+
+## 2. Manuel Kurulum
 
 ### Install PM2
 

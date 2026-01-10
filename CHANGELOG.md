@@ -1,3 +1,21 @@
+## [1.6.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.5.0...v1.6.0) (2026-01-11)
+
+### ✨ Yeni Özellikler
+
+* **install:** Auto-Deploy sistemini kurulum script'ine entegre et ([install.sh](scripts/install.sh))
+  - Kurulum sırasında isteğe bağlı otomatik güncelleme seçeneği
+  - Webhook sunucusu otomatik yapılandırması
+  - Caddy/Nginx için webhook proxy otomatik ekleme
+  - Firewall kuralları otomatik güncelleme
+  - Kurulum özetinde detaylı auto-deploy bilgileri
+  - `habernexus-webhook` yönetim komutu
+
+### 🛠️ Değişiklikler
+
+* **install:** Script sürümü 2.0.2'den 2.1.0'a yükseltildi
+* **install:** Yapılandırma özeti bölümü genişletildi
+* **install:** Web sunucusu yapılandırma fonksiyonlarına webhook proxy desteği eklendi
+
 ## [1.5.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.4.0...v1.5.0) (2026-01-10)
 
 ### ✨ Yeni Özellikler

@@ -87,8 +87,8 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 ---
 
 ### v1.5: Geliştirici Araçları ve Otomasyon
-
 - [✅] **Otomatik Deployment (CI/CD):** GitHub Actions ile sunucuya otomatik deployment sistemi. (10 Ocak 2026)
+- [✅] **Auto-Deploy Kurulum Entegrasyonu:** Otomatik güncelleme sistemi kurulum script'ine isteğe bağlı olarak entegre edildi. (11 Ocak 2026))
 
 ---
 
@@ -146,7 +146,7 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 - **Tahmini Kalan Süre:** ~5 saat
 
 ### v1.5 Geliştirici Araçları İlerlemesi
-- **Tamamlanan:** 1/1 özellik (%100) ✅
+- **Tamamlanan:** 2/2 özellik (%100) ✅
 
 ### v1.4 Topluluk İlerlemesi
 - **Tamamlanan:** 3/3 özellik (%100) ✅
@@ -183,4 +183,4 @@ Bu yol haritasındaki özelliklere katkıda bulunmak isterseniz:
 
 ---
 
-**Son Güncelleme:** 07 Ocak 2026
+**Son Güncelleme:** 11 Ocak 2026

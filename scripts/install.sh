@@ -3,7 +3,7 @@
 # ╔═══════════════════════════════════════════════════════════════════════════╗
 # ║                                                                           ║
 # ║   HaberNexus - Profesyonel Otomatik Kurulum Sistemi                       ║
-# ║   Sürüm: 2.0.2                                                            ║
+# ║   Sürüm: 2.1.0                                                            ║
 # ║   Desteklenen Sistemler: Ubuntu 22.04 LTS, Ubuntu 24.04 LTS               ║
 # ║                                                                           ║
 # ║   Tek Satırlık Kurulum:                                                   ║
@@ -17,7 +17,7 @@ set -euo pipefail
 # YAPILANDIRMA DEĞİŞKENLERİ
 # ═══════════════════════════════════════════════════════════════════════════
 
-readonly SCRIPT_VERSION="2.0.2"
+readonly SCRIPT_VERSION="2.1.0"
 readonly GITHUB_REPO="https://github.com/sata2500/habernexus-nextjs.git"
 readonly INSTALL_DIR="/var/www/habernexus"
 readonly NODE_VERSION="22"
@@ -26,6 +26,12 @@ readonly LOG_FILE="/tmp/habernexus-install-$(date +%Y%m%d-%H%M%S).log"
 
 # Web sunucusu seçimi (caddy veya nginx)
 WEB_SERVER="caddy"
+
+# Auto-Deploy yapılandırması
+ENABLE_AUTO_DEPLOY="false"
+WEBHOOK_PORT="9000"
+WEBHOOK_SECRET=""
+LOG_DIR="/var/log/habernexus"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # RENK TANIMLARI
@@ -364,12 +370,32 @@ get_user_input() {
     ask_input "   E-posta" ADMIN_EMAIL
     echo ""
     
+    # Auto-Deploy seçeneği
+    echo -e "${CYAN}6. Otomatik Güncelleme Sistemi (Auto-Deploy)${NC}"
+    echo -e "${GRAY}   GitHub'a push yapıldığında sunucu otomatik güncellenir.${NC}"
+    echo -e "${GRAY}   Bu özellik webhook tabanlı çalışır ve isteğe bağlıdır.${NC}"
+    echo ""
+    local auto_deploy_choice
+    ask_input "   Otomatik güncellemeyi etkinleştirmek istiyor musunuz? (e/h)" auto_deploy_choice "h"
+    if [[ $auto_deploy_choice =~ ^[Ee]$ ]]; then
+        ENABLE_AUTO_DEPLOY="true"
+        echo ""
+        echo -e "${GRAY}   Webhook portu (varsayılan: 9000)${NC}"
+        ask_input "   Webhook Port" WEBHOOK_PORT "9000"
+    fi
+    echo ""
+    
     # Özet
     print_header "YAPILANDIRMA ÖZETİ"
-    echo -e "  ${WHITE}Domain:${NC}        $SITE_DOMAIN"
-    echo -e "  ${WHITE}Web Sunucusu:${NC}  $WEB_SERVER"
-    echo -e "  ${WHITE}E-posta:${NC}       $ADMIN_EMAIL"
-    echo -e "  ${WHITE}Kurulum Yolu:${NC}  $INSTALL_DIR"
+    echo -e "  ${WHITE}Domain:${NC}              $SITE_DOMAIN"
+    echo -e "  ${WHITE}Web Sunucusu:${NC}        $WEB_SERVER"
+    echo -e "  ${WHITE}E-posta:${NC}             $ADMIN_EMAIL"
+    echo -e "  ${WHITE}Kurulum Yolu:${NC}        $INSTALL_DIR"
+    if [[ "$ENABLE_AUTO_DEPLOY" == "true" ]]; then
+        echo -e "  ${WHITE}Otomatik Güncelleme:${NC} ${GREEN}Etkin${NC} (Port: $WEBHOOK_PORT)"
+    else
+        echo -e "  ${WHITE}Otomatik Güncelleme:${NC} ${GRAY}Devre Dışı${NC}"
+    fi
     echo ""
     
     local confirm
@@ -654,6 +680,16 @@ configure_caddy() {
     
     print_step "Caddyfile oluşturuluyor..."
     
+    # Auto-deploy etkinse webhook proxy ekle
+    local webhook_config=""
+    if [[ "$ENABLE_AUTO_DEPLOY" == "true" ]]; then
+        webhook_config="
+    # Webhook endpoint for auto-deploy
+    route /webhook* {
+        reverse_proxy localhost:${WEBHOOK_PORT}
+    }"
+    fi
+    
     sudo tee /etc/caddy/Caddyfile > /dev/null << EOF
 # HaberNexus Caddy Configuration
 # Otomatik SSL ile reverse proxy
@@ -661,7 +697,7 @@ configure_caddy() {
 ${SITE_DOMAIN} {
     # Reverse proxy to Next.js
     reverse_proxy localhost:3000
-    
+    ${webhook_config}
     # Güvenlik başlıkları
     header {
         X-Content-Type-Options nosniff
@@ -698,7 +734,7 @@ EOF
 
 ${SITE_DOMAIN} {
     reverse_proxy localhost:3000
-    
+    ${webhook_config}
     header {
         X-Content-Type-Options nosniff
         X-Frame-Options DENY
@@ -733,6 +769,20 @@ configure_nginx() {
     
     print_step "Nginx site yapılandırması oluşturuluyor..."
     
+    # Auto-deploy etkinse webhook proxy ekle
+    local webhook_config=""
+    if [[ "$ENABLE_AUTO_DEPLOY" == "true" ]]; then
+        webhook_config="
+    # Webhook endpoint for auto-deploy
+    location /webhook {
+        proxy_pass http://localhost:${WEBHOOK_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    }"
+    fi
+    
     sudo tee /etc/nginx/sites-available/habernexus > /dev/null << EOF
 # HaberNexus Nginx Configuration
 
@@ -753,6 +803,7 @@ server {
         proxy_cache_bypass \$http_upgrade;
         proxy_read_timeout 86400;
     }
+    ${webhook_config}
 }
 EOF
     
@@ -795,6 +846,12 @@ setup_firewall() {
         sudo ufw allow 80/tcp >> "$LOG_FILE" 2>&1 || true
         sudo ufw allow 443/tcp >> "$LOG_FILE" 2>&1 || true
         
+        # Auto-deploy etkinse webhook portunu aç
+        if [[ "$ENABLE_AUTO_DEPLOY" == "true" ]]; then
+            sudo ufw allow ${WEBHOOK_PORT}/tcp comment "HaberNexus Webhook" >> "$LOG_FILE" 2>&1 || true
+            print_success "Webhook portu açıldı: ${WEBHOOK_PORT}"
+        fi
+        
         if ! sudo ufw status | grep -q "Status: active"; then
             print_info "UFW aktif değil. Etkinleştirmek için: sudo ufw enable"
         else
@@ -803,6 +860,109 @@ setup_firewall() {
     else
         print_info "UFW bulunamadı, güvenlik duvarı yapılandırması atlandı"
     fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# AUTO-DEPLOY KURULUM FONKSİYONLARI
+# ═══════════════════════════════════════════════════════════════════════════
+
+setup_auto_deploy() {
+    print_header "OTOMATİK GÜNCELLEME SİSTEMİ KURULUYOR"
+    
+    # Webhook secret oluştur
+    print_step "Webhook secret oluşturuluyor..."
+    WEBHOOK_SECRET=$(openssl rand -hex 32)
+    
+    # Secret'ı dosyaya kaydet
+    local secret_file="$INSTALL_DIR/.webhook-secret"
+    echo "$WEBHOOK_SECRET" > "$secret_file"
+    chmod 600 "$secret_file"
+    print_success "Webhook secret oluşturuldu"
+    
+    # Log dizinini oluştur
+    print_step "Log dizini hazırlanıyor..."
+    sudo mkdir -p "$LOG_DIR"
+    sudo chown -R $USER:$USER "$LOG_DIR"
+    print_success "Log dizini hazır: $LOG_DIR"
+    
+    # Webhook sunucusunu PM2 ile başlat
+    print_step "Webhook sunucusu başlatılıyor..."
+    
+    local webhook_script="$INSTALL_DIR/scripts/webhook-server.js"
+    
+    if [[ ! -f "$webhook_script" ]]; then
+        print_error "Webhook script bulunamadı: $webhook_script"
+        return 1
+    fi
+    
+    # Mevcut webhook process'i durdur
+    pm2 delete habernexus-webhook >> "$LOG_FILE" 2>&1 || true
+    
+    # Yeni process başlat
+    WEBHOOK_SECRET="$WEBHOOK_SECRET" \
+    WEBHOOK_PORT="$WEBHOOK_PORT" \
+    INSTALL_DIR="$INSTALL_DIR" \
+    LOG_DIR="$LOG_DIR" \
+    pm2 start "$webhook_script" \
+        --name "habernexus-webhook" \
+        --cwd "$INSTALL_DIR" \
+        --log "$LOG_DIR/webhook.log" \
+        --time >> "$LOG_FILE" 2>&1
+    
+    # PM2 kaydet
+    pm2 save >> "$LOG_FILE" 2>&1
+    
+    print_success "Webhook sunucusu başlatıldı (Port: $WEBHOOK_PORT)"
+    
+    # Webhook yönetim scripti oluştur
+    print_step "Webhook yönetim scripti oluşturuluyor..."
+    
+    sudo tee /usr/local/bin/habernexus-webhook > /dev/null << 'CMDEOF'
+#!/bin/bash
+
+case "$1" in
+    status)
+        pm2 show habernexus-webhook
+        ;;
+    logs)
+        pm2 logs habernexus-webhook --lines ${2:-50}
+        ;;
+    restart)
+        pm2 restart habernexus-webhook
+        ;;
+    stop)
+        pm2 stop habernexus-webhook
+        ;;
+    start)
+        pm2 start habernexus-webhook
+        ;;
+    test)
+        curl -s http://localhost:${WEBHOOK_PORT:-9000}/health | python3 -m json.tool 2>/dev/null || curl -s http://localhost:${WEBHOOK_PORT:-9000}/health
+        ;;
+    secret)
+        cat /var/www/habernexus/.webhook-secret 2>/dev/null || echo "Secret dosyası bulunamadı"
+        ;;
+    *)
+        echo "HaberNexus Webhook Yönetim Aracı"
+        echo ""
+        echo "Kullanım: habernexus-webhook [komut]"
+        echo ""
+        echo "Komutlar:"
+        echo "  status   - Webhook sunucusu durumu"
+        echo "  logs     - Webhook loglarını görüntüle"
+        echo "  restart  - Webhook sunucusunu yeniden başlat"
+        echo "  stop     - Webhook sunucusunu durdur"
+        echo "  start    - Webhook sunucusunu başlat"
+        echo "  test     - Health check yap"
+        echo "  secret   - Webhook secret'ı görüntüle"
+        exit 1
+        ;;
+esac
+CMDEOF
+    
+    sudo chmod +x /usr/local/bin/habernexus-webhook
+    
+    print_success "Webhook yönetim scripti oluşturuldu: habernexus-webhook"
 }
 
 create_management_scripts() {
@@ -901,6 +1061,44 @@ EOF
     echo -e "  ${WHITE}Web Sunucusu:${NC}    ${WEB_SERVER}"
     echo -e "  ${WHITE}Log Dosyası:${NC}     ${LOG_FILE}"
     echo ""
+    
+    # Auto-Deploy bilgileri
+    if [[ "$ENABLE_AUTO_DEPLOY" == "true" ]]; then
+        local server_ip=$(curl -s ifconfig.me 2>/dev/null || echo "SUNUCU_IP")
+        
+        echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${WHITE}  OTOMATİK GÜNCELLEME SİSTEMİ${NC}"
+        echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+        echo -e "  ${WHITE}Durum:${NC}           ${GREEN}Etkin${NC}"
+        echo -e "  ${WHITE}Webhook URL:${NC}     https://${SITE_DOMAIN}/webhook"
+        echo -e "  ${WHITE}Alternatif URL:${NC}  http://${server_ip}:${WEBHOOK_PORT}/webhook"
+        echo -e "  ${WHITE}Webhook Port:${NC}    ${WEBHOOK_PORT}"
+        echo ""
+        echo -e "  ${WHITE}Webhook Secret:${NC}"
+        echo -e "  ${YELLOW}${WEBHOOK_SECRET}${NC}"
+        echo ""
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${YELLOW}  ÖNEMLİ: GitHub Repository Ayarları${NC}"
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+        echo -e "  ${WHITE}1.${NC} GitHub Repository → Settings → Secrets and variables → Actions"
+        echo ""
+        echo -e "  ${WHITE}2.${NC} Aşağıdaki secret'ları ekleyin:"
+        echo ""
+        echo -e "     ${CYAN}DEPLOY_WEBHOOK_URL${NC}"
+        echo -e "     https://${SITE_DOMAIN}/webhook"
+        echo ""
+        echo -e "     ${CYAN}DEPLOY_WEBHOOK_SECRET${NC}"
+        echo -e "     ${WEBHOOK_SECRET}"
+        echo ""
+        echo -e "  ${WHITE}Webhook Yönetimi:${NC}"
+        echo -e "  ${YELLOW}habernexus-webhook status${NC}  - Durum görüntüleme"
+        echo -e "  ${YELLOW}habernexus-webhook logs${NC}    - Logları izleme"
+        echo -e "  ${YELLOW}habernexus-webhook test${NC}    - Health check"
+        echo ""
+    fi
+    
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${WHITE}  HIZLI KOMUTLAR${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -977,6 +1175,12 @@ main() {
     fi
     
     setup_firewall
+    
+    # Auto-Deploy kurulumu (isteğe bağlı)
+    if [[ "$ENABLE_AUTO_DEPLOY" == "true" ]]; then
+        setup_auto_deploy
+    fi
+    
     create_management_scripts
     
     # Özet
