@@ -2,7 +2,7 @@
 
 **Issue:** Otomatik Deployment Sistemi Ekleme  
 **Date:** 10 January 2026  
-**Status:** In Progress
+**Status:** Completed
 
 ---
 
@@ -12,11 +12,11 @@ GitHub'a yapılan her push işleminde sunucudaki uygulamanın otomatik olarak g�
 
 ### Success Criteria
 
-- [ ] GitHub Actions workflow oluşturuldu
-- [ ] Webhook listener scripti oluşturuldu
-- [ ] Auto-deploy scripti oluşturuldu
-- [ ] Kurulum dokümantasyonu oluşturuldu
-- [ ] Tüm verification komutları başarılı
+- [x] GitHub Actions workflow oluşturuldu
+- [x] Webhook listener scripti oluşturuldu
+- [x] Auto-deploy scripti oluşturuldu
+- [x] Kurulum dokümantasyonu oluşturuldu
+- [x] Tüm verification komutları başarılı
 
 ---
 
@@ -86,10 +86,10 @@ GitHub'a yapılan her push işleminde sunucudaki uygulamanın otomatik olarak g�
 
 ## 4. Documentation Impact
 
-- [ ] `wiki/Deployment.md` - Auto-deploy bölümü eklenmeli
-- [ ] `wiki/Auto-Deployment.md` - Yeni sayfa oluşturulmalı
-- [ ] `README.md` - Özellik listesine eklenmeli
-- [ ] `ROADMAP.md` - Tamamlandı olarak işaretlenmeli
+- [x] `wiki/Deployment.md` - Auto-deploy bölümü eklendi
+- [x] `wiki/Auto-Deployment.md` - Yeni sayfa oluşturuldu
+- [x] `README.md` - Özellik listesine eklendi
+- [x] `ROADMAP.md` - Tamamlandı olarak işaretlendi
 
 ---
 
