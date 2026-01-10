@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.5.0...v1.6.0) (2026-01-10)
+
+### ✨ Yeni Özellikler
+
+* **install:** integrate auto-deploy into installation script ([f1a5c80](https://github.com/sata2500/habernexus-nextjs/commit/f1a5c803180c8d0a79a4fcd04f29e73337cc8589))
+
 ## [1.6.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.5.0...v1.6.0) (2026-01-11)
 
 ### ✨ Yeni Özellikler
