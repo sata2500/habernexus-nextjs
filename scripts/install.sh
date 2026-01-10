@@ -901,8 +901,8 @@ setup_auto_deploy() {
     # Yeni process başlat
     WEBHOOK_SECRET="$WEBHOOK_SECRET" \
     WEBHOOK_PORT="$WEBHOOK_PORT" \
-    INSTALL_DIR="$INSTALL_DIR" \
-    LOG_DIR="$LOG_DIR" \
+    APP_INSTALL_DIR="$INSTALL_DIR" \
+    APP_LOG_DIR="$LOG_DIR" \
     pm2 start "$webhook_script" \
         --name "habernexus-webhook" \
         --cwd "$INSTALL_DIR" \
