@@ -1,3 +1,14 @@
+## [1.5.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.4.0...v1.5.0) (2026-01-10)
+
+### ✨ Yeni Özellikler
+
+* **deploy:** add automatic deployment system with webhook ([4b3d752](https://github.com/sata2500/habernexus-nextjs/commit/4b3d752a26139114b7091884711c9815e63385af))
+
+### 📚 Dokümantasyon
+
+* CI/CD hata dokümantasyonu ve plan arşivleme ([9b4b1d7](https://github.com/sata2500/habernexus-nextjs/commit/9b4b1d7cca5c269b61b8c8d167884a82c4fa1942))
+* move auto-deployment plan to completed ([1f63fbb](https://github.com/sata2500/habernexus-nextjs/commit/1f63fbbc3eb472b218e29d8f63b27feb6a8aadde))
+
 ## [1.4.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.3.0...v1.4.0) (2026-01-07)
 
 ### ✨ Yeni Özellikler
