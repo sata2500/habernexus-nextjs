@@ -1,6 +1,6 @@
-# Otomatik Deployment (CI/CD)
+# Otomatik Deployment (Webhook Sistemi)
 
-Bu rehber, HaberNexus projesini GitHub'a her push yapıldığında otomatik olarak güncelleyecek bir CI/CD (Sürekli Entegrasyon/Sürekli Dağıtım) sisteminin nasıl kurulacağını açıklar.
+Bu rehber, HaberNexus projesini GitHub'a her push yapıldığında otomatik olarak güncelleyecek webhook sisteminin nasıl kurulacağını açıklar.
 
 ---
 
@@ -10,7 +10,7 @@ Otomatik deployment sistemi, aşağıdaki bileşenlerden oluşur:
 
 | Bileşen | Teknoloji | Amaç |
 |---|---|---|
-| **GitHub Actions** | YAML | Kodu test eder, build eder ve webhook'u tetikler. |
+| **GitHub Webhook** | GitHub API | GitHub'dan doğrudan push olayları gönderir. |
 | **Webhook Sunucusu** | Node.js | Sunucuda çalışır, GitHub'dan gelen istekleri dinler. |
 | **Deployment Scripti** | Bash | Uygulamayı günceller, bağımlılıkları kurar ve yeniden başlatır. |
 | **PM2** | Process Manager | Webhook sunucusunun ve ana uygulamanın sürekli çalışmasını sağlar. |
@@ -18,11 +18,9 @@ Otomatik deployment sistemi, aşağıdaki bileşenlerden oluşur:
 ### İş Akışı
 
 1.  Geliştirici, `master` branch'ine kod push eder.
-2.  GitHub Actions'daki `deploy.yml` workflow'u tetiklenir.
-3.  Workflow, kodu test eder ve build alır.
-4.  Build başarılı olursa, sunucudaki webhook URL'sine bir POST isteği gönderir.
-5.  Sunucudaki `webhook-server.js` isteği alır, imzayı doğrular ve `auto-deploy.sh` scriptini çalıştırır.
-6.  `auto-deploy.sh` scripti:
+2.  GitHub, doğrudan webhook isteği gönderir (GitHub Actions'a ihtiyaç yok).
+3.  Sunucudaki `webhook-server.js` isteği alır, imzayı doğrular ve `auto-deploy.sh` scriptini çalıştırır.
+4.  `auto-deploy.sh` scripti:
     *   Uygulama kodunu `git pull` ile günceller.
     *   `npm install` ile bağımlılıkları kurar.
     *   `prisma db push` ile veritabanını günceller.
@@ -33,46 +31,60 @@ Otomatik deployment sistemi, aşağıdaki bileşenlerden oluşur:
 
 ## 2. Kurulum
 
-Otomatik deployment sistemini kurmak için sunucunuzda aşağıdaki komutu çalıştırmanız yeterlidir.
+### Yeni VM'e Kurulum
 
-> ⚠️ **Önemli:** Bu komutu çalıştırmadan önce [ana kurulumu](https://github.com/sata2500/habernexus-nextjs/wiki/Deployment) tamamladığınızdan emin olun.
-
-### Tek Satırlık Kurulum
+Yeni bir sunucuya kurulum yapmak için aşağıdaki komutu çalıştırın:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/scripts/setup-auto-deploy.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/scripts/install.sh | bash
 ```
 
-Bu script otomatik olarak:
+Kurulum sırasında:
 
-- ✅ Gerekli ön koşulları kontrol eder.
-- ✅ Güvenli bir webhook secret anahtarı oluşturur.
-- ✅ Webhook sunucusunu PM2 ile başlatır.
-- ✅ Güvenlik duvarında (UFW) webhook portuna izin verir.
-- ✅ Gerekli GitHub ayarları için size bilgi verir.
+1.  **Otomatik deployment'ı etkinleştir:** `yes` seçeneğini seçin.
+2.  **Webhook secret'ı not edin:** Kurulum sonunda size verilecek webhook secret'ı kaydedin.
 
-### Kurulum Sonrası
+### Webhook'u GitHub'da Yapılandır
 
-Script tamamlandığında, size **Webhook URL** ve **Webhook Secret** bilgilerini verecektir. Bu bilgileri GitHub repository ayarlarınıza eklemeniz gerekmektedir.
+Kurulum tamamlandıktan sonra, GitHub repository'nize webhook ekleyin:
 
 1.  **GitHub Repository Ayarlarına Gidin:**
-    *   Projenizin GitHub sayfasına gidin: `https://github.com/kullanici-adiniz/repo-adiniz`
+    *   Projenizin GitHub sayfasına gidin.
     *   Sağ üstteki **Settings** sekmesine tıklayın.
 
-2.  **Actions Secrets Menüsünü Bulun:**
-    *   Sol menüdeki **Security** başlığı altında, **Secrets and variables** seçeneğine tıklayın.
-    *   Açılan alt menüden **Actions** seçeneğine tıklayın.
+2.  **Webhooks Menüsünü Bulun:**
+    *   Sol menüdeki **Code and automation** başlığı altında, **Webhooks** seçeneğine tıklayın.
 
-3.  **Yeni Secret'lar Ekleyin:**
-    *   **New repository secret** butonuna tıklayarak aşağıdaki iki secret'ı oluşturun:
+3.  **Yeni Webhook Ekleyin:**
+    *   **Add webhook** butonuna tıklayın.
 
-    *   **`DEPLOY_WEBHOOK_URL`**
-        *   Değer: Kurulum scriptinin size verdiği `Webhook URL`.
+4.  **Webhook Bilgilerini Girin:**
 
-    *   **`DEPLOY_WEBHOOK_SECRET`**
-        *   Değer: Kurulum scriptinin size verdiği `Webhook Secret`.
+    | Alan | Değer |
+    |------|-------|
+    | **Payload URL** | `http://<SUNUCU_IP>:9000/webhook` veya `https://<DOMAIN>:9000/webhook` |
+    | **Content type** | `application/json` |
+    | **Secret** | Kurulum sırasında size verilen webhook secret |
+    | **Events** | `Just the push event` seçin |
+    | **Active** | Checkbox'ı işaretleyin |
 
-Bu adımları tamamladıktan sonra, `master` branch'ine yapılan her push, uygulamanızın otomatik olarak güncellenmesini tetikleyecektir.
+5.  **Add webhook** butonuna tıklayarak kaydedin.
+
+### Mevcut Sistemde Güncelleme
+
+Eğer eski sistemi kullanıyorsanız, yeni webhook sunucusunu kurmak için:
+
+```bash
+# Yeni webhook sunucusu dosyasını indir
+curl -fsSL https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/scripts/webhook-server.js \
+  -o /var/www/habernexus/scripts/webhook-server.js
+
+# PM2 process'ini yeniden başlat
+pm2 restart habernexus-webhook --update-env
+
+# Durumu kontrol et
+pm2 logs habernexus-webhook --lines 10
+```
 
 ---
 
@@ -107,12 +119,80 @@ Log dosyaları `/var/log/habernexus/` dizininde saklanır:
 
 ---
 
-## 4. Sorun Giderme
+## 4. Test Etme
 
-- **Deployment başlamıyor:**
-    - GitHub Actions loglarını kontrol edin. `Deploy` adımında hata var mı?
-    - `habernexus-webhook logs` komutu ile webhook sunucusu loglarını kontrol edin. GitHub'dan istek geliyor mu?
-    - GitHub repository secret'larının doğru ayarlandığından emin olun.
+Webhook'un doğru çalışıp çalışmadığını test etmek için:
 
-- **Deployment başarısız oluyor:**
-    - `/var/log/habernexus/` dizinindeki en son `auto-deploy-*.log` dosyasını inceleyin. Hatanın hangi adımda olduğunu tespit edebilirsiniz.
+```bash
+# Webhook sunucusunun sağlık durumunu kontrol et
+curl http://localhost:9000/health | jq
+
+# Webhook loglarını izle
+pm2 logs habernexus-webhook --lines 20
+
+# Test commit yaparak deployment'ı tetikle
+cd /var/www/habernexus
+echo "# Test - $(date)" > TEST.md
+git add TEST.md
+git commit -m "test: deployment test"
+git push origin master
+
+# Logları kontrol et (5-10 saniye bekle)
+pm2 logs habernexus-webhook --lines 15
+```
+
+Başarılı deployment'da şu mesajları göreceksiniz:
+
+```
+[INFO] Webhook isteği alındı
+[INFO] Deployment başlatılıyor
+[INFO] Deployment başarılı
+```
+
+---
+
+## 5. Sorun Giderme
+
+### Webhook isteği gelmiyor
+
+```bash
+# Webhook sunucusunun çalışıp çalışmadığını kontrol et
+pm2 list
+
+# Webhook sunucusunun durumunu kontrol et
+curl http://localhost:9000/health
+
+# Logları kontrol et
+pm2 logs habernexus-webhook --lines 50
+```
+
+### "Geçersiz imza" hatası
+
+Bu, GitHub'dan gelen webhook secret'ının sunucudaki secret'tan farklı olduğu anlamına gelir:
+
+```bash
+# Sunucudaki webhook secret'ını öğren
+cat /proc/$(pgrep -f "webhook-server.js")/environ | tr '\0' '\n' | grep WEBHOOK_SECRET
+
+# GitHub'daki webhook'u düzenle ve secret'ı güncelleyin
+```
+
+### Deployment başarısız oluyor
+
+```bash
+# En son deployment logunu kontrol et
+ls -lt /var/log/habernexus/auto-deploy-*.log | head -1 | awk '{print $NF}' | xargs cat
+
+# Uygulama loglarını kontrol et
+pm2 logs habernexus --lines 50
+```
+
+---
+
+## 6. Güvenlik Notları
+
+- Webhook secret'ını güvenli bir yerde saklayın.
+- Webhook URL'sini sadece GitHub'da kullanın.
+- Sunucudaki firewall ayarlarını kontrol edin (port 9000 açık olmalı).
+- Webhook loglarında hassas bilgileri kontrol edin.
+

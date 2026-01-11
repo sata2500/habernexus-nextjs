@@ -39,7 +39,7 @@ Kurulum sırasında "Otomatik güncellemeyi etkinleştirmek istiyor musunuz?" so
 3. Firewall kuralları otomatik güncellenir
 4. Kurulum sonunda size **detaylı talimatlar** verilir. Bu talimatlar, webhook URL ve secret'ını GitHub repository'nize nasıl ekleyeceğinizi adım adım gösterir.
 
-Detaylı bilgi için: **[Otomatik Deployment (CI/CD)](Auto-Deployment)**
+Detaylı bilgi için: **[Otomatik Deployment (Webhook Sistemi)](Auto-Deployment)**
 
 ---
 
