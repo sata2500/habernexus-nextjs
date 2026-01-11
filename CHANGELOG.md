@@ -1,3 +1,13 @@
+## [1.7.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.7.0...v1.7.1) (2026-01-11)
+
+### 🐛 Hata Düzeltmeleri
+
+* restore working install.sh version ([ac08a04](https://github.com/sata2500/habernexus-nextjs/commit/ac08a042b056a3dcd65a2b67d340f74c99e580c1))
+
+### 🔧 Bakım
+
+* remove old GitHub Actions deploy workflow (migrated to direct webhook) ([a435c2d](https://github.com/sata2500/habernexus-nextjs/commit/a435c2de5129d60f0f1ff29c2c7ac8eaa35fd1a4))
+
 ## [1.7.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.6.2...v1.7.0) (2026-01-11)
 
 ### ✨ Yeni Özellikler
