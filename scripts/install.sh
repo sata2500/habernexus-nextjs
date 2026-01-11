@@ -869,6 +869,10 @@ setup_firewall() {
 setup_auto_deploy() {
     print_header "OTOMATİK GÜNCELLEME SİSTEMİ KURULUYOR"
     
+    print_info "Yeni Sistem: GitHub Repository Webhook (v2.0)"
+    print_info "Bu sistem, GitHub'ın doğrudan webhook gönderme mekanizmasını kullanır."
+    print_info "Daha basit, daha güvenli ve daha güvenilir bir çözümdür."
+    
     # Webhook secret oluştur
     print_step "Webhook secret oluşturuluyor..."
     WEBHOOK_SECRET=$(openssl rand -hex 32)
@@ -898,16 +902,17 @@ setup_auto_deploy() {
     # Mevcut webhook process'i durdur
     pm2 delete habernexus-webhook >> "$LOG_FILE" 2>&1 || true
     
-    # Yeni process başlat
+    # Yeni process başlat (ortam değişkenleri ile)
     WEBHOOK_SECRET="$WEBHOOK_SECRET" \
     WEBHOOK_PORT="$WEBHOOK_PORT" \
-    APP_INSTALL_DIR="$INSTALL_DIR" \
-    APP_LOG_DIR="$LOG_DIR" \
+    INSTALL_DIR="$INSTALL_DIR" \
+    LOG_DIR="$LOG_DIR" \
     pm2 start "$webhook_script" \
         --name "habernexus-webhook" \
         --cwd "$INSTALL_DIR" \
         --log "$LOG_DIR/webhook.log" \
-        --time >> "$LOG_FILE" 2>&1
+        --time \
+        --update-env >> "$LOG_FILE" 2>&1
     
     # PM2 kaydet
     pm2 save >> "$LOG_FILE" 2>&1
@@ -1079,31 +1084,33 @@ EOF
         echo -e "  ${YELLOW}${WEBHOOK_SECRET}${NC}"
         echo ""
         echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-        echo -e "${YELLOW}  ÖNEMLİ: GitHub Repository Ayarları${NC}"
+        echo -e "${YELLOW}  ÖNEMLİ: GitHub Repository Webhook Kurulumu${NC}"
         echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
         echo ""
         echo -e "  Otomatik güncellemenin çalışması için, sunucunuzun webhook bilgilerini"
         echo -e "  GitHub repository'nize güvenli bir şekilde eklemeniz gerekmektedir."
         echo ""
-        echo -e "  ${WHITE}Adım 1: GitHub Repository Ayarlarına Gidin${NC}"
+        echo -e "  ${WHITE}Adım 1: GitHub Repository Webhook Kurulumuna Gidin${NC}"
         echo -e "  - Projenizin GitHub sayfasına gidin: ${CYAN}https://github.com/${GITHUB_USER:-sata2500}/${GITHUB_REPONAME:-habernexus-nextjs}${NC}"
         echo -e "  - Sağ üstteki ${BOLD}Settings${NC} sekmesine tıklayın."
         echo ""
-        echo -e "  ${WHITE}Adım 2: Actions Secrets Menüsünü Bulun${NC}"
+        echo -e "  ${WHITE}Adım 2: Webhooks Menüsünü Açın${NC}"
         echo -e "  - Sol menüdeki ${BOLD}Security${NC} başlığı altında,"
         echo -e "  - ${BOLD}Secrets and variables${NC} seçeneğine tıklayın."
         echo -e "  - Açılan alt menüden ${BOLD}Actions${NC} seçeneğine tıklayın."
         echo ""
-        echo -e "  ${WHITE}Adım 3: Yeni Secret'lar Ekleyin${NC}"
-        echo -e "  - ${BOLD}New repository secret${NC} butonuna tıklayarak aşağıdaki iki secret'ı oluşturun:"
+        echo -e "  ${WHITE}Adım 3: Yeni Webhook Ekleyin${NC}"
+        echo -e "  - ${BOLD}Add webhook${NC} butonuna tıklayın."
         echo ""
-        echo -e "  ${BOLD}Secret 1:${NC}"
-        echo -e "     - ${WHITE}Name:${NC}   ${CYAN}DEPLOY_WEBHOOK_URL${NC}"
-        echo -e "     - ${WHITE}Value:${NC}  ${YELLOW}https://${SITE_DOMAIN}/webhook${NC}"
+        echo -e "  ${WHITE}Adım 4: Webhook Bilgilerini Doldurun${NC}"
+        echo -e "  - ${BOLD}Payload URL:${NC}  http://${server_ip}:${WEBHOOK_PORT}/webhook"
+        echo -e "  - ${BOLD}Content type:${NC} application/json"
+        echo -e "  - ${BOLD}Secret:${NC}       ${YELLOW}${WEBHOOK_SECRET}${NC}"
+        echo -e "  - ${BOLD}Events:${NC}       Push events (seçili olmalı)"
+        echo -e "  - ${BOLD}Active:${NC}       İşaretli olmalı"
         echo ""
-        echo -e "  ${BOLD}Secret 2:${NC}"
-        echo -e "     - ${WHITE}Name:${NC}   ${CYAN}DEPLOY_WEBHOOK_SECRET${NC}"
-        echo -e "     - ${WHITE}Value:${NC}  ${YELLOW}${WEBHOOK_SECRET}${NC}"
+        echo -e "  ${WHITE}Adım 5: Webhook'u Ekleyin${NC}"
+        echo -e "  - ${BOLD}Add webhook${NC} butonuna tıklayın.
 
         echo ""
         echo -e "  ${WHITE}Webhook Yönetimi:${NC}"

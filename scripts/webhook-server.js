@@ -7,6 +7,11 @@
  * Bu script, GitHub'dan gelen webhook isteklerini dinler ve
  * otomatik deployment işlemini tetikler.
  * 
+ * Yeni Sistem (v2.0):
+ * - GitHub Repository Webhook'unu doğrudan kullanır
+ * - GitHub'ın standart X-Hub-Signature-256 mekanizmasını kullanır
+ * - Daha basit, daha güvenli ve daha güvenilir
+ * 
  * Kullanım:
  *   node webhook-server.js
  *   veya PM2 ile: pm2 start webhook-server.js --name habernexus-webhook
@@ -72,7 +77,12 @@ function log(level, message, data = null) {
 }
 
 /**
- * Webhook imzasını doğrula
+ * Webhook imzasını doğrula (GitHub X-Hub-Signature-256)
+ * 
+ * GitHub, her webhook isteğinde payload'u ve secret'ı kullanarak
+ * HMAC-SHA256 hash'i oluşturur ve X-Hub-Signature-256 header'ında gönderir.
+ * 
+ * Format: X-Hub-Signature-256: sha256=<hex_digest>
  */
 function verifySignature(payload, signature) {
     if (!CONFIG.secret) {
@@ -81,16 +91,19 @@ function verifySignature(payload, signature) {
     }
     
     if (!signature) {
-        log('error', 'İmza başlığı eksik');
+        log('error', 'İmza başlığı eksik (X-Hub-Signature-256)');
         return false;
     }
     
+    // GitHub'ın kullandığı format: "sha256=<hex_digest>"
+    // Biz de aynı formatta hesaplıyoruz
     const expectedSignature = 'sha256=' + crypto
         .createHmac('sha256', CONFIG.secret)
         .update(payload)
         .digest('hex');
     
     try {
+        // Timing-safe comparison (timing attack'lara karşı koruma)
         return crypto.timingSafeEqual(
             Buffer.from(signature),
             Buffer.from(expectedSignature)
@@ -140,10 +153,10 @@ function runDeploy(payload) {
             cwd: CONFIG.installDir,
             env: {
                 ...process.env,
-                DEPLOY_SHA: payload.sha || '',
+                DEPLOY_SHA: payload.after || '',
                 DEPLOY_REF: payload.ref || '',
-                DEPLOY_PUSHER: payload.pusher || '',
-                DEPLOY_REPOSITORY: payload.repository || '',
+                DEPLOY_PUSHER: payload.pusher?.name || 'unknown',
+                DEPLOY_REPOSITORY: payload.repository?.full_name || '',
             },
         });
         
@@ -199,6 +212,7 @@ const server = http.createServer(async (req, res) => {
         return sendResponse(res, 200, {
             status: 'ok',
             service: 'habernexus-webhook',
+            version: '2.0.0',
             uptime: process.uptime(),
             isDeploying: state.isDeploying,
             deployCount: state.deployCount,
@@ -215,12 +229,13 @@ const server = http.createServer(async (req, res) => {
                 installDir: CONFIG.installDir,
                 allowedBranches: CONFIG.allowedBranches,
                 secretConfigured: !!CONFIG.secret,
+                webhookSystem: 'GitHub Repository Webhook (v2.0)',
             },
         });
     }
     
-    // Webhook endpoint
-    if (req.method === 'POST' && (req.url === '/webhook' || req.url === '/deploy')) {
+    // Webhook endpoint (GitHub'dan gelen istekler)
+    if (req.method === 'POST' && req.url === '/webhook') {
         try {
             const body = await readBody(req);
             const signature = req.headers['x-hub-signature-256'];
@@ -228,9 +243,9 @@ const server = http.createServer(async (req, res) => {
             
             log('info', 'Webhook isteği alındı', { event, url: req.url });
             
-            // İmza doğrulama
+            // İmza doğrulama (GitHub standart mekanizması)
             if (!verifySignature(body, signature)) {
-                log('warn', 'Geçersiz imza');
+                log('warn', 'Geçersiz imza - istek reddedildi');
                 return sendResponse(res, 401, { error: 'Invalid signature' });
             }
             
@@ -243,14 +258,14 @@ const server = http.createServer(async (req, res) => {
                 return sendResponse(res, 400, { error: 'Invalid JSON' });
             }
             
-            // Ping event
+            // Ping event (GitHub webhook test için)
             if (event === 'ping') {
-                log('info', 'Ping event alındı');
+                log('info', 'Ping event alındı - webhook bağlantısı başarılı');
                 return sendResponse(res, 200, { message: 'pong' });
             }
             
             // Push event kontrolü
-            if (event !== 'push' && payload.action !== 'deploy') {
+            if (event !== 'push') {
                 log('info', 'Event türü desteklenmiyor', { event });
                 return sendResponse(res, 200, { message: 'Event ignored', event });
             }
@@ -259,12 +274,12 @@ const server = http.createServer(async (req, res) => {
             const ref = payload.ref || '';
             const branch = ref.replace('refs/heads/', '');
             
-            if (!CONFIG.allowedBranches.includes(branch) && payload.action !== 'deploy') {
+            if (!CONFIG.allowedBranches.includes(branch)) {
                 log('info', 'Branch deployment için uygun değil', { branch });
                 return sendResponse(res, 200, { message: 'Branch ignored', branch });
             }
             
-            // Cooldown kontrolü
+            // Cooldown kontrolü (çok sık deployment'ları engelle)
             const now = Date.now();
             if (now - state.lastDeployTime < CONFIG.cooldownPeriod) {
                 const remaining = Math.ceil((CONFIG.cooldownPeriod - (now - state.lastDeployTime)) / 1000);
@@ -292,8 +307,9 @@ const server = http.createServer(async (req, res) => {
             // Hemen yanıt ver, deployment arka planda devam etsin
             sendResponse(res, 202, { 
                 message: 'Deployment started',
-                sha: payload.sha,
+                sha: payload.after,
                 branch,
+                pusher: payload.pusher?.name,
             });
             
             // Deployment'ı arka planda çalıştır
@@ -328,12 +344,14 @@ server.listen(CONFIG.port, '0.0.0.0', () => {
         port: CONFIG.port,
         installDir: CONFIG.installDir,
         secretConfigured: !!CONFIG.secret,
+        webhookSystem: 'GitHub Repository Webhook v2.0',
     });
     
     console.log(`
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                                                                           ║
-║   HaberNexus Webhook Server                                               ║
+║   HaberNexus Webhook Server v2.0                                          ║
+║   (GitHub Repository Webhook System)                                      ║
 ║                                                                           ║
 ║   Port: ${CONFIG.port}                                                          ║
 ║   Install Dir: ${CONFIG.installDir.padEnd(40)}        ║
@@ -343,7 +361,11 @@ server.listen(CONFIG.port, '0.0.0.0', () => {
 ║   - GET  /health  - Health check                                          ║
 ║   - GET  /status  - Detailed status                                       ║
 ║   - POST /webhook - GitHub webhook endpoint                               ║
-║   - POST /deploy  - Manual deploy trigger                                 ║
+║                                                                           ║
+║   Webhook Configuration:                                                  ║
+║   - URL: http://<your-server-ip>:${CONFIG.port}/webhook                           ║
+║   - Events: Push events (push)                                            ║
+║   - Secret: Set in GitHub repository settings                             ║
 ║                                                                           ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
     `);
