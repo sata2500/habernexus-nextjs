@@ -1,3 +1,14 @@
+## [1.7.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.6.2...v1.7.0) (2026-01-11)
+
+### ✨ Yeni Özellikler
+
+* **admin:** add complete admin panel management pages ([b5d50f3](https://github.com/sata2500/habernexus-nextjs/commit/b5d50f339e14afc45268cc081dbb6448fc2bbb1d))
+
+### 📚 Dokümantasyon
+
+* add development report for 11 Jan 2026 ([36e5559](https://github.com/sata2500/habernexus-nextjs/commit/36e55592db45ff0a3c5a5bc42354427360dae689))
+* lint hatası çözümünü dokümante et ([7e9d986](https://github.com/sata2500/habernexus-nextjs/commit/7e9d986233f79751f43545240b56815145386f30))
+
 ## [1.6.2](https://github.com/sata2500/habernexus-nextjs/compare/v1.6.1...v1.6.2) (2026-01-11)
 
 ### 🐛 Hata Düzeltmeleri
