@@ -885,6 +885,13 @@ setup_auto_deploy() {
     sudo chown -R $USER:$USER "$LOG_DIR"
     print_success "Log dizini hazır: $LOG_DIR"
     
+    # Backup dizinini oluştur
+    print_step "Backup dizini hazırlanıyor..."
+    local backup_dir="$INSTALL_DIR/../habernexus-backups"
+    sudo mkdir -p "$backup_dir"
+    sudo chown -R $USER:$USER "$backup_dir"
+    print_success "Backup dizini hazır: $backup_dir"
+    
     # Webhook sunucusunu PM2 ile başlat
     print_step "Webhook sunucusu başlatılıyor..."
     
