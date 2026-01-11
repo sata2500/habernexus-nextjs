@@ -24,6 +24,13 @@ enum CommentStatus {
   REJECTED
 }
 
+// Sentiment enum for article sentiment analysis
+enum Sentiment {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+}
+
 // User model - All users in the system (Auth.js compatible)
 model User {
   id            String          @id @default(cuid())
@@ -46,6 +53,7 @@ model User {
   votes         ArticleVote[]   // User's votes on articles
   comments      Comment[]       // User's comments
   commentLikes  CommentLike[]   // User's likes on comments
+  preferences   UserPreferences? // User's personalization preferences
 }
 
 // Auth.js Account model - OAuth accounts linked to users
@@ -90,6 +98,19 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// User preferences model - For personalized homepage
+model UserPreferences {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  favoriteCategories String  // Comma-separated category slugs (e.g., "teknoloji,ekonomi,spor")
+  excludedCategories String? // Categories to exclude from feed
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 // Author profile - Extended information for AUTHOR role users
 model AuthorProfile {
   id        String   @id @default(cuid())
@@ -105,18 +126,20 @@ model AuthorProfile {
 
 // Article model - Published content
 model Article {
-  id          String   @id @default(cuid())
-  title       String   // AI-generated title
-  slug        String   @unique
-  content     String   // AI-generated content (full article)
-  excerpt     String?  // Short summary
-  imageUrl    String   // AI-generated or downloaded image
-  videoUrl    String?  // Original news video (if available)
-  category    String   // AI-determined category
-  viewCount   Int      @default(0)
-  publishedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String    @id @default(cuid())
+  title       String    // AI-generated title
+  slug        String    @unique
+  content     String    // AI-generated content (full article)
+  excerpt     String?   // Short summary
+  imageUrl    String    // AI-generated or downloaded image
+  videoUrl    String?   // Original news video (if available)
+  category    String    // AI-determined category
+  viewCount   Int       @default(0)
+  sentiment   Sentiment? // AI-analyzed sentiment (POSITIVE, NEGATIVE, NEUTRAL)
+  sentimentScore Float?  // Sentiment confidence score (0-1)
+  publishedAt DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   
   // Relations
   author      User          @relation(fields: [authorId], references: [id])
@@ -128,6 +151,7 @@ model Article {
   @@index([category])
   @@index([publishedAt])
   @@index([viewCount])
+  @@index([sentiment])
 }
 
 // RSS Feed source model

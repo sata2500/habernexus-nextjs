@@ -6,6 +6,7 @@ import { formatDate, getReadingTime } from '@/lib/utils'
 import ArticleCard from '@/components/articles/ArticleCard'
 import ArticleActions from '@/components/articles/ArticleActions'
 import AISummary from '@/components/articles/AISummary'
+import SentimentBadge from '@/components/articles/SentimentBadge'
 import CommentSection from '@/components/comments/CommentSection'
 import { prisma } from '@/lib/prisma'
 
@@ -83,13 +84,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Article Header */}
         <header className="max-w-4xl mx-auto mb-8">
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-4">
             <Link
               href={`/kategori/${article.category.toLowerCase()}`}
               className="px-3 py-1 text-sm font-semibold text-blue-600 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors"
             >
               {article.category}
             </Link>
+            <SentimentBadge
+              sentiment={article.sentiment}
+              score={article.sentimentScore}
+              articleId={article.id}
+              showAnalyzeButton={true}
+              size="sm"
+            />
             <span className="text-gray-400">•</span>
             <span className="flex items-center text-sm text-gray-500">
               <Clock className="w-4 h-4 mr-1" />

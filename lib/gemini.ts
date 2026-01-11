@@ -14,6 +14,15 @@ const genAI = new GoogleGenAI({
 const MODEL_NAME = 'gemini-2.0-flash'
 
 /**
+ * Sentiment analysis result type
+ */
+export interface SentimentResult {
+  sentiment: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL'
+  score: number // 0-1 confidence score
+  summary: string // Brief explanation
+}
+
+/**
  * Generate a news article from RSS content
  */
 export async function generateArticle(
@@ -119,6 +128,115 @@ Sadece özeti yaz, başka bir şey ekleme.`
     console.error('Gemini summary error:', error)
     return content.substring(0, 160)
   }
+}
+
+/**
+ * Analyze sentiment of an article using AI
+ */
+export async function analyzeSentiment(
+  title: string,
+  content: string
+): Promise<SentimentResult> {
+  const prompt = `Sen bir duygu analizi uzmanısın. Aşağıdaki haber başlığı ve içeriğini analiz ederek haberin genel duygusal tonunu belirle.
+
+BAŞLIK: ${title}
+
+İÇERİK: ${content.substring(0, 1500)}
+
+GÖREV:
+1. Haberin genel duygusal tonunu belirle (POSITIVE, NEGATIVE veya NEUTRAL)
+2. Güven skorunu belirle (0-1 arası, 1 en yüksek güven)
+3. Kısa bir açıklama yaz (maksimum 100 karakter)
+
+KRİTERLER:
+- POSITIVE: İyi haberler, başarılar, olumlu gelişmeler, umut verici konular
+- NEGATIVE: Kötü haberler, sorunlar, olumsuz gelişmeler, endişe verici konular
+- NEUTRAL: Tarafsız haberler, bilgilendirici içerik, olgu aktarımı
+
+ÇIKTI FORMATI (JSON):
+{
+  "sentiment": "POSITIVE" | "NEGATIVE" | "NEUTRAL",
+  "score": 0.85,
+  "summary": "Kısa açıklama"
+}`
+
+  try {
+    const response = await genAI.models.generateContent({
+      model: MODEL_NAME,
+      contents: prompt,
+      config: {
+        temperature: 0.3,
+        maxOutputTokens: 256,
+      },
+    })
+
+    const text = response.text || ''
+    
+    // Parse JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error('Invalid response format from Gemini')
+    }
+
+    const result = JSON.parse(jsonMatch[0])
+    
+    // Validate sentiment value
+    const validSentiments = ['POSITIVE', 'NEGATIVE', 'NEUTRAL']
+    const sentiment = validSentiments.includes(result.sentiment) 
+      ? result.sentiment 
+      : 'NEUTRAL'
+    
+    // Validate score
+    const score = typeof result.score === 'number' 
+      ? Math.min(1, Math.max(0, result.score))
+      : 0.5
+
+    return {
+      sentiment: sentiment as 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL',
+      score,
+      summary: result.summary || 'Duygu analizi tamamlandı',
+    }
+  } catch (error) {
+    console.error('Gemini sentiment analysis error:', error)
+    return {
+      sentiment: 'NEUTRAL',
+      score: 0.5,
+      summary: 'Analiz yapılamadı',
+    }
+  }
+}
+
+/**
+ * Batch analyze sentiment for multiple articles
+ */
+export async function batchAnalyzeSentiment(
+  articles: Array<{ id: string; title: string; content: string }>
+): Promise<Map<string, SentimentResult>> {
+  const results = new Map<string, SentimentResult>()
+  
+  // Process in batches of 5 to avoid rate limits
+  const batchSize = 5
+  for (let i = 0; i < articles.length; i += batchSize) {
+    const batch = articles.slice(i, i + batchSize)
+    
+    const batchResults = await Promise.all(
+      batch.map(async (article) => {
+        const result = await analyzeSentiment(article.title, article.content)
+        return { id: article.id, result }
+      })
+    )
+    
+    batchResults.forEach(({ id, result }) => {
+      results.set(id, result)
+    })
+    
+    // Small delay between batches to avoid rate limits
+    if (i + batchSize < articles.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+  }
+  
+  return results
 }
 
 /**

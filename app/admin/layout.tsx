@@ -11,7 +11,8 @@ import {
   BarChart3,
   MessageCircle,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from 'lucide-react'
 
 const sidebarItems = [
@@ -20,6 +21,7 @@ const sidebarItems = [
   { name: 'RSS Kaynakları', href: '/admin/rss', icon: Rss },
   { name: 'Yorumlar', href: '/admin/yorumlar', icon: MessageCircle },
   { name: 'Kullanıcılar', href: '/admin/kullanicilar', icon: Users },
+  { name: 'Duygu Analizi', href: '/admin/duygu-analizi', icon: Sparkles },
   { name: 'Analitik', href: '/admin/analitik', icon: BarChart3 },
   { name: 'Ayarlar', href: '/admin/ayarlar', icon: Settings },
 ]

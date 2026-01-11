@@ -87,7 +87,6 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 ---
 
 ### v1.4: Topluluk ve İletişim ✅
-
 **Durum:** Tamamlandı  
 **Amaç:** Kullanıcılarla etkileşimi artırmak ve iletişim kanallarını açmak.
 
@@ -119,8 +118,8 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 |---|---|---|
 | ✅ | PWA (Progressive Web App) desteği | Manifest, Service Worker, offline sayfa, kurulum prompt'u. |
 | ✅ | Yorum sistemi (Moderasyonlu) | Kullanıcı yorumları, yanıtlar, beğeniler, admin moderasyonu. |
-| 🔲 | Kişiselleştirilebilir ana sayfa | Kullanıcıların ilgi alanlarına göre makaleler. |
-| 🔲 | Duygu analizi (AI ile) | Makalelerin genel duygu tonunu belirleme. |
+| ✅ | Kişiselleştirilebilir ana sayfa | Kullanıcı tercih sistemi, favori kategoriler, kişiselleştirilmiş haber akışı. |
+| ✅ | Duygu analizi (AI ile) | Gemini API ile makale duygu analizi, admin toplu analiz paneli, sentiment badge'leri. |
 
 ---
 
@@ -153,14 +152,13 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 - **Tamamlanan:** 3/3 özellik (%100) ✅
 
 ### v2.0 Genişleme İlerlemesi
-- **Tamamlanan:** 2/4 özellik (%50)
-- **Kalan:** Kişiselleştirme, Duygu analizi
+- **Tamamlanan:** 4/4 özellik (%100) ✅
 
 ---
 
 ## 🎯 v1-v2 Tam İşlevsellik Hedefi
 
-**Durum:** Büyük ölçüde tamamlandı ✅
+**Durum:** Tamamlandı ✅
 
 ### Zorunlu Kriterler (Must Have)
 - [x] Tüm sayfalar gerçek veritabanı verisi kullanmalı (demo veri olmamalı)
@@ -171,11 +169,12 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 - [x] Yorum sistemi (moderasyonlu)
 
 ### İsteğe Bağlı Kriterler (Nice to Have)
+
 - [x] Newsletter sistemi aktif
 - [x] AI özetleme UI entegrasyonu
 - [x] Detaylı analitikler
-- [ ] Kişiselleştirme
-- [ ] Duygu analizi
+- [x] Kişiselleştirme
+- [x] Duygu analizi
 
 ---
 
