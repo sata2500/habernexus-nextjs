@@ -5,6 +5,7 @@ import { Clock, Eye, Calendar, ArrowLeft } from 'lucide-react'
 import { formatDate, getReadingTime } from '@/lib/utils'
 import ArticleCard from '@/components/articles/ArticleCard'
 import ArticleActions from '@/components/articles/ArticleActions'
+import AISummary from '@/components/articles/AISummary'
 import { prisma } from '@/lib/prisma'
 
 // Makaleyi veritabanından çek
@@ -159,6 +160,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               priority
             />
           </div>
+        </div>
+
+        {/* AI Summary Section */}
+        <div className="max-w-3xl mx-auto mb-8">
+          <AISummary articleId={article.id} />
         </div>
 
         {/* Article Content */}
