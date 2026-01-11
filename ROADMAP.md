@@ -82,17 +82,7 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 | ✅ | Popüler makaleler bölümü | Ana sayfada "En Çok Okunanlar" bölümü eklendi. |
 | ✅ | Basit arama (Başlık ve içerik) | Header'da arama butonu, `/arama` sayfası, API endpoint. |
 | ✅ | Otomatik SEO iyileştirmeleri | Meta etiketleri, OpenGraph ve Twitter Card desteği eklendi. |
-| ⏳ | AI Destekli Özetleme UI | Gemini API entegrasyonu tamamlandı, UI entegrasyonu bekliyor. |
-
----
-
-### v1.5: Geliştirici Araçları ve Otomasyon ✅
-
-**Durum:** Tamamlandı
-
-- [✅] **Otomatik Deployment (CI/CD):** GitHub Actions ile sunucuya otomatik deployment sistemi. (10 Ocak 2026)
-- [✅] **Auto-Deploy Kurulum Entegrasyonu:** Otomatik güncelleme sistemi kurulum script'ine isteğe bağlı olarak entegre edildi. (11 Ocak 2026)
-- [✅] **Webhook Dokümantasyonu İyileştirme:** GitHub Actions Secrets yapılandırması için detaylı adım adım talimatlar eklendi. (11 Ocak 2026)
+| ✅ | AI Destekli Özetleme UI | Gemini API ile makale özetleme, anahtar noktalar çıkarma. |
 
 ---
 
@@ -109,17 +99,27 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 
 ---
 
-### v2.0: Genişleme ve Kişiselleştirme
+### v1.5: Geliştirici Araçları ve Otomasyon ✅
 
-**Durum:** Planlandı  
-**Tahmini Süre:** 1-2 hafta  
+**Durum:** Tamamlandı
+
+- [✅] **Otomatik Deployment (CI/CD):** GitHub Actions ile sunucuya otomatik deployment sistemi. (10 Ocak 2026)
+- [✅] **Auto-Deploy Kurulum Entegrasyonu:** Otomatik güncelleme sistemi kurulum script'ine isteğe bağlı olarak entegre edildi. (11 Ocak 2026)
+- [✅] **Webhook Dokümantasyonu İyileştirme:** GitHub Actions Secrets yapılandırması için detaylı adım adım talimatlar eklendi. (11 Ocak 2026)
+
+---
+
+### v2.0: Genişleme ve Kişiselleştirme ✅
+
+**Durum:** Tamamlandı  
+**Tamamlanma Tarihi:** 11 Ocak 2026  
 **Amaç:** Platformu bir sonraki seviyeye taşıyarak daha akıllı ve kişiselleştirilmiş bir deneyim sunmak.
 
 | Durum | Özellik | Geliştirici Notu |
 |---|---|---|
+| ✅ | PWA (Progressive Web App) desteği | Manifest, Service Worker, offline sayfa, kurulum prompt'u. |
+| ✅ | Yorum sistemi (Moderasyonlu) | Kullanıcı yorumları, yanıtlar, beğeniler, admin moderasyonu. |
 | 🔲 | Kişiselleştirilebilir ana sayfa | Kullanıcıların ilgi alanlarına göre makaleler. |
-| 🔲 | PWA (Progressive Web App) desteği | Mobil cihazlarda daha iyi bir deneyim. |
-| 🔲 | Yorum sistemi (Moderasyonlu) | Kullanıcıların makalelere yorum yapabilmesi. |
 | 🔲 | Duygu analizi (AI ile) | Makalelerin genel duygu tonunu belirleme. |
 
 ---
@@ -144,34 +144,38 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 - **Tamamlanan:** 4/4 özellik (%100) ✅
 
 ### v1.3 UX İyileştirmeleri İlerlemesi
-- **Tamamlanan:** 5/6 özellik (%83)
-- **Kalan:** AI Özetleme UI
-
-### v1.5 Geliştirici Araçları İlerlemesi
-- **Tamamlanan:** 3/3 özellik (%100) ✅
+- **Tamamlanan:** 6/6 özellik (%100) ✅
 
 ### v1.4 Topluluk İlerlemesi
 - **Tamamlanan:** 3/3 özellik (%100) ✅
 
+### v1.5 Geliştirici Araçları İlerlemesi
+- **Tamamlanan:** 3/3 özellik (%100) ✅
+
+### v2.0 Genişleme İlerlemesi
+- **Tamamlanan:** 2/4 özellik (%50)
+- **Kalan:** Kişiselleştirme, Duygu analizi
+
 ---
 
-## 🎯 v1 Tam İşlevsellik Hedefi
+## 🎯 v1-v2 Tam İşlevsellik Hedefi
 
 **Durum:** Büyük ölçüde tamamlandı ✅
-
-v1'in tam işlevsel kabul edilmesi için aşağıdaki kriterlerin karşılanması gerekmektedir:
 
 ### Zorunlu Kriterler (Must Have)
 - [x] Tüm sayfalar gerçek veritabanı verisi kullanmalı (demo veri olmamalı)
 - [x] Admin panelindeki tüm sayfalar işlevsel olmalı
 - [x] Bookmark ve oylama sistemleri çalışır durumda olmalı
 - [x] Arama fonksiyonu aktif olmalı
+- [x] PWA desteği (mobil kurulum)
+- [x] Yorum sistemi (moderasyonlu)
 
 ### İsteğe Bağlı Kriterler (Nice to Have)
-
 - [x] Newsletter sistemi aktif
-- [ ] AI özetleme UI entegrasyonu
+- [x] AI özetleme UI entegrasyonu
 - [x] Detaylı analitikler
+- [ ] Kişiselleştirme
+- [ ] Duygu analizi
 
 ---
 
