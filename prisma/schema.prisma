@@ -17,6 +17,13 @@ enum Role {
   USER
 }
 
+// Comment status enum
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // User model - All users in the system (Auth.js compatible)
 model User {
   id            String          @id @default(cuid())
@@ -37,6 +44,8 @@ model User {
   authorProfile AuthorProfile?  // Author profile (if AUTHOR role)
   bookmarks     Bookmark[]      // User's bookmarked articles
   votes         ArticleVote[]   // User's votes on articles
+  comments      Comment[]       // User's comments
+  commentLikes  CommentLike[]   // User's likes on comments
 }
 
 // Auth.js Account model - OAuth accounts linked to users
@@ -114,6 +123,7 @@ model Article {
   authorId    String
   bookmarks   Bookmark[]    // Users who bookmarked this article
   votes       ArticleVote[] // Votes on this article
+  comments    Comment[]     // Comments on this article
   
   @@index([category])
   @@index([publishedAt])
@@ -183,4 +193,43 @@ model NewsletterSubscription {
   updatedAt DateTime @updatedAt
   
   @@index([isActive])
+}
+
+// Comment model - User comments on articles
+model Comment {
+  id        String        @id @default(cuid())
+  content   String        // Comment text
+  status    CommentStatus @default(PENDING)
+  articleId String
+  userId    String
+  parentId  String?       // For reply comments
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  
+  // Relations
+  article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]     @relation("CommentReplies")
+  likes     CommentLike[]
+  
+  @@index([articleId])
+  @@index([userId])
+  @@index([status])
+  @@index([parentId])
+}
+
+// Comment like model - User likes on comments
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, commentId])
+  @@index([commentId])
 }

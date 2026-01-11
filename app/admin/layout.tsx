@@ -9,6 +9,7 @@ import {
   Users, 
   Settings, 
   BarChart3,
+  MessageCircle,
   LogOut,
   ChevronRight
 } from 'lucide-react'
@@ -17,6 +18,7 @@ const sidebarItems = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Makaleler', href: '/admin/makaleler', icon: Newspaper },
   { name: 'RSS Kaynakları', href: '/admin/rss', icon: Rss },
+  { name: 'Yorumlar', href: '/admin/yorumlar', icon: MessageCircle },
   { name: 'Kullanıcılar', href: '/admin/kullanicilar', icon: Users },
   { name: 'Analitik', href: '/admin/analitik', icon: BarChart3 },
   { name: 'Ayarlar', href: '/admin/ayarlar', icon: Settings },

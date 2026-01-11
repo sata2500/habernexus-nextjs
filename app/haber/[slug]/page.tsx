@@ -6,6 +6,7 @@ import { formatDate, getReadingTime } from '@/lib/utils'
 import ArticleCard from '@/components/articles/ArticleCard'
 import ArticleActions from '@/components/articles/ArticleActions'
 import AISummary from '@/components/articles/AISummary'
+import CommentSection from '@/components/comments/CommentSection'
 import { prisma } from '@/lib/prisma'
 
 // Makaleyi veritabanından çek
@@ -173,6 +174,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
+        </div>
+
+        {/* Comments Section */}
+        <div className="max-w-3xl mx-auto">
+          <CommentSection articleId={article.id} />
         </div>
 
         {/* Related Articles */}
