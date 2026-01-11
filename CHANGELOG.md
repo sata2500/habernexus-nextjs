@@ -1,3 +1,18 @@
+## [1.7.2](https://github.com/sata2500/habernexus-nextjs/compare/v1.7.1...v1.7.2) (2026-01-11)
+
+### 🐛 Hata Düzeltmeleri
+
+* add backup directory creation in auto-deploy setup ([849b419](https://github.com/sata2500/habernexus-nextjs/commit/849b4195347bf400cb90c51a5271bdbad8f9435e))
+
+### 📚 Dokümantasyon
+
+* update documentation for new webhook system (v2.0) ([7f9ef63](https://github.com/sata2500/habernexus-nextjs/commit/7f9ef639f85412f2e820df1d2af76e3f68150c78))
+* update wiki for new webhook system (v2.0) ([bb0c364](https://github.com/sata2500/habernexus-nextjs/commit/bb0c3646d3bcf441071a8f487d58528f0f2ba4e8))
+
+### 🔧 Bakım
+
+* remove test files ([7e240ae](https://github.com/sata2500/habernexus-nextjs/commit/7e240aefe58327bdd819fb5290060fa6e92d27b6))
+
 ## [1.7.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.7.0...v1.7.1) (2026-01-11)
 
 ### 🐛 Hata Düzeltmeleri
