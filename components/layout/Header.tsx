@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { Menu, X, Search, User, Moon, Sun, LogOut, Settings } from 'lucide-react'
 import { NAV_ITEMS, SITE_CONFIG } from '@/lib/constants'
@@ -10,8 +11,11 @@ import { cn } from '@/lib/utils'
 
 export default function Header() {
   const { data: session, status } = useSession()
+  const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [isDarkMode, setIsDarkMode] = useState(false)
 
   const toggleDarkMode = () => {
@@ -21,6 +25,15 @@ export default function Header() {
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/' })
+  }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim().length >= 2) {
+      router.push(`/arama?q=${encodeURIComponent(searchQuery.trim())}`)
+      setIsSearchOpen(false)
+      setSearchQuery('')
+    }
   }
 
   return (
@@ -52,13 +65,39 @@ export default function Header() {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-2">
-            {/* Search Button */}
-            <button
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800"
-              aria-label="Ara"
-            >
-              <Search className="w-5 h-5" />
-            </button>
+            {/* Search Button & Input */}
+            <div className="relative">
+              {isSearchOpen ? (
+                <form onSubmit={handleSearch} className="flex items-center">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Haber ara..."
+                    className="w-48 sm:w-64 px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSearchOpen(false)
+                      setSearchQuery('')
+                    }}
+                    className="ml-2 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </form>
+              ) : (
+                <button
+                  onClick={() => setIsSearchOpen(true)}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800"
+                  aria-label="Ara"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+              )}
+            </div>
 
             {/* Theme Toggle */}
             <button
@@ -162,6 +201,20 @@ export default function Header() {
           )}
         >
           <nav className="flex flex-col space-y-1 pt-2">
+            {/* Mobile Search */}
+            <form onSubmit={handleSearch} className="px-4 py-2">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Haber ara..."
+                  className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              </div>
+            </form>
+
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}

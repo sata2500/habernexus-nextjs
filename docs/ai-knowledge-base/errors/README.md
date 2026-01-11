@@ -11,6 +11,7 @@ This directory contains a log of all non-trivial errors encountered during devel
 | ERR-001 | `create-next-app` Fails in Non-Interactive Environments | Resolved | 2025-12-25 |
 | ERR-002 | Slow `npm install` in Resource-Constrained Environments | Mitigated | 2025-12-25 |
 | ERR-003 | Node.js Version Incompatibility with Next.js 16 | Resolved | 2025-12-26 |
+| ERR-004 | Next.js 16 Lint Komutu Değişikliği | Resolved | 2026-01-11 |
 
 ## How to Add a New Error
 

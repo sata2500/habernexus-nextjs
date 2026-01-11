@@ -2,7 +2,7 @@
 
 - **Issue:** N/A (Kullanıcı talebi)
 - **Agent:** Manus AI
-- **Status:** In Progress
+- **Status:** Completed
 
 ---
 
@@ -53,9 +53,12 @@ Mevcut otomatik güncelleme sistemini (auto-deploy) kurulum script'ine (`install
 
 ## 6. Documentation Impact
 
-- [x] `CHANGELOG.md` - v1.6.0 sürüm notları eklendi
+- [x] `CHANGELOG.md` - v1.6.0 ve v1.6.1 sürüm notları eklendi
 - [x] `ROADMAP.md` - v1.5 altına bu özellik eklendi
 - [x] `wiki/Deployment.md` - Auto-deploy kurulum talimatları güncellendi
+- [x] `wiki/Auto-Deployment.md` - GitHub Actions Secrets için detaylı talimatlar eklendi
+- [x] `scripts/install.sh` - Kurulum sonrası webhook talimatları genişletildi
+- [x] `scripts/setup-auto-deploy.sh` - GitHub talimatları detaylandırıldı
 
 ## 7. Error Log
 
@@ -94,3 +97,30 @@ LOG_DIR="/var/log/habernexus"
 ---
 
 **Son Güncelleme:** 11 Ocak 2026
+
+---
+
+## 8. GitHub Actions Secrets Yapılandırması Açıklaması
+
+Mevcut sistem, GitHub Actions workflow'u (`deploy.yml`) üzerinden çalışır. Bu sistem, doğrudan GitHub Webhooks'tan farklıdır:
+
+### Nasıl Çalışır?
+
+1. Geliştirici `master` branch'ine kod push eder
+2. GitHub Actions `deploy.yml` workflow'u tetiklenir
+3. Kod build edilir ve test edilir
+4. Build başarılı olursa, workflow içindeki curl komutu sunucudaki webhook URL'sine POST isteği gönderir
+5. Sunucudaki webhook server isteği alır, imzayı doğrular ve `auto-deploy.sh` scriptini çalıştırır
+
+### Neden GitHub Actions Secrets?
+
+Bu yöntemin avantajları:
+- **Güvenlik:** Secret'lar şifreli olarak saklanır ve loglarda görünmez
+- **Build Kontrolü:** Sadece başarılı build'lerden sonra deploy tetiklenir
+- **Esneklik:** Workflow'u özelleştirerek farklı koşullar eklenebilir
+
+### GitHub Arayüzünde Secrets Ekleme
+
+1. Repository → **Settings** → **Security** → **Secrets and variables** → **Actions**
+2. **New repository secret** butonuna tıkla
+3. `DEPLOY_WEBHOOK_URL` ve `DEPLOY_WEBHOOK_SECRET` secret'larını ekle

@@ -37,10 +37,7 @@ Kurulum sırasında "Otomatik güncellemeyi etkinleştirmek istiyor musunuz?" so
 1. Webhook sunucusu otomatik olarak kurulur ve başlatılır
 2. Web sunucusu (Caddy/Nginx) webhook proxy olarak yapılandırılır
 3. Firewall kuralları otomatik güncellenir
-4. Kurulum sonunda size:
-   - Webhook URL
-   - Webhook Secret
-   - GitHub repository ayarları talimatları verilir
+4. Kurulum sonunda size **detaylı talimatlar** verilir. Bu talimatlar, webhook URL ve secret'ını GitHub repository'nize nasıl ekleyeceğinizi adım adım gösterir.
 
 Detaylı bilgi için: **[Otomatik Deployment (CI/CD)](Auto-Deployment)**
 

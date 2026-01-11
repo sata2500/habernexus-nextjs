@@ -1,12 +1,12 @@
 {
   "name": "habernexus-nextjs",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "Yeni Nesil HaberNexus: AI destekli, tam otomatik haber agregasyon platformu",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint app components lib scripts --ext .ts,.tsx,.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",

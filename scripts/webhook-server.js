@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 /**
  * HaberNexus - Webhook Server for Auto-Deployment
@@ -237,7 +238,7 @@ const server = http.createServer(async (req, res) => {
             let payload;
             try {
                 payload = JSON.parse(body);
-            } catch (err) {
+            } catch {
                 log('error', 'Geçersiz JSON payload');
                 return sendResponse(res, 400, { error: 'Invalid JSON' });
             }

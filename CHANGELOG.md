@@ -1,4 +1,36 @@
+## [1.7.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.6.2...v1.7.0) (2026-01-11)
+
+### ✨ Yeni Özellikler
+
+* **admin:** add complete admin panel management pages ([b5d50f3](https://github.com/sata2500/habernexus-nextjs/commit/b5d50f339e14afc45268cc081dbb6448fc2bbb1d))
+
+### 📚 Dokümantasyon
+
+* add development report for 11 Jan 2026 ([36e5559](https://github.com/sata2500/habernexus-nextjs/commit/36e55592db45ff0a3c5a5bc42354427360dae689))
+* lint hatası çözümünü dokümante et ([7e9d986](https://github.com/sata2500/habernexus-nextjs/commit/7e9d986233f79751f43545240b56815145386f30))
+
+## [1.6.2](https://github.com/sata2500/habernexus-nextjs/compare/v1.6.1...v1.6.2) (2026-01-11)
+
+### 🐛 Hata Düzeltmeleri
+
+* **lint:** GitHub Actions lint hatalarını düzelt ([0cd0c13](https://github.com/sata2500/habernexus-nextjs/commit/0cd0c13af0b99ecc56053f2e9a4af3b28a0874a6))
+
+### 📚 Dokümantasyon
+
+* AI geliştirme talimatlarına uygun dokümantasyon güncellemesi ([c1d8456](https://github.com/sata2500/habernexus-nextjs/commit/c1d8456969ec89a1360a1a02ee99f3732cdf8fe1))
+* GitHub Actions Secrets yapılandırması için detaylı talimatlar eklendi ([7aac25c](https://github.com/sata2500/habernexus-nextjs/commit/7aac25ce942f394b9c31d33ddd851ef1eee870d5))
+
+### 🔧 Bakım
+
+* plan dosyasını completed klasörüne taşı ([f722097](https://github.com/sata2500/habernexus-nextjs/commit/f722097df66b9d676698f170ed241dfbf54a0f05))
+
 ## [1.6.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.6.0...v1.6.1) (2026-01-10)
+
+### 📚 Dokümantasyon
+
+* **docs:** GitHub Actions Secrets yapılandırması için detaylı adım adım talimatlar eklendi
+* **install:** Kurulum scripti sonundaki webhook talimatları genişletildi
+* **wiki:** Auto-Deployment rehberi daha açıklayıcı hale getirildi
 
 ### 🐛 Hata Düzeltmeleri
 

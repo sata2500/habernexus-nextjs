@@ -55,9 +55,16 @@ Bu script otomatik olarak:
 
 Script tamamlandığında, size **Webhook URL** ve **Webhook Secret** bilgilerini verecektir. Bu bilgileri GitHub repository ayarlarınıza eklemeniz gerekmektedir.
 
-1.  Projenizin GitHub sayfasına gidin.
-2.  **Settings** > **Secrets and variables** > **Actions** menüsünü açın.
-3.  **New repository secret** butonuna tıklayarak aşağıdaki iki secret'ı ekleyin:
+1.  **GitHub Repository Ayarlarına Gidin:**
+    *   Projenizin GitHub sayfasına gidin: `https://github.com/kullanici-adiniz/repo-adiniz`
+    *   Sağ üstteki **Settings** sekmesine tıklayın.
+
+2.  **Actions Secrets Menüsünü Bulun:**
+    *   Sol menüdeki **Security** başlığı altında, **Secrets and variables** seçeneğine tıklayın.
+    *   Açılan alt menüden **Actions** seçeneğine tıklayın.
+
+3.  **Yeni Secret'lar Ekleyin:**
+    *   **New repository secret** butonuna tıklayarak aşağıdaki iki secret'ı oluşturun:
 
     *   **`DEPLOY_WEBHOOK_URL`**
         *   Değer: Kurulum scriptinin size verdiği `Webhook URL`.
