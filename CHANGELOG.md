@@ -1,3 +1,9 @@
+## [1.9.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.8.0...v1.9.0) (2026-01-11)
+
+### ✨ Yeni Özellikler
+
+* **v2:** add personalized homepage and sentiment analysis ([64b2b97](https://github.com/sata2500/habernexus-nextjs/commit/64b2b97ec58fe54e9319c278d8be8537d8ae664f))
+
 ## [1.8.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.7.2...v1.8.0) (2026-01-11)
 
 ### ✨ Yeni Özellikler
