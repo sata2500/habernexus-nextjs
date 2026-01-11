@@ -1,3 +1,16 @@
+## [1.8.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.7.2...v1.8.0) (2026-01-11)
+
+### ✨ Yeni Özellikler
+
+* **ai:** add AI-powered article summary feature ([483895f](https://github.com/sata2500/habernexus-nextjs/commit/483895fc42f372cc2d70d25011143eefbad77821))
+* **comments:** add moderated comment system ([d565ebb](https://github.com/sata2500/habernexus-nextjs/commit/d565ebb1f1cd06f672a59f1fa93a795dec97c379))
+* **pwa:** add Progressive Web App support ([ebc454b](https://github.com/sata2500/habernexus-nextjs/commit/ebc454b13b0d494be10d6f300bf0373265f61d8b))
+
+### 📚 Dokümantasyon
+
+* translate wiki home page to Turkish ([2eb7b13](https://github.com/sata2500/habernexus-nextjs/commit/2eb7b1383d7f8f8a1978134b6764bbe722c61d2a))
+* update ROADMAP and add development report for v1.8.0 ([b4164f4](https://github.com/sata2500/habernexus-nextjs/commit/b4164f47c5a00a975c29e81ee2ec123767985f32))
+
 ## [1.7.2](https://github.com/sata2500/habernexus-nextjs/compare/v1.7.1...v1.7.2) (2026-01-11)
 
 ### 🐛 Hata Düzeltmeleri
