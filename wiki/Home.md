@@ -1,52 +1,56 @@
-# Welcome to the HaberNexus Wiki!
+# HaberNexus Wiki'sine Hoş Geldiniz!
 
-This Wiki provides in-depth documentation for the HaberNexus project. It is intended for developers, contributors, and anyone interested in the technical details of the project.
+Bu Wiki, HaberNexus projesi için derinlemesine dokümantasyon sağlar. Geliştiriciler, katkıda bulunanlar ve projenin teknik detaylarıyla ilgilenen herkes için tasarlanmıştır.
 
-## 🚀 Quick Links
+## 🚀 Hızlı Bağlantılar
 
-- **[Project Roadmap](https://github.com/sata2500/habernexus-nextjs/blob/master/ROADMAP.md)**
-- **[Contribution Guide](https://github.com/sata2500/habernexus-nextjs/blob/master/CONTRIBUTING.md)**
-- **[AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)**
+- **[Proje Yol Haritası](https://github.com/sata2500/habernexus-nextjs/blob/master/ROADMAP.md)**
+- **[Katkıda Bulunma Rehberi](https://github.com/sata2500/habernexus-nextjs/blob/master/CONTRIBUTING.md)**
+- **[AI Geliştirme Rehberi](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)**
 
-## 📚 Main Sections
+## 📚 Ana Bölümler
 
-### 1. [Project Philosophy & Architecture](Project-Philosophy-&-Architecture)
-- Learn about the "Simple but Powerful" philosophy, the choice of a self-hosted Next.js monolith, and the overall system design.
+### 1. [Proje Felsefesi & Mimarisi](Project-Philosophy-&-Architecture)
+"Basit ama Güçlü" felsefesi, kendi sunucunuzda barındırılabilir Next.js monolitinin seçimi ve genel sistem tasarımı hakkında bilgi edinin.
 
-### 2. [Getting Started](Getting-Started)
-- A comprehensive guide to setting up your local development environment, including Node.js version management and obtaining API keys.
+### 2. [Başlangıç Rehberi](Getting-Started)
+Yerel geliştirme ortamınızı ayarlamak, Node.js sürüm yönetimi ve API anahtarlarını almak için kapsamlı bir rehber.
 
-### 3. Core Features
-- Detailed explanations of the project's core functionalities:
-  - [AI Content Engine](AI-Content-Engine)
-  - [User & Role System](User-&-Role-System)
-  - [Admin Dashboard](Admin-Dashboard)
+### 3. Temel Özellikler
+Projenin temel işlevselliklerinin detaylı açıklamaları:
+  - [AI İçerik Motoru](AI-Content-Engine)
+  - [Kullanıcı & Rol Sistemi](User-&-Role-System)
+  - [Admin Paneli](Admin-Dashboard)
 
-### 4. [Development & Contribution](Development-&-Contribution)
-- Information on coding standards, commit conventions, and the pull request process.
+### 4. [Geliştirme & Katkıda Bulunma](Development-&-Contribution)
+Kodlama standartları, commit kuralları ve pull request süreci hakkında bilgi.
 
 ### 5. [Deployment](Deployment)
-- How to deploy the HaberNexus application to a production server using PM2.
+HaberNexus uygulamasını PM2 kullanarak production sunucusuna nasıl deploy edeceğiniz.
 
-## 🤖 For AI Agents
+### 6. [Otomatik Deployment (Webhook Sistemi)](Auto-Deployment)
+GitHub'a yapılan güncellemelerin otomatik olarak sunucuya deploy edilmesini sağlayan webhook sisteminin kurulumu ve yönetimi.
 
-AI agents **MUST** follow the complete framework outlined in the [AI Development Guide](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md). Your primary sources of truth are the protocols in `docs/ai-agents/` and the shared brain in `docs/ai-knowledge-base/`. This Wiki serves as a supplementary resource for deeper architectural context.
+## 🤖 AI Ajanları İçin
 
-### Essential AI Agent Documents
+AI ajanları, [AI Geliştirme Rehberi](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/AI_DEVELOPMENT_GUIDE.md)'nde belirtilen tam çerçeveyi **MUTLAKA** takip etmelidir. Birincil bilgi kaynakları `docs/ai-agents/` klasöründeki protokoller ve `docs/ai-knowledge-base/` klasöründeki paylaşılan bilgi tabanıdır. Bu Wiki, daha derin mimari bağlam için ek bir kaynaktır.
 
-| Document | Purpose |
-|----------|---------|
-| [ONBOARDING.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/ONBOARDING.md) | Environment setup and project familiarization |
-| [WORKFLOW.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/WORKFLOW.md) | Step-by-step development process |
-| [QUALITY_CHECKLIST.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/QUALITY_CHECKLIST.md) | Verification requirements |
-| [DOCUMENTATION_PROTOCOL.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/DOCUMENTATION_PROTOCOL.md) | Wiki and documentation rules |
+### Temel AI Ajan Belgeleri
 
-## 🤝 How to Contribute to the Wiki
+| Belge | Amaç |
+|-------|------|
+| [ONBOARDING.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/ONBOARDING.md) | Ortam kurulumu ve proje tanıtımı |
+| [WORKFLOW.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/WORKFLOW.md) | Adım adım geliştirme süreci |
+| [QUALITY_CHECKLIST.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/QUALITY_CHECKLIST.md) | Doğrulama gereksinimleri |
+| [DOCUMENTATION_PROTOCOL.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/DOCUMENTATION_PROTOCOL.md) | Wiki ve dokümantasyon kuralları |
 
-This Wiki is automatically synchronized from the `wiki/` folder in the repository. To contribute:
+## 🤝 Wiki'ye Nasıl Katkıda Bulunursunuz?
 
-1. Edit files in the `wiki/` folder
-2. Commit and push to `master` branch
-3. GitHub Action will sync changes to this Wiki
+Bu Wiki, repository'deki `wiki/` klasöründen otomatik olarak senkronize edilir. Katkıda bulunmak için:
 
-For detailed instructions, see [DOCUMENTATION_PROTOCOL.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/DOCUMENTATION_PROTOCOL.md).
+1. `wiki/` klasöründeki dosyaları düzenleyin
+2. `master` branch'ine commit ve push yapın
+3. GitHub Action, değişiklikleri bu Wiki'ye senkronize edecektir
+
+Detaylı talimatlar için [DOCUMENTATION_PROTOCOL.md](https://github.com/sata2500/habernexus-nextjs/blob/master/docs/ai-agents/DOCUMENTATION_PROTOCOL.md) dosyasına bakın.
+
