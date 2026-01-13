@@ -1,8 +1,13 @@
 import { GoogleGenAI } from '@google/genai'
+import { prisma } from '@/lib/prisma'
+import { getDefaultModel, isValidModel } from '@/lib/gemini-models'
 
 /**
  * Google Gemini AI Service
  * Handles AI content generation for news articles
+ * 
+ * @version 2.0.0
+ * @lastUpdated 13 January 2026
  */
 
 // Initialize the Gemini client
@@ -10,8 +15,36 @@ const genAI = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || '',
 })
 
-// Default model for content generation
-const MODEL_NAME = 'gemini-2.0-flash'
+/**
+ * Get the configured model for a specific use case from system settings
+ * Falls back to default if not configured
+ */
+async function getConfiguredModel(useCase: 'content' | 'sentiment' | 'category' | 'summary'): Promise<string> {
+  try {
+    const settingKey = `ai_model_${useCase}`
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key: settingKey },
+    })
+    
+    if (setting?.value && isValidModel(setting.value)) {
+      return setting.value
+    }
+    
+    // Fallback to general content model setting
+    if (useCase !== 'content') {
+      const contentSetting = await prisma.systemSetting.findUnique({
+        where: { key: 'ai_model_content' },
+      })
+      if (contentSetting?.value && isValidModel(contentSetting.value)) {
+        return contentSetting.value
+      }
+    }
+    
+    return getDefaultModel(useCase)
+  } catch {
+    return getDefaultModel(useCase)
+  }
+}
 
 /**
  * Sentiment analysis result type
@@ -28,13 +61,18 @@ export interface SentimentResult {
 export async function generateArticle(
   sourceTitle: string,
   sourceContent: string,
-  category: string
+  category: string,
+  modelOverride?: string
 ): Promise<{
   title: string
   content: string
   excerpt: string
   slug: string
 }> {
+  const modelName = modelOverride && isValidModel(modelOverride) 
+    ? modelOverride 
+    : await getConfiguredModel('content')
+
   const prompt = `Sen profesyonel bir haber editörüsün. Aşağıdaki haber kaynağını kullanarak özgün, SEO dostu ve okuyucu için değerli bir Türkçe haber makalesi oluştur.
 
 KAYNAK BAŞLIK: ${sourceTitle}
@@ -65,7 +103,7 @@ KURALLAR:
 
   try {
     const response = await genAI.models.generateContent({
-      model: MODEL_NAME,
+      model: modelName,
       contents: prompt,
       config: {
         temperature: 0.7,
@@ -106,7 +144,14 @@ KURALLAR:
 /**
  * Generate article summary
  */
-export async function generateSummary(content: string): Promise<string> {
+export async function generateSummary(
+  content: string,
+  modelOverride?: string
+): Promise<string> {
+  const modelName = modelOverride && isValidModel(modelOverride)
+    ? modelOverride
+    : await getConfiguredModel('summary')
+
   const prompt = `Aşağıdaki haber makalesinin kısa bir özetini yaz (maksimum 2-3 cümle, 160 karakter):
 
 ${content}
@@ -115,7 +160,7 @@ Sadece özeti yaz, başka bir şey ekleme.`
 
   try {
     const response = await genAI.models.generateContent({
-      model: MODEL_NAME,
+      model: modelName,
       contents: prompt,
       config: {
         temperature: 0.5,
@@ -135,8 +180,13 @@ Sadece özeti yaz, başka bir şey ekleme.`
  */
 export async function analyzeSentiment(
   title: string,
-  content: string
+  content: string,
+  modelOverride?: string
 ): Promise<SentimentResult> {
+  const modelName = modelOverride && isValidModel(modelOverride)
+    ? modelOverride
+    : await getConfiguredModel('sentiment')
+
   const prompt = `Sen bir duygu analizi uzmanısın. Aşağıdaki haber başlığı ve içeriğini analiz ederek haberin genel duygusal tonunu belirle.
 
 BAŞLIK: ${title}
@@ -162,7 +212,7 @@ KRİTERLER:
 
   try {
     const response = await genAI.models.generateContent({
-      model: MODEL_NAME,
+      model: modelName,
       contents: prompt,
       config: {
         temperature: 0.3,
@@ -210,7 +260,8 @@ KRİTERLER:
  * Batch analyze sentiment for multiple articles
  */
 export async function batchAnalyzeSentiment(
-  articles: Array<{ id: string; title: string; content: string }>
+  articles: Array<{ id: string; title: string; content: string }>,
+  modelOverride?: string
 ): Promise<Map<string, SentimentResult>> {
   const results = new Map<string, SentimentResult>()
   
@@ -221,7 +272,7 @@ export async function batchAnalyzeSentiment(
     
     const batchResults = await Promise.all(
       batch.map(async (article) => {
-        const result = await analyzeSentiment(article.title, article.content)
+        const result = await analyzeSentiment(article.title, article.content, modelOverride)
         return { id: article.id, result }
       })
     )
@@ -244,8 +295,13 @@ export async function batchAnalyzeSentiment(
  */
 export async function determineCategory(
   title: string,
-  content: string
+  content: string,
+  modelOverride?: string
 ): Promise<string> {
+  const modelName = modelOverride && isValidModel(modelOverride)
+    ? modelOverride
+    : await getConfiguredModel('category')
+
   const categories = [
     'Gündem',
     'Ekonomi',
@@ -269,7 +325,7 @@ Sadece kategori adını yaz, başka bir şey ekleme.`
 
   try {
     const response = await genAI.models.generateContent({
-      model: MODEL_NAME,
+      model: modelName,
       contents: prompt,
       config: {
         temperature: 0.3,
@@ -309,4 +365,23 @@ function generateSlug(title: string): string {
  */
 export function isGeminiConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY
+}
+
+/**
+ * Get current model configuration
+ */
+export async function getCurrentModelConfig(): Promise<{
+  content: string
+  sentiment: string
+  category: string
+  summary: string
+}> {
+  const [content, sentiment, category, summary] = await Promise.all([
+    getConfiguredModel('content'),
+    getConfiguredModel('sentiment'),
+    getConfiguredModel('category'),
+    getConfiguredModel('summary'),
+  ])
+  
+  return { content, sentiment, category, summary }
 }
