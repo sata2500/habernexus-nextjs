@@ -1,3 +1,9 @@
+## [1.11.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.10.0...v1.11.0) (2026-01-13)
+
+### ✨ Yeni Özellikler
+
+* **imagen:** add AI-powered image generation for articles ([d86c6d3](https://github.com/sata2500/habernexus-nextjs/commit/d86c6d39f15d29f4b86f5ed916ffae8e5f9d38bc))
+
 ## [1.10.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.9.0...v1.10.0) (2026-01-13)
 
 ### ✨ Yeni Özellikler
