@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.11.0...v1.12.0) (2026-01-13)
+
+### ✨ Yeni Özellikler
+
+* AI prompt yönetimi ve gelişmiş görsel sistemi ([a0af97e](https://github.com/sata2500/habernexus-nextjs/commit/a0af97ec7f795b29867fe67c2c55cf235ea87671)), closes [#prompt-management](https://github.com/sata2500/habernexus-nextjs/issues/prompt-management) [#image-optimization](https://github.com/sata2500/habernexus-nextjs/issues/image-optimization)
+
 ## [1.11.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.10.0...v1.11.0) (2026-01-13)
 
 ### ✨ Yeni Özellikler
