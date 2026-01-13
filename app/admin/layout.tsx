@@ -12,7 +12,9 @@ import {
   MessageCircle,
   LogOut,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react'
 
 const sidebarItems = [
@@ -23,6 +25,8 @@ const sidebarItems = [
   { name: 'Kullanıcılar', href: '/admin/kullanicilar', icon: Users },
   { name: 'Duygu Analizi', href: '/admin/duygu-analizi', icon: Sparkles },
   { name: 'Analitik', href: '/admin/analitik', icon: BarChart3 },
+  { name: 'AI Promptları', href: '/admin/promptlar', icon: FileText },
+  { name: 'Görsel Ayarları', href: '/admin/gorsel-ayarlari', icon: ImageIcon },
   { name: 'Ayarlar', href: '/admin/ayarlar', icon: Settings },
 ]
 

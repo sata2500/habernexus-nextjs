@@ -1,13 +1,19 @@
 import { GoogleGenAI } from '@google/genai'
 import { prisma } from '@/lib/prisma'
 import { getDefaultModel, isValidModel } from '@/lib/gemini-models'
+import { getPromptByType, interpolatePrompt } from '@/lib/prompts'
+import { PromptType } from '@prisma/client'
 
 /**
  * Google Gemini AI Service
  * Handles AI content generation for news articles
  * 
- * @version 2.0.0
+ * @version 3.0.0
  * @lastUpdated 13 January 2026
+ * 
+ * Changes in v3.0.0:
+ * - Added prompt template support from database
+ * - Prompts can now be customized via admin panel
  */
 
 // Initialize the Gemini client
@@ -57,6 +63,7 @@ export interface SentimentResult {
 
 /**
  * Generate a news article from RSS content
+ * Now uses customizable prompts from database
  */
 export async function generateArticle(
   sourceTitle: string,
@@ -73,13 +80,18 @@ export async function generateArticle(
     ? modelOverride 
     : await getConfiguredModel('content')
 
-  const prompt = `Sen profesyonel bir haber editörüsün. Aşağıdaki haber kaynağını kullanarak özgün, SEO dostu ve okuyucu için değerli bir Türkçe haber makalesi oluştur.
+  // Get prompt template from database
+  let promptTemplate = await getPromptByType('CONTENT' as PromptType)
+  
+  // Fallback to hardcoded prompt if not found
+  if (!promptTemplate) {
+    promptTemplate = `Sen profesyonel bir haber editörüsün. Aşağıdaki haber kaynağını kullanarak özgün, SEO dostu ve okuyucu için değerli bir Türkçe haber makalesi oluştur.
 
-KAYNAK BAŞLIK: ${sourceTitle}
+KAYNAK BAŞLIK: {{title}}
 
-KAYNAK İÇERİK: ${sourceContent}
+KAYNAK İÇERİK: {{content}}
 
-KATEGORİ: ${category}
+KATEGORİ: {{category}}
 
 GÖREV:
 1. Özgün ve dikkat çekici bir başlık yaz (maksimum 80 karakter)
@@ -100,6 +112,14 @@ KURALLAR:
   "excerpt": "Kısa özet burada",
   "slug": "url-friendly-slug-burada"
 }`
+  }
+
+  // Interpolate variables into the prompt
+  const prompt = interpolatePrompt(promptTemplate, {
+    title: sourceTitle,
+    content: sourceContent,
+    category: category,
+  })
 
   try {
     const response = await genAI.models.generateContent({
@@ -143,6 +163,7 @@ KURALLAR:
 
 /**
  * Generate article summary
+ * Now uses customizable prompts from database
  */
 export async function generateSummary(
   content: string,
@@ -152,11 +173,19 @@ export async function generateSummary(
     ? modelOverride
     : await getConfiguredModel('summary')
 
-  const prompt = `Aşağıdaki haber makalesinin kısa bir özetini yaz (maksimum 2-3 cümle, 160 karakter):
+  // Get prompt template from database
+  let promptTemplate = await getPromptByType('SUMMARY' as PromptType)
+  
+  // Fallback to hardcoded prompt if not found
+  if (!promptTemplate) {
+    promptTemplate = `Aşağıdaki haber makalesinin kısa bir özetini yaz (maksimum 2-3 cümle, 160 karakter):
 
-${content}
+{{content}}
 
 Sadece özeti yaz, başka bir şey ekleme.`
+  }
+
+  const prompt = interpolatePrompt(promptTemplate, { content })
 
   try {
     const response = await genAI.models.generateContent({
@@ -177,6 +206,7 @@ Sadece özeti yaz, başka bir şey ekleme.`
 
 /**
  * Analyze sentiment of an article using AI
+ * Now uses customizable prompts from database
  */
 export async function analyzeSentiment(
   title: string,
@@ -187,11 +217,16 @@ export async function analyzeSentiment(
     ? modelOverride
     : await getConfiguredModel('sentiment')
 
-  const prompt = `Sen bir duygu analizi uzmanısın. Aşağıdaki haber başlığı ve içeriğini analiz ederek haberin genel duygusal tonunu belirle.
+  // Get prompt template from database
+  let promptTemplate = await getPromptByType('SENTIMENT' as PromptType)
+  
+  // Fallback to hardcoded prompt if not found
+  if (!promptTemplate) {
+    promptTemplate = `Sen bir duygu analizi uzmanısın. Aşağıdaki haber başlığı ve içeriğini analiz ederek haberin genel duygusal tonunu belirle.
 
-BAŞLIK: ${title}
+BAŞLIK: {{title}}
 
-İÇERİK: ${content.substring(0, 1500)}
+İÇERİK: {{content}}
 
 GÖREV:
 1. Haberin genel duygusal tonunu belirle (POSITIVE, NEGATIVE veya NEUTRAL)
@@ -209,6 +244,12 @@ KRİTERLER:
   "score": 0.85,
   "summary": "Kısa açıklama"
 }`
+  }
+
+  const prompt = interpolatePrompt(promptTemplate, {
+    title,
+    content: content.substring(0, 1500),
+  })
 
   try {
     const response = await genAI.models.generateContent({
@@ -292,6 +333,7 @@ export async function batchAnalyzeSentiment(
 
 /**
  * Determine article category using AI
+ * Now uses customizable prompts from database
  */
 export async function determineCategory(
   title: string,
@@ -313,15 +355,27 @@ export async function determineCategory(
     'Bilim',
   ]
 
-  const prompt = `Aşağıdaki haber başlığı ve içeriğine göre en uygun kategoriyi seç.
+  // Get prompt template from database
+  let promptTemplate = await getPromptByType('CATEGORY' as PromptType)
+  
+  // Fallback to hardcoded prompt if not found
+  if (!promptTemplate) {
+    promptTemplate = `Aşağıdaki haber başlığı ve içeriğine göre en uygun kategoriyi seç.
 
-BAŞLIK: ${title}
+BAŞLIK: {{title}}
 
-İÇERİK: ${content.substring(0, 500)}
+İÇERİK: {{content}}
 
-KATEGORİLER: ${categories.join(', ')}
+KATEGORİLER: {{categories}}
 
 Sadece kategori adını yaz, başka bir şey ekleme.`
+  }
+
+  const prompt = interpolatePrompt(promptTemplate, {
+    title,
+    content: content.substring(0, 500),
+    categories: categories.join(', '),
+  })
 
   try {
     const response = await genAI.models.generateContent({

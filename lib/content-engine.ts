@@ -2,19 +2,31 @@ import { prisma } from '@/lib/prisma'
 import { fetchRssFeed } from '@/lib/rss'
 import { generateArticle, determineCategory, isGeminiConfigured } from '@/lib/gemini'
 import { generateArticleImage, getPlaceholderImage, isImagenConfigured } from '@/lib/imagen'
+import { 
+  downloadAndOptimizeImage, 
+  shouldUseRssImage, 
+  getImagePlacement 
+} from '@/lib/image-optimizer'
 
 /**
  * Content Engine Service
  * Handles automated content generation from RSS feeds
  * 
- * @version 2.0.0
+ * @version 3.0.0
  * @lastUpdated 13 January 2026
+ * 
+ * Changes in v3.0.0:
+ * - Added RSS image downloading and optimization
+ * - Added smart image source selection (RSS vs AI)
+ * - Added image placement recommendations
+ * - Added imageSource tracking for articles
  */
 
 export interface ContentGenerationResult {
   success: boolean
   articlesCreated: number
   imagesGenerated: number
+  imagesOptimized: number
   errors: string[]
 }
 
@@ -49,6 +61,21 @@ async function isImageGenerationEnabled(): Promise<boolean> {
 }
 
 /**
+ * Check if RSS image optimization is enabled
+ */
+async function isRssImageOptimizationEnabled(): Promise<boolean> {
+  try {
+    const setting = await prisma.systemSetting.findUnique({
+      where: { key: 'enable_rss_image_optimization' },
+    })
+    // Default to true if not set
+    return setting?.value !== 'false'
+  } catch {
+    return true
+  }
+}
+
+/**
  * Process all active RSS feeds and generate articles
  */
 export async function processAllFeeds(): Promise<ContentGenerationResult> {
@@ -56,6 +83,7 @@ export async function processAllFeeds(): Promise<ContentGenerationResult> {
     success: true,
     articlesCreated: 0,
     imagesGenerated: 0,
+    imagesOptimized: 0,
     errors: [],
   }
 
@@ -93,6 +121,7 @@ export async function processAllFeeds(): Promise<ContentGenerationResult> {
         const feedResult = await processFeed(feed.id, remainingSlots)
         result.articlesCreated += feedResult.articlesCreated
         result.imagesGenerated += feedResult.imagesGenerated
+        result.imagesOptimized += feedResult.imagesOptimized
         result.errors.push(...feedResult.errors)
         totalArticlesCreated += feedResult.articlesCreated
       } catch (error) {
@@ -120,6 +149,7 @@ export async function processFeed(
     success: true,
     articlesCreated: 0,
     imagesGenerated: 0,
+    imagesOptimized: 0,
     errors: [],
   }
 
@@ -157,9 +187,10 @@ export async function processFeed(
       })
     }
 
-    // Check if image generation is enabled
+    // Check settings
     const imageGenEnabled = await isImageGenerationEnabled()
     const imagenConfigured = await isImagenConfigured()
+    const rssImageOptEnabled = await isRssImageOptimizationEnabled()
 
     // Process each item (limited by maxArticles)
     const itemsToProcess = rssData.items.slice(0, maxArticles)
@@ -192,12 +223,33 @@ export async function processFeed(
           generatedContent.content
         )
 
-        // Generate or get image
-        let imageUrl = item.imageUrl || null
+        // Handle image selection and optimization
+        let imageUrl: string | null = null
+        let imageSource: 'ai' | 'rss' | 'placeholder' = 'placeholder'
 
-        // Try to generate image with AI if enabled and no source image
+        // Check if we should use RSS image
+        const hasRssImage = !!item.imageUrl
+        const useRssImage = shouldUseRssImage(category, hasRssImage)
+
+        if (useRssImage && item.imageUrl && rssImageOptEnabled) {
+          // Download and optimize RSS image
+          console.log(`[ContentEngine] Downloading and optimizing RSS image for: ${generatedContent.title}`)
+          const optimizedResult = await downloadAndOptimizeImage(
+            item.imageUrl,
+            generatedContent.title
+          )
+
+          if (optimizedResult.success && optimizedResult.publicUrl) {
+            imageUrl = optimizedResult.publicUrl
+            imageSource = 'rss'
+            result.imagesOptimized++
+            console.log(`[ContentEngine] RSS image optimized: ${optimizedResult.originalSize} -> ${optimizedResult.optimizedSize} bytes`)
+          }
+        }
+
+        // If no RSS image or optimization failed, try AI generation
         if (!imageUrl && imageGenEnabled && imagenConfigured) {
-          console.log(`[ContentEngine] Generating image for: ${generatedContent.title}`)
+          console.log(`[ContentEngine] Generating AI image for: ${generatedContent.title}`)
           const imageResult = await generateArticleImage(
             generatedContent.title,
             category,
@@ -206,17 +258,23 @@ export async function processFeed(
 
           if (imageResult.success && imageResult.imageUrl) {
             imageUrl = imageResult.imageUrl
+            imageSource = 'ai'
             result.imagesGenerated++
-            console.log(`[ContentEngine] Image generated: ${imageUrl}`)
+            console.log(`[ContentEngine] AI image generated: ${imageUrl}`)
           } else {
-            console.warn(`[ContentEngine] Image generation failed: ${imageResult.error}`)
+            console.warn(`[ContentEngine] AI image generation failed: ${imageResult.error}`)
           }
         }
 
         // Use placeholder if no image available
         if (!imageUrl) {
           imageUrl = getPlaceholderImage(category)
+          imageSource = 'placeholder'
         }
+
+        // Get image placement recommendation
+        const placement = getImagePlacement(category)
+        console.log(`[ContentEngine] Image placement for ${category}: ${placement}`)
 
         // Ensure unique slug
         const uniqueSlug = await ensureUniqueSlug(generatedContent.slug)
@@ -229,6 +287,7 @@ export async function processFeed(
             content: generatedContent.content,
             excerpt: generatedContent.excerpt,
             imageUrl,
+            imageSource,
             category,
             authorId: systemAuthor.id,
             publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
@@ -236,7 +295,7 @@ export async function processFeed(
         })
 
         result.articlesCreated++
-        console.log(`[ContentEngine] Article created: ${generatedContent.title}`)
+        console.log(`[ContentEngine] Article created: ${generatedContent.title} (image: ${imageSource})`)
       } catch (error) {
         result.errors.push(`Error processing item "${item.title}": ${error}`)
       }
@@ -307,11 +366,26 @@ async function ensureUniqueSlug(baseSlug: string): Promise<string> {
 export async function getEngineStatus(): Promise<{
   isConfigured: boolean
   isImageGenEnabled: boolean
+  isRssImageOptEnabled: boolean
   activeFeeds: number
   totalArticles: number
   lastGeneration: Date | null
+  imageStats: {
+    aiGenerated: number
+    rssOptimized: number
+    placeholder: number
+  }
 }> {
-  const [activeFeeds, totalArticles, lastArticle, imageGenEnabled] = await Promise.all([
+  const [
+    activeFeeds, 
+    totalArticles, 
+    lastArticle, 
+    imageGenEnabled,
+    rssImageOptEnabled,
+    aiImages,
+    rssImages,
+    placeholderImages
+  ] = await Promise.all([
     prisma.rssFeed.count({ where: { isActive: true } }),
     prisma.article.count(),
     prisma.article.findFirst({
@@ -319,13 +393,23 @@ export async function getEngineStatus(): Promise<{
       select: { createdAt: true },
     }),
     isImageGenerationEnabled(),
+    isRssImageOptimizationEnabled(),
+    prisma.article.count({ where: { imageSource: 'ai' } }),
+    prisma.article.count({ where: { imageSource: 'rss' } }),
+    prisma.article.count({ where: { OR: [{ imageSource: 'placeholder' }, { imageSource: null }] } }),
   ])
 
   return {
     isConfigured: isGeminiConfigured(),
     isImageGenEnabled: imageGenEnabled,
+    isRssImageOptEnabled: rssImageOptEnabled,
     activeFeeds,
     totalArticles,
     lastGeneration: lastArticle?.createdAt || null,
+    imageStats: {
+      aiGenerated: aiImages,
+      rssOptimized: rssImages,
+      placeholder: placeholderImages,
+    },
   }
 }

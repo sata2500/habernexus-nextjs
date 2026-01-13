@@ -31,6 +31,15 @@ enum Sentiment {
   NEUTRAL
 }
 
+// Prompt type enum for categorizing prompts
+enum PromptType {
+  CONTENT      // Article content generation
+  IMAGE        // Image generation
+  SENTIMENT    // Sentiment analysis
+  CATEGORY     // Category determination
+  SUMMARY      // Summary generation
+}
+
 // User model - All users in the system (Auth.js compatible)
 model User {
   id            String          @id @default(cuid())
@@ -126,20 +135,21 @@ model AuthorProfile {
 
 // Article model - Published content
 model Article {
-  id          String    @id @default(cuid())
-  title       String    // AI-generated title
-  slug        String    @unique
-  content     String    // AI-generated content (full article)
-  excerpt     String?   // Short summary
-  imageUrl    String    // AI-generated or downloaded image
-  videoUrl    String?   // Original news video (if available)
-  category    String    // AI-determined category
-  viewCount   Int       @default(0)
-  sentiment   Sentiment? // AI-analyzed sentiment (POSITIVE, NEGATIVE, NEUTRAL)
-  sentimentScore Float?  // Sentiment confidence score (0-1)
-  publishedAt DateTime  @default(now())
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  title          String    // AI-generated title
+  slug           String    @unique
+  content        String    // AI-generated content (full article)
+  excerpt        String?   // Short summary
+  imageUrl       String    // AI-generated or downloaded image
+  imageSource    String?   // "ai" | "rss" | "placeholder" - Source of the image
+  videoUrl       String?   // Original news video (if available)
+  category       String    // AI-determined category
+  viewCount      Int       @default(0)
+  sentiment      Sentiment? // AI-analyzed sentiment (POSITIVE, NEGATIVE, NEUTRAL)
+  sentimentScore Float?    // Sentiment confidence score (0-1)
+  publishedAt    DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   
   // Relations
   author      User          @relation(fields: [authorId], references: [id])
@@ -175,6 +185,33 @@ model SystemSetting {
   value     String   // Setting value
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Prompt template model - For managing AI prompts
+model PromptTemplate {
+  id          String     @id @default(cuid())
+  name        String     @unique  // Unique identifier: "content_generation", "image_generation", etc.
+  displayName String               // Human-readable name: "İçerik Üretim Promptu"
+  description String?              // Description of what this prompt does
+  type        PromptType           // Type of prompt (CONTENT, IMAGE, etc.)
+  template    String               // The actual prompt template with {{variables}}
+  variables   String               // JSON array of variable names: ["title", "content", "category"]
+  isActive    Boolean    @default(true)
+  isDefault   Boolean    @default(false) // Whether this is the default prompt for its type
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  @@index([type])
+  @@index([isActive])
+}
+
+// Image settings model - For image optimization configuration
+model ImageSettings {
+  id                    String   @id @default(cuid())
+  key                   String   @unique // Setting key
+  value                 String            // Setting value (JSON for complex settings)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
 
 // Bookmark model - User's saved articles

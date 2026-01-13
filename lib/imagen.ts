@@ -1,5 +1,7 @@
 import { GoogleGenAI, PersonGeneration } from '@google/genai'
 import { prisma } from '@/lib/prisma'
+import { getPromptByType, interpolatePrompt, getImageStyleForCategory } from '@/lib/prompts'
+import { PromptType } from '@prisma/client'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -7,8 +9,13 @@ import * as path from 'path'
  * Imagen Image Generation Service
  * Handles AI-powered image generation for news articles
  * 
- * @version 1.0.0
+ * @version 2.0.0
  * @lastUpdated 13 January 2026
+ * 
+ * Changes in v2.0.0:
+ * - Added prompt template support from database
+ * - Prompts can now be customized via admin panel
+ * - Added category-specific style support
  */
 
 // Initialize the Gemini client
@@ -44,34 +51,35 @@ async function getConfiguredImageModel(): Promise<string> {
 
 /**
  * Generate an image prompt from article title and content
+ * Now uses customizable prompts from database
  */
-function generateImagePrompt(title: string, category: string, content?: string): string {
-  // Extract key themes from title
+async function generateImagePrompt(title: string, category: string): Promise<string> {
+  // Get prompt template from database
+  let promptTemplate = await getPromptByType('IMAGE' as PromptType)
+  
+  // Fallback to hardcoded prompt if not found
+  if (!promptTemplate) {
+    promptTemplate = `A high-quality, professional news article header image.
+Topic: {{title}}
+Category: {{category}}
+Style: {{style}}, photorealistic, editorial quality, 16:9 aspect ratio, no text overlay, suitable for news website.
+The image should be visually appealing and relevant to the topic without showing any specific people's faces.`
+  }
+
+  // Get category-specific style
+  const style = getImageStyleForCategory(category)
+
+  // Clean title for prompt
   const cleanTitle = title
     .replace(/['"]/g, '')
     .substring(0, 100)
 
-  // Category-specific style hints
-  const categoryStyles: Record<string, string> = {
-    'Teknoloji': 'modern, digital, futuristic, tech-inspired',
-    'Ekonomi': 'professional, business, financial, corporate',
-    'Spor': 'dynamic, energetic, athletic, action',
-    'Sağlık': 'clean, medical, wellness, healthy lifestyle',
-    'Bilim': 'scientific, research, discovery, innovation',
-    'Dünya': 'global, international, world news, diverse',
-    'Kültür-Sanat': 'artistic, creative, cultural, colorful',
-    'Gündem': 'news, current events, journalistic, informative',
-  }
-
-  const style = categoryStyles[category] || 'professional, news, journalistic'
-
-  // Build the prompt
-  const prompt = `A high-quality, professional news article header image. 
-Topic: ${cleanTitle}
-Style: ${style}, photorealistic, editorial quality, 16:9 aspect ratio, no text overlay, suitable for news website.
-The image should be visually appealing and relevant to the topic without showing any specific people's faces.`
-
-  return prompt
+  // Interpolate variables into the prompt
+  return interpolatePrompt(promptTemplate, {
+    title: cleanTitle,
+    category,
+    style,
+  })
 }
 
 /**
@@ -80,7 +88,7 @@ The image should be visually appealing and relevant to the topic without showing
 export async function generateArticleImage(
   title: string,
   category: string,
-  content?: string,
+  _content?: string,
   modelOverride?: string
 ): Promise<ImageGenerationResult> {
   try {
@@ -95,7 +103,7 @@ export async function generateArticleImage(
     }
 
     const model = modelOverride || await getConfiguredImageModel()
-    const prompt = generateImagePrompt(title, category, content)
+    const prompt = await generateImagePrompt(title, category)
 
     console.log(`[Imagen] Generating image with model: ${model}`)
     console.log(`[Imagen] Prompt: ${prompt.substring(0, 100)}...`)
@@ -254,4 +262,13 @@ export function getPlaceholderImage(category: string): string {
   }
 
   return placeholders[category] || '/images/placeholder.jpg'
+}
+
+/**
+ * Get current image prompt template
+ * Used for displaying in admin panel
+ */
+export async function getCurrentImagePrompt(): Promise<string> {
+  const template = await getPromptByType('IMAGE' as PromptType)
+  return template || 'No image prompt template found'
 }
