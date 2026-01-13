@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Settings, Save, AlertCircle, CheckCircle, RefreshCw, Sparkles, Zap, Crown, Clock } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Settings, Save, AlertCircle, CheckCircle, RefreshCw, Sparkles, Zap, Crown, Clock, Play, Timer } from 'lucide-react'
 
 /**
  * Gemini Model Configuration
@@ -21,6 +21,16 @@ interface ModelGroup {
   models: string[]
   badge: string
   badgeColor: string
+}
+
+interface SchedulerStatus {
+  isRunning: boolean
+  currentSchedule: string
+  scheduleDescription: string
+  lastRun: string | null
+  nextRun: string | null
+  runCount: number
+  lastError: string | null
 }
 
 const GEMINI_MODELS: Record<string, GeminiModel> = {
@@ -132,6 +142,18 @@ const MODEL_GROUPS: ModelGroup[] = [
   },
 ]
 
+const CRON_PRESETS = [
+  { label: 'Her 15 dakikada', value: '*/15 * * * *' },
+  { label: 'Her 30 dakikada', value: '*/30 * * * *' },
+  { label: 'Her saat başı', value: '0 * * * *' },
+  { label: 'Her 2 saatte', value: '0 */2 * * *' },
+  { label: 'Her 4 saatte', value: '0 */4 * * *' },
+  { label: 'Her 6 saatte', value: '0 */6 * * *' },
+  { label: 'Her 12 saatte', value: '0 */12 * * *' },
+  { label: 'Günde bir (gece yarısı)', value: '0 0 * * *' },
+  { label: 'Günde bir (sabah 8)', value: '0 8 * * *' },
+]
+
 interface SettingsState {
   site_name: string
   site_description: string
@@ -232,10 +254,29 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [schedulerStatus, setSchedulerStatus] = useState<SchedulerStatus | null>(null)
+  const [triggeringScheduler, setTriggeringScheduler] = useState(false)
+
+  const fetchSchedulerStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/scheduler')
+      if (response.ok) {
+        const data = await response.json()
+        setSchedulerStatus(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch scheduler status:', err)
+    }
+  }, [])
 
   useEffect(() => {
     fetchSettings()
-  }, [])
+    fetchSchedulerStatus()
+    
+    // Refresh scheduler status every 30 seconds
+    const interval = setInterval(fetchSchedulerStatus, 30000)
+    return () => clearInterval(interval)
+  }, [fetchSchedulerStatus])
 
   const fetchSettings = async () => {
     try {
@@ -267,12 +308,43 @@ export default function SettingsPage() {
         throw new Error(data.error || 'Ayarlar kaydedilemedi')
       }
 
+      // Restart scheduler with new settings
+      await fetch('/api/admin/scheduler', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'restart' }),
+      })
+
       setSuccess(true)
+      fetchSchedulerStatus()
       setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Bir hata oluştu')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleTriggerScheduler = async () => {
+    setTriggeringScheduler(true)
+    try {
+      const response = await fetch('/api/admin/scheduler', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'trigger' }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        setSuccess(true)
+        setTimeout(() => setSuccess(false), 3000)
+      } else {
+        setError(data.message || 'İçerik üretimi başlatılamadı')
+      }
+      fetchSchedulerStatus()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bir hata oluştu')
+    } finally {
+      setTriggeringScheduler(false)
     }
   }
 
@@ -332,6 +404,67 @@ export default function SettingsPage() {
 
       {/* Settings Sections */}
       <div className="grid gap-6">
+        {/* Scheduler Status Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Timer className="w-5 h-5 text-blue-600" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Zamanlayıcı Durumu</h2>
+            </div>
+            <button
+              onClick={handleTriggerScheduler}
+              disabled={triggeringScheduler}
+              className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {triggeringScheduler ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
+              {triggeringScheduler ? 'Çalışıyor...' : 'Şimdi Çalıştır'}
+            </button>
+          </div>
+          
+          {schedulerStatus ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Durum</p>
+                <p className={`text-sm font-medium ${schedulerStatus.isRunning ? 'text-green-600' : 'text-yellow-600'}`}>
+                  {schedulerStatus.isRunning ? 'Aktif' : 'Pasif'}
+                </p>
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Zamanlama</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {schedulerStatus.scheduleDescription || schedulerStatus.currentSchedule}
+                </p>
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Son Çalışma</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {schedulerStatus.lastRun 
+                    ? new Date(schedulerStatus.lastRun).toLocaleString('tr-TR')
+                    : 'Henüz çalışmadı'}
+                </p>
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Toplam Çalışma</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {schedulerStatus.runCount} kez
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-500">Zamanlayıcı durumu yükleniyor...</p>
+          )}
+          
+          {schedulerStatus?.lastError && (
+            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+              <p className="text-xs text-red-600 dark:text-red-400">Son Hata: {schedulerStatus.lastError}</p>
+            </div>
+          )}
+        </div>
+
         {/* Site Ayarları */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Site Ayarları</h2>
@@ -445,20 +578,27 @@ export default function SettingsPage() {
 
         {/* Otomasyon Ayarları */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Otomasyon Ayarları</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <Timer className="w-5 h-5 text-green-600" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Otomasyon Ayarları</h2>
+          </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Cron Zamanlaması
+                Zamanlama
               </label>
-              <input
-                type="text"
+              <select
                 value={settings.cron_schedule}
                 onChange={(e) => handleChange('cron_schedule', e.target.value)}
-                placeholder="0 */6 * * *"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-              />
-              <p className="mt-1 text-xs text-gray-500">Örnek: &quot;0 */6 * * *&quot; = Her 6 saatte bir</p>
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {CRON_PRESETS.map((preset) => (
+                  <option key={preset.value} value={preset.value}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500">İçerik üretim motorunun ne sıklıkla çalışacağı</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -474,6 +614,23 @@ export default function SettingsPage() {
               />
               <p className="mt-1 text-xs text-gray-500">Her çalışmada üretilecek maksimum makale sayısı</p>
             </div>
+          </div>
+          
+          {/* Custom Cron Input */}
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Özel Cron İfadesi (İleri Düzey)
+            </label>
+            <input
+              type="text"
+              value={settings.cron_schedule}
+              onChange={(e) => handleChange('cron_schedule', e.target.value)}
+              placeholder="*/15 * * * *"
+              className="w-full md:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Format: dakika saat gün ay haftanın_günü (örn: &quot;*/15 * * * *&quot; = her 15 dakikada)
+            </p>
           </div>
         </div>
 

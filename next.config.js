@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable instrumentation for scheduler initialization
+  experimental: {
+    instrumentationHook: true,
+  },
   images: {
     remotePatterns: [
       {
