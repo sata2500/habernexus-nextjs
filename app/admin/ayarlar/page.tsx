@@ -162,6 +162,7 @@ interface SettingsState {
   ai_model_category: string
   ai_model_summary: string
   ai_model_image: string
+  enable_image_generation: string
   cron_schedule: string
   articles_per_run: string
   default_category: string
@@ -174,7 +175,8 @@ const defaultSettings: SettingsState = {
   ai_model_sentiment: 'gemini-2.5-flash',
   ai_model_category: 'gemini-2.5-flash-lite',
   ai_model_summary: 'gemini-2.5-flash-lite',
-  ai_model_image: 'imagen-3.0-generate-001',
+  ai_model_image: 'imagen-3.0-generate-002',
+  enable_image_generation: 'true',
   cron_schedule: '0 */6 * * *',
   articles_per_run: '5',
   default_category: 'Gündem',
@@ -557,19 +559,45 @@ export default function SettingsPage() {
             />
           </div>
 
-          {/* Görsel Üretim Modeli */}
+          {/* Görsel Üretim Ayarları */}
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 className="text-md font-medium text-gray-900 dark:text-white mb-4">Görsel Üretim Ayarları</h3>
+            
+            {/* Görsel Üretim Toggle */}
+            <div className="mb-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.enable_image_generation === 'true'}
+                  onChange={(e) => handleChange('enable_image_generation', e.target.checked ? 'true' : 'false')}
+                  className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  AI ile Otomatik Görsel Üretimi
+                </span>
+              </label>
+              <p className="mt-1 ml-8 text-xs text-gray-500">Aktif olduğunda her makale için AI ile görsel üretilir</p>
+            </div>
+
+            {/* Görsel Üretim Modeli */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Görsel Üretim Modeli
+                Görsel Üretim Modeli (Imagen)
               </label>
               <select
                 value={settings.ai_model_image}
                 onChange={(e) => handleChange('ai_model_image', e.target.value)}
-                className="w-full md:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={settings.enable_image_generation !== 'true'}
+                className="w-full md:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="imagen-3.0-generate-001">Imagen 3.0 (Önerilen)</option>
-                <option value="imagen-3.0-fast-generate-001">Imagen 3.0 Fast (Hızlı)</option>
+                <optgroup label="Imagen 4 (En Yeni)">
+                  <option value="imagen-4.0-generate-001">Imagen 4.0 Standard</option>
+                  <option value="imagen-4.0-fast-generate-001">Imagen 4.0 Fast (Hızlı)</option>
+                  <option value="imagen-4.0-ultra-generate-001">Imagen 4.0 Ultra (2K)</option>
+                </optgroup>
+                <optgroup label="Imagen 3 (Stabil)">
+                  <option value="imagen-3.0-generate-002">Imagen 3.0 (Önerilen)</option>
+                </optgroup>
               </select>
               <p className="mt-1 text-xs text-gray-500">Makale görselleri oluşturmak için kullanılır</p>
             </div>
