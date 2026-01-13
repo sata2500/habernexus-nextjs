@@ -1,4 +1,4 @@
-import { GoogleGenAI, PersonGeneration } from '@google/genai'
+import { GoogleGenAI } from '@google/genai'
 import { prisma } from '@/lib/prisma'
 import { getPromptByType, interpolatePrompt, getImageStyleForCategory } from '@/lib/prompts'
 import { PromptType } from '@prisma/client'
@@ -115,8 +115,7 @@ export async function generateArticleImage(
       config: {
         numberOfImages: 1,
         aspectRatio: '16:9',
-        // Don't generate people to avoid issues
-        personGeneration: PersonGeneration.DONT_ALLOW,
+        // Allow people in generated images for more realistic and engaging visuals
       },
     })
 
