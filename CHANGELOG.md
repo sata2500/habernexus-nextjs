@@ -1,3 +1,13 @@
+## [1.13.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.12.0...v1.13.0) (2026-01-13)
+
+### ✨ Yeni Özellikler
+
+* Görsel üretim promptu v2 - Daha güzel, özgün ve sansürsüz ([324a64a](https://github.com/sata2500/habernexus-nextjs/commit/324a64a5ae5588bb52b3b642e0f7269c8a931f48))
+
+### 📚 Dokümantasyon
+
+* Görsel üretim promptu v2 geliştirme raporu ([59328f3](https://github.com/sata2500/habernexus-nextjs/commit/59328f3791b00b6918a3a4e6730aa649dfe2f9b6))
+
 ## [1.12.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.11.0...v1.12.0) (2026-01-13)
 
 ### ✨ Yeni Özellikler
