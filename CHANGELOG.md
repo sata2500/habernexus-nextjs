@@ -1,3 +1,14 @@
+## [1.10.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.9.0...v1.10.0) (2026-01-13)
+
+### ✨ Yeni Özellikler
+
+* **ai:** add comprehensive Gemini model selection system ([628930a](https://github.com/sata2500/habernexus-nextjs/commit/628930accb8310eac7658b2bb3aa252d6eeea2af))
+* **scheduler:** add automatic content generation scheduler ([01a8bc3](https://github.com/sata2500/habernexus-nextjs/commit/01a8bc39668730657a708a8db133f5b5c39f155f))
+
+### 📚 Dokümantasyon
+
+* add work log for Gemini models and scheduler implementation ([e804aab](https://github.com/sata2500/habernexus-nextjs/commit/e804aab20a9837f2d01db2dd2a544f654c38c754))
+
 ## [1.9.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.8.0...v1.9.0) (2026-01-11)
 
 ### ✨ Yeni Özellikler
