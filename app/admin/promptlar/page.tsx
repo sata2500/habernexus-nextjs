@@ -291,7 +291,7 @@ export default function PromptsPage() {
     }
   }
 
-  const handleResetPrompt = async (_id: string) => {
+  const handleResetPrompt = async () => {
     // Just refresh to get original value
     fetchPrompts()
   }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -51,11 +51,7 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
   const [replyContent, setReplyContent] = useState('')
 
   // Fetch comments
-  useEffect(() => {
-    fetchComments()
-  }, [articleId])
-
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       setIsLoading(true)
       const response = await fetch(`/api/comments?articleId=${articleId}`)
@@ -72,7 +68,11 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [articleId])
+
+  useEffect(() => {
+    fetchComments()
+  }, [fetchComments])
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()

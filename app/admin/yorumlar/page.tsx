@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { MessageCircle, Check, X, Trash2, Loader2, AlertCircle, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
@@ -38,11 +38,7 @@ export default function AdminCommentsPage() {
   const [activeTab, setActiveTab] = useState<'PENDING' | 'APPROVED' | 'REJECTED'>('PENDING')
   const [processingId, setProcessingId] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchComments()
-  }, [activeTab])
-
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       setIsLoading(true)
       const response = await fetch(`/api/admin/comments?status=${activeTab}`)
@@ -59,7 +55,11 @@ export default function AdminCommentsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [activeTab])
+
+  useEffect(() => {
+    fetchComments()
+  }, [fetchComments])
 
   const handleUpdateStatus = async (id: string, status: 'APPROVED' | 'REJECTED') => {
     setProcessingId(id)

@@ -1,14 +1,25 @@
 /**
  * Imagen API Test Script
  * Tests the image generation functionality with real API calls
+ * 
+ * Usage: GEMINI_API_KEY=your_key npx ts-node scripts/test-imagen.ts
  */
 
 import { GoogleGenAI } from '@google/genai'
 import * as fs from 'fs'
 import * as path from 'path'
 
-// Load environment variables
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+// Load environment variables with validation
+const envApiKey = process.env.GEMINI_API_KEY
+
+if (!envApiKey) {
+  console.error('❌ ERROR: GEMINI_API_KEY environment variable is not set')
+  console.error('Usage: GEMINI_API_KEY=your_key npx ts-node scripts/test-imagen.ts')
+  process.exit(1)
+}
+
+// Now we know it's defined, assign to a non-nullable constant
+const GEMINI_API_KEY: string = envApiKey
 
 console.log('='.repeat(60))
 console.log('IMAGEN API TEST SCRIPT')
@@ -40,7 +51,7 @@ const TEST_PROMPTS = [
   },
 ]
 
-async function testModel(modelName: string, prompt: string, title: string): Promise<{
+async function testModel(modelName: string, prompt: string): Promise<{
   success: boolean
   error?: string
   imageSize?: number
@@ -168,7 +179,7 @@ async function runTests() {
   // Test each model with first prompt
   for (const model of MODELS_TO_TEST) {
     const testPrompt = TEST_PROMPTS[0]
-    const result = await testModel(model, testPrompt.prompt, testPrompt.title)
+    const result = await testModel(model, testPrompt.prompt)
     results.push({
       model,
       prompt: testPrompt.title,

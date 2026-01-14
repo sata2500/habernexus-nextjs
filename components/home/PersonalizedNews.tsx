@@ -41,7 +41,7 @@ interface PersonalizedNewsResponse {
 }
 
 export default function PersonalizedNews() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const [articles, setArticles] = useState<Article[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isPersonalized, setIsPersonalized] = useState(false)

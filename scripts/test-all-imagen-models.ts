@@ -1,14 +1,25 @@
 /**
  * Test All Imagen Models Script
  * Tests all available Imagen models to verify API access
+ * 
+ * Usage: GEMINI_API_KEY=your_key npx ts-node scripts/test-all-imagen-models.ts
  */
 
 import { GoogleGenAI } from '@google/genai'
 import * as fs from 'fs'
 import * as path from 'path'
 
-// Load environment variables
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+// Load environment variables with validation
+const envApiKey = process.env.GEMINI_API_KEY
+
+if (!envApiKey) {
+  console.error('❌ ERROR: GEMINI_API_KEY environment variable is not set')
+  console.error('Usage: GEMINI_API_KEY=your_key npx ts-node scripts/test-all-imagen-models.ts')
+  process.exit(1)
+}
+
+// Now we know it's defined, assign to a non-nullable constant
+const GEMINI_API_KEY: string = envApiKey
 
 console.log('='.repeat(70))
 console.log('IMAGEN API - ALL MODELS TEST')
@@ -249,8 +260,13 @@ async function runAllTests() {
   console.log(`TOTAL: ${workingModels.length}/${results.length} models working`)
   console.log('='.repeat(70))
   
-  // Generate JSON report
-  const reportPath = path.join(process.cwd(), 'docs', 'ai-knowledge-base', 'research', 'imagen-model-test-results.json')
+  // Generate JSON report - ensure directory exists
+  const reportDir = path.join(process.cwd(), 'docs', 'ai-knowledge-base', 'research')
+  if (!fs.existsSync(reportDir)) {
+    fs.mkdirSync(reportDir, { recursive: true })
+  }
+  
+  const reportPath = path.join(reportDir, 'imagen-model-test-results.json')
   fs.writeFileSync(reportPath, JSON.stringify({
     testDate: new Date().toISOString(),
     apiKey: `${GEMINI_API_KEY.substring(0, 10)}...`,
