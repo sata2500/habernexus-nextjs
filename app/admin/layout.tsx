@@ -14,7 +14,9 @@ import {
   ChevronRight,
   Sparkles,
   FileText,
-  Image as ImageIcon
+  Image as ImageIcon,
+  FlaskConical,
+  AlertTriangle
 } from 'lucide-react'
 
 const sidebarItems = [
@@ -27,6 +29,8 @@ const sidebarItems = [
   { name: 'Analitik', href: '/admin/analitik', icon: BarChart3 },
   { name: 'AI Promptları', href: '/admin/promptlar', icon: FileText },
   { name: 'Görsel Ayarları', href: '/admin/gorsel-ayarlari', icon: ImageIcon },
+  { name: 'Görsel Hataları', href: '/admin/gorsel-hatalari', icon: AlertTriangle },
+  { name: 'Test Ortamı', href: '/admin/test-ortami', icon: FlaskConical },
   { name: 'Ayarlar', href: '/admin/ayarlar', icon: Settings },
 ]
 

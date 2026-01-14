@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai'
 import { prisma } from '@/lib/prisma'
 import { getPromptByType, interpolatePrompt, getImageStyleForCategory } from '@/lib/prompts'
 import { PromptType } from '@prisma/client'
+import { logImageError, logImageStats, classifyErrorType } from '@/lib/image-error-tracker'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -159,14 +160,24 @@ export async function generateArticleImage(
   title: string,
   category: string,
   _content?: string,
-  modelOverride?: string
+  modelOverride?: string,
+  articleId?: string
 ): Promise<ImageGenerationResult> {
   let lastError: string = 'Unknown error'
   let retryCount = 0
+  const startTime = Date.now()
 
   // Check if API key is configured
   if (!process.env.GEMINI_API_KEY) {
     console.warn('[Imagen] API key not configured, using placeholder')
+    await logImageError({
+      articleId,
+      source: 'ai',
+      operation: 'generate',
+      errorType: 'auth_error',
+      errorMessage: 'GEMINI_API_KEY not configured',
+      category,
+    })
     return {
       success: false,
       imageUrl: null,
@@ -174,10 +185,11 @@ export async function generateArticleImage(
     }
   }
 
+  let model: string = ''
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const client = getGenAIClient()
-      const model = modelOverride || await getConfiguredImageModel()
+      model = modelOverride || await getConfiguredImageModel()
       const prompt = await generateImagePrompt(title, category)
 
       console.log(`[Imagen] Attempt ${attempt + 1}/${MAX_RETRIES + 1} - Generating image with model: ${model}`)
@@ -257,8 +269,18 @@ export async function generateArticleImage(
 
       // Save the image to public folder
       const imageUrl = await saveGeneratedImage(generatedImage.image, title)
+      const duration = Date.now() - startTime
 
       console.log(`[Imagen] Image generated and saved successfully: ${imageUrl}`)
+
+      // Log successful generation stats
+      await logImageStats({
+        articleId,
+        source: 'ai',
+        model,
+        duration,
+        success: true,
+      })
 
       return {
         success: true,
@@ -287,6 +309,25 @@ export async function generateArticleImage(
       }
     }
   }
+
+  // Log failed generation
+  const duration = Date.now() - startTime
+  await logImageError({
+    articleId,
+    source: 'ai',
+    operation: 'generate',
+    errorType: classifyErrorType(lastError),
+    errorMessage: lastError,
+    category,
+    retryCount,
+  })
+  await logImageStats({
+    articleId,
+    source: 'ai',
+    model,
+    duration,
+    success: false,
+  })
 
   return {
     success: false,

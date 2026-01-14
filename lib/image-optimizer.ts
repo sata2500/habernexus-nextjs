@@ -2,6 +2,7 @@ import sharp from 'sharp'
 import * as fs from 'fs'
 import * as path from 'path'
 import { prisma } from '@/lib/prisma'
+import { logImageError, logImageStats, classifyErrorType } from '@/lib/image-error-tracker'
 
 /**
  * Image Optimizer Service
@@ -353,7 +354,9 @@ export async function saveOptimizedImage(
 export async function downloadAndOptimizeImage(
   url: string,
   title: string,
-  customSettings?: Partial<ImageOptimizationSettings>
+  customSettings?: Partial<ImageOptimizationSettings>,
+  articleId?: string,
+  category?: string
 ): Promise<ImageOptimizationResult> {
   const startTime = Date.now()
   
@@ -368,6 +371,22 @@ export async function downloadAndOptimizeImage(
     // Download the image
     const originalBuffer = await downloadImage(url)
     if (!originalBuffer) {
+      const duration = Date.now() - startTime
+      await logImageError({
+        articleId,
+        source: 'rss',
+        operation: 'download',
+        errorType: 'download_failed',
+        errorMessage: 'Failed to download image from RSS source',
+        sourceUrl: url,
+        category,
+      })
+      await logImageStats({
+        articleId,
+        source: 'rss',
+        duration,
+        success: false,
+      })
       return {
         success: false,
         localPath: null,
@@ -386,6 +405,23 @@ export async function downloadAndOptimizeImage(
     // Optimize the image
     const optimized = await optimizeImage(originalBuffer, settings)
     if (!optimized) {
+      const duration = Date.now() - startTime
+      await logImageError({
+        articleId,
+        source: 'rss',
+        operation: 'optimize',
+        errorType: 'optimization_failed',
+        errorMessage: 'Failed to optimize image',
+        sourceUrl: url,
+        category,
+      })
+      await logImageStats({
+        articleId,
+        source: 'rss',
+        originalSize,
+        duration,
+        success: false,
+      })
       return {
         success: false,
         localPath: null,
@@ -412,6 +448,19 @@ export async function downloadAndOptimizeImage(
 
     console.log(`[ImageOptimizer] Complete: ${originalSize} -> ${optimized.buffer.length} bytes (${Math.round((1 - optimized.buffer.length / originalSize) * 100)}% reduction) in ${duration}ms`)
 
+    // Log successful optimization stats
+    await logImageStats({
+      articleId,
+      source: 'rss',
+      originalSize,
+      optimizedSize: optimized.buffer.length,
+      width: optimized.info.width,
+      height: optimized.info.height,
+      format: settings.format,
+      duration,
+      success: true,
+    })
+
     return {
       success: true,
       localPath,
@@ -424,6 +473,25 @@ export async function downloadAndOptimizeImage(
     }
   } catch (error) {
     console.error('[ImageOptimizer] Error:', error)
+    const duration = Date.now() - startTime
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    
+    await logImageError({
+      articleId,
+      source: 'rss',
+      operation: 'optimize',
+      errorType: classifyErrorType(errorMessage),
+      errorMessage,
+      sourceUrl: url,
+      category,
+    })
+    await logImageStats({
+      articleId,
+      source: 'rss',
+      duration,
+      success: false,
+    })
+    
     return {
       success: false,
       localPath: null,
@@ -433,7 +501,7 @@ export async function downloadAndOptimizeImage(
       format: 'webp',
       width: 0,
       height: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
     }
   }
 }

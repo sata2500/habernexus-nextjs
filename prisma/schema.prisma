@@ -294,3 +294,44 @@ model CommentLike {
   @@unique([userId, commentId])
   @@index([commentId])
 }
+
+
+// Image error tracking model - For tracking failed image operations
+model ImageError {
+  id          String   @id @default(cuid())
+  articleId   String?  // Optional: related article if applicable
+  source      String   // "ai" | "rss" | "optimization"
+  operation   String   // "download" | "generate" | "optimize" | "save"
+  errorType   String   // Error classification (e.g., "timeout", "api_error", "invalid_format")
+  errorMessage String  // Full error message
+  sourceUrl   String?  // Original image URL if applicable
+  category    String?  // Article category if applicable
+  retryCount  Int      @default(0)
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  
+  @@index([source])
+  @@index([createdAt])
+  @@index([resolved])
+}
+
+// Image statistics model - For tracking image generation/optimization stats
+model ImageStats {
+  id              String   @id @default(cuid())
+  articleId       String?  // Optional: related article
+  source          String   // "ai" | "rss"
+  model           String?  // AI model used (for AI images)
+  originalSize    Int?     // Original file size in bytes
+  optimizedSize   Int?     // Optimized file size in bytes
+  width           Int?     // Final image width
+  height          Int?     // Final image height
+  format          String?  // Output format (webp, jpeg, etc.)
+  duration        Int      // Processing duration in milliseconds
+  success         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  
+  @@index([source])
+  @@index([createdAt])
+  @@index([success])
+}
