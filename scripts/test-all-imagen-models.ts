@@ -8,7 +8,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 // Load environment variables
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyDGxyNclI2R2W4gEJC0pWSKuGfpyeOukVg'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 
 console.log('='.repeat(70))
 console.log('IMAGEN API - ALL MODELS TEST')
