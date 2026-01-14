@@ -1,3 +1,17 @@
+## [1.16.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.15.1...v1.16.0) (2026-01-14)
+
+### ✨ Yeni Özellikler
+
+* Görsel hata takibi, test ortamı ve istatistik sistemi eklendi ([49b375a](https://github.com/sata2500/habernexus-nextjs/commit/49b375a9903c9e787244468052b5e18831ef27b8))
+
+### 📚 Dokümantasyon
+
+* add final development and improvement report ([fd37502](https://github.com/sata2500/habernexus-nextjs/commit/fd37502675f6a428bab189c0790c3c0a14110f6f))
+
+### 🔧 Bakım
+
+* mark development plan as completed ([f64e43d](https://github.com/sata2500/habernexus-nextjs/commit/f64e43d692055177263f1cb720199bff0187290f))
+
 ## [1.15.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.15.0...v1.15.1) (2026-01-14)
 
 ### 🐛 Hata Düzeltmeleri
