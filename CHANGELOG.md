@@ -1,3 +1,9 @@
+## [1.15.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.14.0...v1.15.0) (2026-01-14)
+
+### ✨ Yeni Özellikler
+
+* **imagen:** Update to Imagen 4.0 models and add comprehensive testing ([fca76ec](https://github.com/sata2500/habernexus-nextjs/commit/fca76ec5ea27516653376631c28c30c05fe6262f))
+
 ## [1.14.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.13.0...v1.14.0) (2026-01-14)
 
 ### ✨ Yeni Özellikler
