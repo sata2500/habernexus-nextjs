@@ -1,0 +1,67 @@
+{
+  "testDate": "2026-01-14T04:24:28.067Z",
+  "apiKey": "AIzaSyDGxy...",
+  "results": [
+    {
+      "modelId": "imagen-4.0-generate-001",
+      "modelName": "Imagen 4.0 Standard",
+      "status": "stable",
+      "success": true,
+      "duration": 8056,
+      "imageSize": 1288419
+    },
+    {
+      "modelId": "imagen-4.0-ultra-generate-001",
+      "modelName": "Imagen 4.0 Ultra",
+      "status": "stable",
+      "success": true,
+      "duration": 9967,
+      "imageSize": 1295539
+    },
+    {
+      "modelId": "imagen-4.0-fast-generate-001",
+      "modelName": "Imagen 4.0 Fast",
+      "status": "stable",
+      "success": true,
+      "duration": 4972,
+      "imageSize": 1244006
+    },
+    {
+      "modelId": "imagen-4.0-generate-preview-06-06",
+      "modelName": "Imagen 4.0 Preview",
+      "status": "preview",
+      "success": true,
+      "duration": 7679,
+      "imageSize": 1212690
+    },
+    {
+      "modelId": "imagen-4.0-ultra-generate-preview-06-06",
+      "modelName": "Imagen 4.0 Ultra Preview",
+      "status": "preview",
+      "success": true,
+      "duration": 10027,
+      "imageSize": 1535385
+    },
+    {
+      "modelId": "imagen-3.0-generate-002",
+      "modelName": "Imagen 3.0",
+      "status": "deprecated",
+      "success": false,
+      "duration": 35,
+      "error": "Model not found (404)"
+    },
+    {
+      "modelId": "imagen-3.0-generate-001",
+      "modelName": "Imagen 3.0 v1",
+      "status": "deprecated",
+      "success": false,
+      "duration": 37,
+      "error": "Model not found (404)"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "working": 5,
+    "failed": 2
+  }
+}

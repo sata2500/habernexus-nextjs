@@ -38,11 +38,15 @@ const FORMAT_OPTIONS = [
   { value: 'png', label: 'PNG', description: 'Kayıpsız, büyük dosya boyutu' },
 ]
 
+// Updated: 14 January 2026 - Imagen 3.0 deprecated, using Imagen 4.0 models
 const IMAGE_MODELS = [
-  { value: 'imagen-3.0-generate-002', label: 'Imagen 3.0', description: 'Yüksek kaliteli görsel üretimi' },
-  { value: 'imagen-4.0-generate-001', label: 'Imagen 4.0', description: 'En yeni model - Daha yüksek kalite' },
-  { value: 'imagen-4.0-fast-generate-001', label: 'Imagen 4.0 Fast', description: 'Hızlı görsel üretimi' },
-  { value: 'imagen-4.0-ultra-generate-001', label: 'Imagen 4.0 Ultra', description: 'Ultra yüksek kalite (2K)' },
+  // Stable (GA) Models - Recommended for production
+  { value: 'imagen-4.0-fast-generate-001', label: 'Imagen 4.0 Fast (Önerilen)', description: 'Hızlı ve yüksek kalite (~5 saniye)', status: 'stable' },
+  { value: 'imagen-4.0-generate-001', label: 'Imagen 4.0 Standard', description: 'En yüksek kalite (~8 saniye)', status: 'stable' },
+  { value: 'imagen-4.0-ultra-generate-001', label: 'Imagen 4.0 Ultra', description: 'Ultra yüksek kalite, 2K çözünürlük (~10 saniye)', status: 'stable' },
+  // Preview Models - Will be shut down Feb 17, 2026
+  { value: 'imagen-4.0-generate-preview-06-06', label: 'Imagen 4.0 Preview', description: 'Önizleme - 17 Şubat 2026\'da kapanacak', status: 'preview' },
+  { value: 'imagen-4.0-ultra-generate-preview-06-06', label: 'Imagen 4.0 Ultra Preview', description: 'Ultra önizleme - 17 Şubat 2026\'da kapanacak', status: 'preview' },
 ]
 
 export default function ImageSettingsPage() {
@@ -54,7 +58,7 @@ export default function ImageSettingsPage() {
     stripMetadata: true,
     enableImageGeneration: true,
     enableRssImageOptimization: true,
-    imageModel: 'imagen-3.0-generate-002',
+    imageModel: 'imagen-4.0-fast-generate-001',
   })
   const [stats, setStats] = useState<ImageStats>({
     aiGenerated: 0,

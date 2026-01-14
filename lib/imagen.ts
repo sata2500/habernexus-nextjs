@@ -9,8 +9,15 @@ import * as path from 'path'
  * Imagen Image Generation Service
  * Handles AI-powered image generation for news articles
  * 
- * @version 3.0.0
+ * @version 4.0.0
  * @lastUpdated 14 January 2026
+ * 
+ * Changes in v4.0.0:
+ * - Updated to use Imagen 4.0 models (Imagen 3.0 deprecated)
+ * - Added all 5 working Imagen models with metadata
+ * - Added model status tracking (stable/preview)
+ * - Added shutdown date warnings for preview models
+ * - Added average duration and size info for each model
  * 
  * Changes in v3.0.0:
  * - Improved error handling and logging
@@ -36,7 +43,8 @@ function getGenAIClient(): GoogleGenAI {
 }
 
 // Default model for image generation
-const DEFAULT_IMAGE_MODEL = 'imagen-3.0-generate-002'
+// Note: imagen-3.0-generate-002 is deprecated, using imagen-4.0-fast-generate-001
+const DEFAULT_IMAGE_MODEL = 'imagen-4.0-fast-generate-001'
 
 // Maximum retry attempts for transient failures
 const MAX_RETRIES = 2
@@ -459,26 +467,65 @@ export async function testImagenConnection(): Promise<{
 /**
  * Get available Imagen models
  */
+/**
+ * Available Imagen models with their characteristics
+ * Updated: 14 January 2026
+ * 
+ * Test Results:
+ * - imagen-4.0-fast-generate-001: ~5s, ~1.2MB (RECOMMENDED)
+ * - imagen-4.0-generate-001: ~8s, ~1.3MB
+ * - imagen-4.0-ultra-generate-001: ~10s, ~1.3MB
+ * - imagen-4.0-generate-preview-06-06: ~8s, ~1.2MB (Preview - shutting down Feb 2026)
+ * - imagen-4.0-ultra-generate-preview-06-06: ~10s, ~1.5MB (Preview - shutting down Feb 2026)
+ * 
+ * Deprecated (404 Not Found):
+ * - imagen-3.0-generate-002 (shut down Nov 2025)
+ * - imagen-3.0-generate-001 (shut down)
+ */
 export const IMAGEN_MODELS = {
-  'imagen-3.0-generate-002': {
-    name: 'Imagen 3.0',
-    description: 'Yüksek kaliteli görsel üretimi',
-    isDefault: true,
-  },
-  'imagen-4.0-generate-001': {
-    name: 'Imagen 4.0',
-    description: 'En yeni model - Daha yüksek kalite',
-    isDefault: false,
-  },
+  // Stable (GA) Models - Recommended for production
   'imagen-4.0-fast-generate-001': {
     name: 'Imagen 4.0 Fast',
-    description: 'Hızlı görsel üretimi',
+    description: 'Hızlı ve yüksek kaliteli görsel üretimi (~5 saniye) - Önerilen',
+    isDefault: true,
+    status: 'stable',
+    avgDuration: 5000,
+    avgSize: 1200,
+  },
+  'imagen-4.0-generate-001': {
+    name: 'Imagen 4.0 Standard',
+    description: 'En yüksek kalite, daha fazla detay (~8 saniye)',
     isDefault: false,
+    status: 'stable',
+    avgDuration: 8000,
+    avgSize: 1300,
   },
   'imagen-4.0-ultra-generate-001': {
     name: 'Imagen 4.0 Ultra',
-    description: 'Ultra yüksek kalite (2K)',
+    description: 'Ultra yüksek kalite, 2K çözünürlük (~10 saniye)',
     isDefault: false,
+    status: 'stable',
+    avgDuration: 10000,
+    avgSize: 1300,
+  },
+  // Preview Models - Will be shut down Feb 17, 2026
+  'imagen-4.0-generate-preview-06-06': {
+    name: 'Imagen 4.0 Preview',
+    description: 'Önizleme modeli - 17 Şubat 2026\'da kapanacak',
+    isDefault: false,
+    status: 'preview',
+    avgDuration: 8000,
+    avgSize: 1200,
+    shutdownDate: '2026-02-17',
+  },
+  'imagen-4.0-ultra-generate-preview-06-06': {
+    name: 'Imagen 4.0 Ultra Preview',
+    description: 'Ultra önizleme modeli - 17 Şubat 2026\'da kapanacak',
+    isDefault: false,
+    status: 'preview',
+    avgDuration: 10000,
+    avgSize: 1500,
+    shutdownDate: '2026-02-17',
   },
 }
 
