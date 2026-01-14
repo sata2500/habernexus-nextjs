@@ -1,3 +1,13 @@
+## [1.15.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.15.0...v1.15.1) (2026-01-14)
+
+### 🐛 Hata Düzeltmeleri
+
+* **ci:** resolve TypeScript undefined errors and lint warnings ([fb70a4e](https://github.com/sata2500/habernexus-nextjs/commit/fb70a4e102732fc0c8d566feec284581201c36ea))
+
+### 📚 Dokümantasyon
+
+* add image system analysis and improvement report ([59406a8](https://github.com/sata2500/habernexus-nextjs/commit/59406a80338cc3e4de12615c34734b1925daa546))
+
 ## [1.15.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.14.0...v1.15.0) (2026-01-14)
 
 ### ✨ Yeni Özellikler
