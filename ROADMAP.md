@@ -123,6 +123,24 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 
 ---
 
+### v2.1: Admin Panel İyileştirmeleri ✅
+
+**Durum:** Tamamlandı  
+**Tamamlanma Tarihi:** 14 Ocak 2026  
+**Amaç:** Admin panelini daha kullanışlı ve tutarlı hale getirmek.
+
+| Durum | Özellik | Geliştirici Notu |
+|---|---|---|
+| ✅ | Sidebar aktif sayfa vurgulaması | Hangi sayfada olduğunuz artık görsel olarak belirtiliyor. |
+| ✅ | Dinamik breadcrumb | Sayfa başlığı URL'den otomatik belirleniyor. |
+| ✅ | Analitik gerçek veri entegrasyonu | Son 7 günlük aktivite artık gerçek verilerden hesaplanıyor. |
+| ✅ | Görsel ayarları tekrarının kaldırılması | Ayarlar sayfasından görsel ayarları kaldırıldı, ayrı sayfaya yönlendirme eklendi. |
+| ✅ | Makale düzenleme sayfası | Admin panelinden makaleler düzenlenebilir hale getirildi. |
+| ✅ | RSS kaynağı düzenleme | RSS kaynaklarının adı ve kategorisi düzenlenebilir. |
+| ✅ | Newsletter abone sayısı API | Analitik sayfası için newsletter count endpoint'i eklendi. |
+
+---
+
 ## 🔮 Gelecek Vizyonu
 
 - **Gelişmiş AI Özellikleri:** Çoklu dil desteği, video özetleme, sesli haber okuma.
@@ -153,6 +171,9 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 
 ### v2.0 Genişleme İlerlemesi
 - **Tamamlanan:** 4/4 özellik (%100) ✅
+
+### v2.1 Admin Panel İyileştirmeleri İlerlemesi
+- **Tamamlanan:** 7/7 özellik (%100) ✅
 
 ---
 
@@ -189,4 +210,4 @@ Bu yol haritasındaki özelliklere katkıda bulunmak isterseniz:
 
 ---
 
-**Son Güncelleme:** 11 Ocak 2026
+**Son Güncelleme:** 14 Ocak 2026

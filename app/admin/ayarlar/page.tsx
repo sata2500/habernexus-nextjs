@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Settings, Save, AlertCircle, CheckCircle, RefreshCw, Sparkles, Zap, Crown, Clock, Play, Timer } from 'lucide-react'
+import { Settings, Save, AlertCircle, CheckCircle, RefreshCw, Sparkles, Zap, Crown, Clock, Play, Timer, ExternalLink } from 'lucide-react'
+import Link from 'next/link'
 
 /**
  * Gemini Model Configuration
@@ -559,47 +560,22 @@ export default function SettingsPage() {
             />
           </div>
 
-          {/* Görsel Üretim Ayarları */}
+          {/* Görsel Ayarları Yönlendirmesi */}
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <h3 className="text-md font-medium text-gray-900 dark:text-white mb-4">Görsel Üretim Ayarları</h3>
-            
-            {/* Görsel Üretim Toggle */}
-            <div className="mb-4">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.enable_image_generation === 'true'}
-                  onChange={(e) => handleChange('enable_image_generation', e.target.checked ? 'true' : 'false')}
-                  className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  AI ile Otomatik Görsel Üretimi
-                </span>
-              </label>
-              <p className="mt-1 ml-8 text-xs text-gray-500">Aktif olduğunda her makale için AI ile görsel üretilir</p>
-            </div>
-
-            {/* Görsel Üretim Modeli */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Görsel Üretim Modeli (Imagen)
-              </label>
-              <select
-                value={settings.ai_model_image}
-                onChange={(e) => handleChange('ai_model_image', e.target.value)}
-                disabled={settings.enable_image_generation !== 'true'}
-                className="w-full md:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <div>
+                <h3 className="text-md font-medium text-gray-900 dark:text-white">Görsel Üretim Ayarları</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  AI görsel üretimi ve optimizasyon ayarları için ayrı sayfaya gidin
+                </p>
+              </div>
+              <Link
+                href="/admin/gorsel-ayarlari"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                <optgroup label="Imagen 4 (En Yeni)">
-                  <option value="imagen-4.0-generate-001">Imagen 4.0 Standard</option>
-                  <option value="imagen-4.0-fast-generate-001">Imagen 4.0 Fast (Hızlı)</option>
-                  <option value="imagen-4.0-ultra-generate-001">Imagen 4.0 Ultra (2K)</option>
-                </optgroup>
-                <optgroup label="Imagen 3 (Stabil)">
-                  <option value="imagen-3.0-generate-002">Imagen 3.0 (Önerilen)</option>
-                </optgroup>
-              </select>
-              <p className="mt-1 text-xs text-gray-500">Makale görselleri oluşturmak için kullanılır</p>
+                <span>Görsel Ayarları</span>
+                <ExternalLink className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </div>

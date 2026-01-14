@@ -10,7 +10,8 @@ import {
   XCircle,
   ExternalLink,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Edit
 } from 'lucide-react'
 
 interface RssFeed {
@@ -33,6 +34,12 @@ export default function RssManagement() {
   const [formData, setFormData] = useState({
     name: '',
     url: '',
+    category: 'Gündem',
+  })
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingFeed, setEditingFeed] = useState<RssFeed | null>(null)
+  const [editFormData, setEditFormData] = useState({
+    name: '',
     category: 'Gündem',
   })
 
@@ -115,6 +122,51 @@ export default function RssManagement() {
       setFeeds(feeds.filter(f => f.id !== id))
     } catch {
       alert('Kaynak silinirken bir hata oluştu')
+    }
+  }
+
+  const handleOpenEditModal = (feed: RssFeed) => {
+    setEditingFeed(feed)
+    setEditFormData({
+      name: feed.name,
+      category: feed.category,
+    })
+    setShowEditModal(true)
+  }
+
+  const handleEditFeed = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingFeed) return
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/admin/rss', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingFeed.id,
+          name: editFormData.name,
+          category: editFormData.category,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update feed')
+      }
+
+      setFeeds(feeds.map(f => 
+        f.id === editingFeed.id 
+          ? { ...f, name: editFormData.name, category: editFormData.category }
+          : f
+      ))
+      setShowEditModal(false)
+      setEditingFeed(null)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Kaynak güncellenirken bir hata oluştu')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -269,8 +321,16 @@ export default function RssManagement() {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end space-x-2">
                           <button 
+                            onClick={() => handleOpenEditModal(feed)}
+                            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            title="Düzenle"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button 
                             onClick={() => handleDeleteFeed(feed.id)}
                             className="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            title="Sil"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -287,6 +347,72 @@ export default function RssManagement() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && editingFeed && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">RSS Kaynağını Düzenle</h2>
+            <form onSubmit={handleEditFeed} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kaynak Adı</label>
+                <input
+                  type="text"
+                  placeholder="örn: TRT Haber"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">RSS URL</label>
+                <input
+                  type="url"
+                  value={editingFeed.url}
+                  disabled
+                  className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-600 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-500 cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-500 mt-1">URL değiştirilemez</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Kategori</label>
+                <select 
+                  value={editFormData.category}
+                  onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Gündem">Gündem</option>
+                  <option value="Ekonomi">Ekonomi</option>
+                  <option value="Teknoloji">Teknoloji</option>
+                  <option value="Spor">Spor</option>
+                  <option value="Dünya">Dünya</option>
+                  <option value="Sağlık">Sağlık</option>
+                  <option value="Kültür-Sanat">Kültür-Sanat</option>
+                  <option value="Bilim">Bilim</option>
+                </select>
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => { setShowEditModal(false); setEditingFeed(null); }}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 inline-flex items-center"
+                >
+                  {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Güncelle
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

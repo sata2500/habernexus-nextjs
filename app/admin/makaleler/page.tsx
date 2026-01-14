@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Newspaper, Eye, Bookmark, ThumbsUp, Trash2, ExternalLink, Search, AlertCircle } from 'lucide-react'
+import { Newspaper, Eye, Bookmark, ThumbsUp, Trash2, ExternalLink, Search, AlertCircle, Edit } from 'lucide-react'
 
 interface Article {
   id: string
@@ -239,21 +239,30 @@ export default function ArticlesPage() {
                     {new Date(article.publishedAt).toLocaleDateString('tr-TR')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link
-                      href={`/haber/${article.slug}`}
-                      target="_blank"
-                      className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3"
-                      title="Görüntüle"
-                    >
-                      <ExternalLink className="w-4 h-4 inline" />
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(article.id, article.title)}
-                      className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                      title="Sil"
-                    >
-                      <Trash2 className="w-4 h-4 inline" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/haber/${article.slug}`}
+                        target="_blank"
+                        className="p-1.5 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                        title="Görüntüle"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                      <Link
+                        href={`/admin/makaleler/${article.id}/duzenle`}
+                        className="p-1.5 text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                        title="Düzenle"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(article.id, article.title)}
+                        className="p-1.5 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                        title="Sil"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

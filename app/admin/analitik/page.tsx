@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { BarChart3, Users, Newspaper, Eye, Bookmark, ThumbsUp, TrendingUp, Calendar, AlertCircle } from 'lucide-react'
+import { BarChart3, Users, Newspaper, Eye, Bookmark, ThumbsUp, TrendingUp, Calendar, AlertCircle, Mail } from 'lucide-react'
 
 interface AnalyticsData {
   totalUsers: number
@@ -23,17 +23,27 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     fetchAnalytics()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchAnalytics = async () => {
     try {
-      // Kullanıcı verileri
-      const usersRes = await fetch('/api/admin/users')
-      const users = await usersRes.json()
+      // Tüm verileri paralel olarak çek
+      const [usersRes, articlesRes, newsletterRes] = await Promise.all([
+        fetch('/api/admin/users'),
+        fetch('/api/admin/articles'),
+        fetch('/api/newsletter?action=count'),
+      ])
 
-      // Makale verileri
-      const articlesRes = await fetch('/api/admin/articles')
+      const users = await usersRes.json()
       const articles = await articlesRes.json()
+      
+      // Newsletter sayısını al (hata durumunda 0)
+      let newsletterCount = 0
+      if (newsletterRes.ok) {
+        const newsletterData = await newsletterRes.json()
+        newsletterCount = newsletterData.count || 0
+      }
 
       // Verileri işle
       const totalViews = articles.reduce((sum: number, a: { viewCount: number }) => sum + a.viewCount, 0)
@@ -67,17 +77,8 @@ export default function AnalyticsPage() {
           category: a.category
         }))
 
-      // Son 7 günlük aktivite (simüle)
-      const recentActivity = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date()
-        date.setDate(date.getDate() - (6 - i))
-        return {
-          date: date.toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric' }),
-          users: Math.floor(Math.random() * 10) + 1,
-          articles: Math.floor(Math.random() * 5),
-          views: Math.floor(Math.random() * 500) + 100
-        }
-      })
+      // Son 7 günlük aktivite - gerçek verilerden hesapla
+      const recentActivity = calculateRecentActivity(articles, users)
 
       setData({
         totalUsers: users.length,
@@ -85,7 +86,7 @@ export default function AnalyticsPage() {
         totalViews,
         totalBookmarks,
         totalVotes,
-        totalNewsletterSubs: 0, // Newsletter API'den alınabilir
+        totalNewsletterSubs: newsletterCount,
         usersByRole,
         articlesByCategory,
         topArticles,
@@ -96,6 +97,48 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Son 7 günlük aktiviteyi gerçek verilerden hesapla
+  const calculateRecentActivity = (
+    articles: Array<{ createdAt: string; viewCount: number }>,
+    users: Array<{ createdAt: string }>
+  ) => {
+    const days: { date: string; dateObj: Date; users: number; articles: number; views: number }[] = []
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date()
+      date.setHours(0, 0, 0, 0)
+      date.setDate(date.getDate() - i)
+      
+      const nextDate = new Date(date)
+      nextDate.setDate(nextDate.getDate() + 1)
+      
+      // O gün oluşturulan makaleleri say
+      const dayArticles = articles.filter(a => {
+        const articleDate = new Date(a.createdAt)
+        return articleDate >= date && articleDate < nextDate
+      })
+      
+      // O gün kayıt olan kullanıcıları say
+      const dayUsers = users.filter(u => {
+        const userDate = new Date(u.createdAt)
+        return userDate >= date && userDate < nextDate
+      })
+      
+      // O günkü makalelerin toplam görüntülenmesi
+      const dayViews = dayArticles.reduce((sum, a) => sum + a.viewCount, 0)
+      
+      days.push({
+        date: date.toLocaleDateString('tr-TR', { weekday: 'short', day: 'numeric' }),
+        dateObj: date,
+        users: dayUsers.length,
+        articles: dayArticles.length,
+        views: dayViews
+      })
+    }
+    
+    return days.map(({ date, users, articles, views }) => ({ date, users, articles, views }))
   }
 
   if (loading) {
@@ -135,7 +178,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-5 h-5 text-blue-500" />
@@ -170,6 +213,13 @@ export default function AnalyticsPage() {
             <span className="text-sm text-gray-500 dark:text-gray-400">Oylar</span>
           </div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{data.totalVotes}</p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
+          <div className="flex items-center gap-2 mb-2">
+            <Mail className="w-5 h-5 text-cyan-500" />
+            <span className="text-sm text-gray-500 dark:text-gray-400">Aboneler</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{data.totalNewsletterSubs}</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
           <div className="flex items-center gap-2 mb-2">
@@ -285,6 +335,11 @@ export default function AnalyticsPage() {
               </tbody>
             </table>
           </div>
+          {data.recentActivity.every(d => d.users === 0 && d.articles === 0) && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
+              Son 7 günde yeni aktivite yok
+            </p>
+          )}
         </div>
       </div>
     </div>

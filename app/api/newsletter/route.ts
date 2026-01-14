@@ -115,12 +115,26 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-// GET /api/newsletter - Abonelik durumunu kontrol et
+// GET /api/newsletter - Abonelik durumunu kontrol et veya toplam sayıyı al
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
+    const action = searchParams.get('action')
     const email = searchParams.get('email')
 
+    // Toplam aktif abone sayısını döndür
+    if (action === 'count') {
+      const count = await prisma.newsletterSubscription.count({
+        where: { isActive: true },
+      })
+
+      return NextResponse.json({
+        success: true,
+        count,
+      })
+    }
+
+    // E-posta ile abonelik durumu kontrolü
     if (!email) {
       return NextResponse.json(
         { error: 'E-posta adresi gerekli' },

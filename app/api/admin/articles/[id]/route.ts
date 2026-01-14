@@ -97,6 +97,14 @@ export async function PATCH(
   }
 }
 
+// PUT /api/admin/articles/[id] - Makaleyi güncelle (PUT alias for PATCH)
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return PATCH(request, { params })
+}
+
 // DELETE /api/admin/articles/[id] - Makaleyi sil
 export async function DELETE(
   request: NextRequest,

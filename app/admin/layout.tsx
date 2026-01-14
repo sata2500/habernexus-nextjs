@@ -1,7 +1,10 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+import { useSession, signOut } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { auth, signOut } from '@/auth'
 import { 
   LayoutDashboard, 
   Newspaper, 
@@ -18,6 +21,7 @@ import {
   FlaskConical,
   AlertTriangle
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const sidebarItems = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -34,12 +38,45 @@ const sidebarItems = [
   { name: 'Ayarlar', href: '/admin/ayarlar', icon: Settings },
 ]
 
-export default async function AdminLayout({
+// Sayfa başlıklarını URL'den belirle
+function getPageTitle(pathname: string): string {
+  // Tam eşleşme kontrolü
+  const exactMatch = sidebarItems.find(item => item.href === pathname)
+  if (exactMatch) return exactMatch.name
+  
+  // Alt sayfa kontrolü (örn: /admin/makaleler/yeni)
+  const parentMatch = sidebarItems.find(item => 
+    pathname.startsWith(item.href) && item.href !== '/admin'
+  )
+  if (parentMatch) return parentMatch.name
+  
+  return 'Dashboard'
+}
+
+// Aktif sayfa kontrolü
+function isActivePath(pathname: string, href: string): boolean {
+  if (href === '/admin') {
+    return pathname === '/admin'
+  }
+  return pathname.startsWith(href)
+}
+
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
+  const pathname = usePathname()
+  const { data: session, status } = useSession()
+  
+  // Loading state
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
 
   // Check if user is authenticated
   if (!session?.user) {
@@ -50,6 +87,8 @@ export default async function AdminLayout({
   if (session.user.role !== 'ADMIN') {
     redirect('/?error=unauthorized')
   }
+
+  const pageTitle = getPageTitle(pathname)
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -71,14 +110,30 @@ export default async function AdminLayout({
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             {sidebarItems.map((item) => {
               const Icon = item.icon
+              const isActive = isActivePath(pathname, item.href)
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
+                  className={cn(
+                    'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors group',
+                    isActive
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  )}
                 >
-                  <Icon className="w-5 h-5 text-gray-500 group-hover:text-blue-600" />
-                  <span className="font-medium group-hover:text-blue-600">{item.name}</span>
+                  <Icon className={cn(
+                    'w-5 h-5',
+                    isActive
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-gray-500 group-hover:text-blue-600'
+                  )} />
+                  <span className={cn(
+                    'font-medium',
+                    isActive
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'group-hover:text-blue-600'
+                  )}>{item.name}</span>
                 </Link>
               )
             })}
@@ -109,20 +164,13 @@ export default async function AdminLayout({
                 <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
               </div>
             </div>
-            <form
-              action={async () => {
-                'use server'
-                await signOut({ redirectTo: '/' })
-              }}
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="flex items-center space-x-3 w-full px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors mt-2"
             >
-              <button
-                type="submit"
-                className="flex items-center space-x-3 w-full px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors mt-2"
-              >
-                <LogOut className="w-5 h-5 text-gray-500" />
-                <span className="font-medium">Çıkış Yap</span>
-              </button>
-            </form>
+              <LogOut className="w-5 h-5 text-gray-500" />
+              <span className="font-medium">Çıkış Yap</span>
+            </button>
           </div>
         </div>
       </aside>
@@ -135,7 +183,7 @@ export default async function AdminLayout({
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <Link href="/admin" className="hover:text-blue-600">Admin</Link>
               <ChevronRight className="w-4 h-4" />
-              <span className="text-gray-900 dark:text-white font-medium">Dashboard</span>
+              <span className="text-gray-900 dark:text-white font-medium">{pageTitle}</span>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
