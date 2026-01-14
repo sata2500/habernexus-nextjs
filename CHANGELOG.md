@@ -1,3 +1,9 @@
+## [1.14.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.13.0...v1.14.0) (2026-01-14)
+
+### ✨ Yeni Özellikler
+
+* **images:** improve image generation and optimization system ([8d6a13f](https://github.com/sata2500/habernexus-nextjs/commit/8d6a13f7e75b64c60f87bd1a95ce2ad28cf3a4b6))
+
 ## [1.13.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.12.0...v1.13.0) (2026-01-13)
 
 ### ✨ Yeni Özellikler
