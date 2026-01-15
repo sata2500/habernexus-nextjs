@@ -1,3 +1,9 @@
+## [1.18.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.17.0...v1.18.0) (2026-01-15)
+
+### ✨ Yeni Özellikler
+
+* **admin:** Kapsamlı admin panel denetimi ve iyileştirmeleri ([62ff67b](https://github.com/sata2500/habernexus-nextjs/commit/62ff67bb9eb3c06cca8d29d827c1950a9d44cf02))
+
 ## [1.17.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.16.0...v1.17.0) (2026-01-14)
 
 ### ✨ Yeni Özellikler
