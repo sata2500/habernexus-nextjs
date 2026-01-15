@@ -1,3 +1,9 @@
+## [1.19.2](https://github.com/sata2500/habernexus-nextjs/compare/v1.19.1...v1.19.2) (2026-01-15)
+
+### ♻️ Kod İyileştirmeleri
+
+* İyileştirme raporunu docs klasöründe uygun yere taşıma ([207d0f2](https://github.com/sata2500/habernexus-nextjs/commit/207d0f2356c57580bd969201d3e781711b6793d4))
+
 ## [1.19.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.19.0...v1.19.1) (2026-01-15)
 
 ### 🐛 Hata Düzeltmeleri
