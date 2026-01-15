@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Edit
 } from 'lucide-react'
+import { CATEGORY_NAMES } from '@/lib/constants'
 
 interface RssFeed {
   id: string
@@ -384,14 +385,9 @@ export default function RssManagement() {
                   onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
                   className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="Gündem">Gündem</option>
-                  <option value="Ekonomi">Ekonomi</option>
-                  <option value="Teknoloji">Teknoloji</option>
-                  <option value="Spor">Spor</option>
-                  <option value="Dünya">Dünya</option>
-                  <option value="Sağlık">Sağlık</option>
-                  <option value="Kültür-Sanat">Kültür-Sanat</option>
-                  <option value="Bilim">Bilim</option>
+                  {CATEGORY_NAMES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
               <div className="flex justify-end space-x-3 pt-4">
@@ -452,14 +448,9 @@ export default function RssManagement() {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="Gündem">Gündem</option>
-                  <option value="Ekonomi">Ekonomi</option>
-                  <option value="Teknoloji">Teknoloji</option>
-                  <option value="Spor">Spor</option>
-                  <option value="Dünya">Dünya</option>
-                  <option value="Sağlık">Sağlık</option>
-                  <option value="Kültür-Sanat">Kültür-Sanat</option>
-                  <option value="Bilim">Bilim</option>
+                  {CATEGORY_NAMES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
               <div className="flex justify-end space-x-3 pt-4">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { BarChart3, Users, Newspaper, Eye, Bookmark, ThumbsUp, TrendingUp, Calendar, AlertCircle, Mail } from 'lucide-react'
 
 interface AnalyticsData {
@@ -21,12 +21,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchAnalytics()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       // Tüm verileri paralel olarak çek
       const [usersRes, articlesRes, newsletterRes] = await Promise.all([
@@ -97,7 +92,11 @@ export default function AnalyticsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [fetchAnalytics])
 
   // Son 7 günlük aktiviteyi gerçek verilerden hesapla
   const calculateRecentActivity = (

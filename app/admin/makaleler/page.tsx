@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Newspaper, Eye, Bookmark, ThumbsUp, Trash2, ExternalLink, Search, AlertCircle, Edit } from 'lucide-react'
+import { CATEGORY_COLORS } from '@/lib/constants'
 
 interface Article {
   id: string
@@ -21,16 +22,6 @@ interface Article {
     bookmarks: number
     votes: number
   }
-}
-
-const categoryColors: Record<string, string> = {
-  'Teknoloji': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  'Ekonomi': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  'Spor': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-  'Sağlık': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  'Bilim': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  'Dünya': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-  'Gündem': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
 }
 
 export default function ArticlesPage() {
@@ -212,7 +203,7 @@ export default function ArticlesPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColors[article.category] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
+                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[article.category] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
                       {article.category}
                     </span>
                   </td>

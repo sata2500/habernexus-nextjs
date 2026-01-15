@@ -16,6 +16,7 @@ import {
   Clock,
   Loader2
 } from 'lucide-react'
+import { CATEGORY_NAMES } from '@/lib/constants'
 
 interface RssFeed {
   id: string
@@ -76,10 +77,8 @@ export default function TestEnvironmentPage() {
     avgDuration: number
   } | null>(null)
 
-  const categories = [
-    'Teknoloji', 'Ekonomi', 'Spor', 'Sağlık', 
-    'Bilim', 'Dünya', 'Kültür-Sanat', 'Gündem'
-  ]
+  // Merkezi kategori listesi kullanılıyor
+  const categories = CATEGORY_NAMES
 
   const imageModels = [
     { value: 'imagen-4.0-fast-generate-001', label: 'Imagen 4.0 Fast (Önerilen)' },

@@ -153,6 +153,7 @@ const CRON_PRESETS = [
   { label: 'Her 12 saatte', value: '0 */12 * * *' },
   { label: 'Günde bir (gece yarısı)', value: '0 0 * * *' },
   { label: 'Günde bir (sabah 8)', value: '0 8 * * *' },
+  { label: 'Özel...', value: 'custom' },
 ]
 
 interface SettingsState {
@@ -592,8 +593,12 @@ export default function SettingsPage() {
                 Zamanlama
               </label>
               <select
-                value={settings.cron_schedule}
-                onChange={(e) => handleChange('cron_schedule', e.target.value)}
+                value={CRON_PRESETS.some(p => p.value === settings.cron_schedule) ? settings.cron_schedule : 'custom'}
+                onChange={(e) => {
+                  if (e.target.value !== 'custom') {
+                    handleChange('cron_schedule', e.target.value)
+                  }
+                }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {CRON_PRESETS.map((preset) => (
@@ -620,22 +625,24 @@ export default function SettingsPage() {
             </div>
           </div>
           
-          {/* Custom Cron Input */}
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Özel Cron İfadesi (İleri Düzey)
-            </label>
-            <input
-              type="text"
-              value={settings.cron_schedule}
-              onChange={(e) => handleChange('cron_schedule', e.target.value)}
-              placeholder="*/15 * * * *"
-              className="w-full md:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              Format: dakika saat gün ay haftanın_günü (örn: &quot;*/15 * * * *&quot; = her 15 dakikada)
-            </p>
-          </div>
+          {/* Custom Cron Input - Sadece "Özel" seçiliğinde veya mevcut değer preset listesinde değilse göster */}
+          {!CRON_PRESETS.some(p => p.value === settings.cron_schedule && p.value !== 'custom') && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Özel Cron İfadesi
+              </label>
+              <input
+                type="text"
+                value={settings.cron_schedule === 'custom' ? '' : settings.cron_schedule}
+                onChange={(e) => handleChange('cron_schedule', e.target.value)}
+                placeholder="*/15 * * * *"
+                className="w-full md:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Format: dakika saat gün ay haftanın_günü (örn: &quot;*/15 * * * *&quot; = her 15 dakikada)
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Model Referans Tablosu */}

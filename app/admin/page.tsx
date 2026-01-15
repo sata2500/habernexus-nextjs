@@ -207,11 +207,11 @@ export default async function AdminDashboard() {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hızlı İşlemler</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link 
-            href="/admin/makaleler/yeni"
+            href="/admin/makaleler"
             className="flex flex-col items-center justify-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
           >
             <Newspaper className="w-6 h-6 text-blue-600 dark:text-blue-400 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Yeni Makale</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white">Makaleler</span>
           </Link>
           <Link 
             href="/admin/rss"

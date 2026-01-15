@@ -12,6 +12,7 @@ import {
   Eye,
   Newspaper
 } from 'lucide-react'
+import { CATEGORY_NAMES } from '@/lib/constants'
 
 interface Article {
   id: string
@@ -24,17 +25,6 @@ interface Article {
   viewCount: number
   publishedAt: string
 }
-
-const CATEGORIES = [
-  'Gündem',
-  'Teknoloji',
-  'Ekonomi',
-  'Spor',
-  'Sağlık',
-  'Bilim',
-  'Dünya',
-  'Kültür-Sanat',
-]
 
 export default function EditArticlePage() {
   const params = useParams()
@@ -247,7 +237,7 @@ export default function EditArticlePage() {
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              {CATEGORIES.map((cat) => (
+              {CATEGORY_NAMES.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>

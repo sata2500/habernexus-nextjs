@@ -1,8 +1,8 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -19,7 +19,9 @@ import {
   FileText,
   Image as ImageIcon,
   FlaskConical,
-  AlertTriangle
+  AlertTriangle,
+  Menu,
+  X
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -67,7 +69,9 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session, status } = useSession()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   
   // Loading state
   if (status === 'loading') {
@@ -80,30 +84,57 @@ export default function AdminLayout({
 
   // Check if user is authenticated
   if (!session?.user) {
-    redirect('/auth/signin')
+    router.push('/auth/signin')
+    return null
   }
 
   // Check if user has ADMIN role
   if (session.user.role !== 'ADMIN') {
-    redirect('/?error=unauthorized')
+    router.push('/?error=unauthorized')
+    return null
   }
 
   const pageTitle = getPageTitle(pathname)
 
+  // Mobil menüde link tıklandığında menüyü kapat
+  const handleMobileNavClick = () => {
+    setIsMobileMenuOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 transition-transform">
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center space-x-2 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">H</span>
+          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">H</span>
+              </div>
+              <div>
+                <span className="font-bold text-lg text-gray-900 dark:text-white">HaberNexus</span>
+                <span className="block text-xs text-gray-500">Admin Panel</span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-lg text-gray-900 dark:text-white">HaberNexus</span>
-              <span className="block text-xs text-gray-500">Admin Panel</span>
-            </div>
+            {/* Mobil kapatma butonu */}
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="md:hidden p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Navigation */}
@@ -115,6 +146,7 @@ export default function AdminLayout({
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={handleMobileNavClick}
                   className={cn(
                     'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors group',
                     isActive
@@ -180,10 +212,19 @@ export default function AdminLayout({
         {/* Top Bar */}
         <header className="sticky top-0 z-40 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <Link href="/admin" className="hover:text-blue-600">Admin</Link>
-              <ChevronRight className="w-4 h-4" />
-              <span className="text-gray-900 dark:text-white font-medium">{pageTitle}</span>
+            <div className="flex items-center space-x-4">
+              {/* Mobil menü butonu */}
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 -ml-2"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <Link href="/admin" className="hover:text-blue-600">Admin</Link>
+                <ChevronRight className="w-4 h-4" />
+                <span className="text-gray-900 dark:text-white font-medium">{pageTitle}</span>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded">
@@ -191,7 +232,7 @@ export default function AdminLayout({
               </span>
               <Link
                 href="/"
-                className="text-sm text-gray-600 hover:text-blue-600"
+                className="text-sm text-gray-600 hover:text-blue-600 hidden sm:block"
               >
                 Siteyi Görüntüle
               </Link>

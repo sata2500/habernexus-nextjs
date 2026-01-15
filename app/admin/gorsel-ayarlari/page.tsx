@@ -11,7 +11,8 @@ import {
   Sparkles,
   Download,
   Zap,
-  Info
+  Info,
+  AlertTriangle
 } from 'lucide-react'
 
 interface ImageSettings {
@@ -238,6 +239,23 @@ export default function ImageSettingsPage() {
               ))}
             </select>
           </div>
+
+          {/* Preview Model Uyarısı */}
+          {IMAGE_MODELS.find(m => m.value === settings.imageModel)?.status === 'preview' && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    Önizleme Modeli Seçili
+                  </p>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                    Bu model 17 Şubat 2026 tarihinde kaldırılacaktır. Üretim ortamı için stabil bir model seçmeniz önerilir.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Info */}
           <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
