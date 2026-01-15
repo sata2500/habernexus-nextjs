@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Clock, Eye, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
+import { Clock, Eye, ChevronLeft, ChevronRight, Filter, Newspaper } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { formatDateShort } from '@/lib/utils'
 import { CATEGORIES } from '@/lib/constants'
@@ -18,44 +18,53 @@ interface PageProps {
 const ITEMS_PER_PAGE = 12
 
 async function getArticles(page: number, category?: string) {
-  const where = category ? { category } : {}
-  
-  const [articles, totalCount] = await Promise.all([
-    prisma.article.findMany({
-      where,
-      skip: (page - 1) * ITEMS_PER_PAGE,
-      take: ITEMS_PER_PAGE,
-      orderBy: { publishedAt: 'desc' },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        excerpt: true,
-        imageUrl: true,
-        category: true,
-        viewCount: true,
-        publishedAt: true,
-        author: {
-          select: {
-            name: true,
-            image: true,
+  try {
+    const where = category ? { category: { contains: category, mode: 'insensitive' } } : {}
+    
+    const [articles, totalCount] = await Promise.all([
+      prisma.article.findMany({
+        where,
+        skip: (page - 1) * ITEMS_PER_PAGE,
+        take: ITEMS_PER_PAGE,
+        orderBy: { publishedAt: 'desc' },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          imageUrl: true,
+          category: true,
+          viewCount: true,
+          publishedAt: true,
+          author: {
+            select: {
+              name: true,
+              image: true,
+            },
           },
         },
-      },
-    }),
-    prisma.article.count({ where }),
-  ])
+      }),
+      prisma.article.count({ where }),
+    ])
 
-  return {
-    articles,
-    totalCount,
-    totalPages: Math.ceil(totalCount / ITEMS_PER_PAGE),
+    return {
+      articles,
+      totalCount,
+      totalPages: Math.ceil(totalCount / ITEMS_PER_PAGE),
+    }
+  } catch (error) {
+    console.error('Error fetching articles:', error)
+    return {
+      articles: [],
+      totalCount: 0,
+      totalPages: 0,
+    }
   }
 }
 
 export default async function AllNewsPage({ searchParams }: PageProps) {
   const params = await searchParams
-  const page = parseInt(params.page || '1', 10)
+  const page = Math.max(1, parseInt(params.page || '1', 10))
   const category = params.category
 
   const { articles, totalCount, totalPages } = await getArticles(page, category)
@@ -82,7 +91,7 @@ export default async function AllNewsPage({ searchParams }: PageProps) {
               onChange={(e) => {
                 const value = e.target.value
                 if (value) {
-                  window.location.href = `/haberler?category=${value}`
+                  window.location.href = `/haberler?category=${encodeURIComponent(value)}`
                 } else {
                   window.location.href = '/haberler'
                 }
@@ -111,13 +120,23 @@ export default async function AllNewsPage({ searchParams }: PageProps) {
                 className="group bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300"
               >
                 {/* Image */}
-                <div className="relative aspect-video overflow-hidden">
-                  <Image
-                    src={article.imageUrl || '/images/placeholder.jpg'}
-                    alt={article.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-700">
+                  {article.imageUrl ? (
+                    <Image
+                      src={article.imageUrl}
+                      alt={article.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement
+                        img.src = '/images/placeholder.jpg'
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600">
+                      <Newspaper className="w-12 h-12 text-gray-400" />
+                    </div>
+                  )}
                   <div className="absolute top-3 left-3">
                     <span className="px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded-md">
                       {article.category}
@@ -154,12 +173,18 @@ export default async function AllNewsPage({ searchParams }: PageProps) {
           </div>
         ) : (
           <div className="text-center py-16">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">
-              Henüz haber bulunmuyor.
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
+              <Newspaper className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">
+              {category ? `${category} kategorisinde henüz haber bulunmuyor.` : 'Henüz haber bulunmuyor.'}
+            </p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mb-6">
+              Lütfen daha sonra tekrar kontrol edin veya başka bir kategori seçin.
             </p>
             <Link
               href="/"
-              className="inline-flex items-center mt-4 text-blue-600 dark:text-blue-400 hover:underline"
+              className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:underline font-medium"
             >
               <ChevronLeft className="w-4 h-4 mr-1" />
               Ana Sayfaya Dön
@@ -171,11 +196,11 @@ export default async function AllNewsPage({ searchParams }: PageProps) {
       {/* Pagination */}
       {totalPages > 1 && (
         <section className="container mx-auto px-4">
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
             {/* Previous */}
             {page > 1 ? (
               <Link
-                href={`/haberler?page=${page - 1}${category ? `&category=${category}` : ''}`}
+                href={`/haberler?page=${page - 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`}
                 className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
@@ -205,7 +230,7 @@ export default async function AllNewsPage({ searchParams }: PageProps) {
                 return (
                   <Link
                     key={pageNum}
-                    href={`/haberler?page=${pageNum}${category ? `&category=${category}` : ''}`}
+                    href={`/haberler?page=${pageNum}${category ? `&category=${encodeURIComponent(category)}` : ''}`}
                     className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium transition-colors ${
                       pageNum === page
                         ? 'bg-blue-600 text-white'
@@ -226,7 +251,7 @@ export default async function AllNewsPage({ searchParams }: PageProps) {
             {/* Next */}
             {page < totalPages ? (
               <Link
-                href={`/haberler?page=${page + 1}${category ? `&category=${category}` : ''}`}
+                href={`/haberler?page=${page + 1}${category ? `&category=${encodeURIComponent(category)}` : ''}`}
                 className="flex items-center px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Sonraki
