@@ -335,3 +335,18 @@ model ImageStats {
   @@index([createdAt])
   @@index([success])
 }
+
+
+// Contact message model - For storing contact form submissions
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String   // genel, teknik, oneri, hata, isbirligi, diger
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  @@index([isRead])
+  @@index([createdAt])
+}

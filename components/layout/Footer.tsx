@@ -1,9 +1,40 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
-import { Github, Twitter, Mail, Heart } from 'lucide-react'
+import { Github, Twitter, Mail, Heart, Rss, Loader2, CheckCircle } from 'lucide-react'
 import { SITE_CONFIG, CATEGORIES } from '@/lib/constants'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+
+    setStatus('loading')
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      if (response.ok) {
+        setStatus('success')
+        setEmail('')
+        setTimeout(() => setStatus('idle'), 3000)
+      } else {
+        setStatus('error')
+        setTimeout(() => setStatus('idle'), 3000)
+      }
+    } catch {
+      setStatus('error')
+      setTimeout(() => setStatus('idle'), 3000)
+    }
+  }
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -25,7 +56,7 @@ export default function Footer() {
                 href={SITE_CONFIG.social.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="w-5 h-5" />
@@ -34,18 +65,25 @@ export default function Footer() {
                 href={`https://twitter.com/${SITE_CONFIG.social.twitter.replace('@', '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
                 href={`mailto:${SITE_CONFIG.email}`}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
                 aria-label="E-posta"
               >
                 <Mail className="w-5 h-5" />
               </a>
+              <Link
+                href="/rss"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400 hover:text-orange-400 hover:bg-gray-700 transition-colors"
+                aria-label="RSS"
+              >
+                <Rss className="w-5 h-5" />
+              </Link>
             </div>
           </div>
 
@@ -63,6 +101,14 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/kategoriler"
+                  className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Tüm Kategoriler →
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -95,6 +141,11 @@ export default function Footer() {
                   RSS Akışı
                 </Link>
               </li>
+              <li>
+                <Link href="/haberler" className="text-sm text-gray-400 hover:text-white transition-colors">
+                  Tüm Haberler
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -104,28 +155,64 @@ export default function Footer() {
             <p className="text-sm text-gray-400 mb-4">
               Günlük haber özetlerini e-posta ile alın.
             </p>
-            <form className="space-y-2">
-              <input
-                type="email"
-                placeholder="E-posta adresiniz"
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                Abone Ol
-              </button>
-            </form>
+            {status === 'success' ? (
+              <div className="flex items-center space-x-2 text-green-400 bg-green-900/20 rounded-lg p-3">
+                <CheckCircle className="w-5 h-5" />
+                <span className="text-sm">Abone oldunuz!</span>
+              </div>
+            ) : (
+              <form onSubmit={handleNewsletterSubmit} className="space-y-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="E-posta adresiniz"
+                  required
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {status === 'loading' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    'Abone Ol'
+                  )}
+                </button>
+                {status === 'error' && (
+                  <p className="text-xs text-red-400">Bir hata oluştu. Lütfen tekrar deneyin.</p>
+                )}
+              </form>
+            )}
+            <p className="text-xs text-gray-500 mt-3">
+              Abone olarak{' '}
+              <Link href="/gizlilik" className="text-gray-400 hover:text-white underline">
+                Gizlilik Politikamızı
+              </Link>{' '}
+              kabul etmiş olursunuz.
+            </p>
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-sm text-gray-400">
-              © {currentYear} {SITE_CONFIG.name}. Tüm hakları saklıdır.
-            </p>
+            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <p className="text-sm text-gray-400">
+                © {currentYear} {SITE_CONFIG.name}. Tüm hakları saklıdır.
+              </p>
+              <span className="hidden sm:inline text-gray-600">|</span>
+              <a
+                href={SITE_CONFIG.social.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                Açık Kaynak (MIT)
+              </a>
+            </div>
             <p className="text-sm text-gray-400 flex items-center">
               <Heart className="w-4 h-4 text-red-500 mx-1" />
               ile yapıldı by{' '}
