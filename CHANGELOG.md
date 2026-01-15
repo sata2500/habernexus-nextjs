@@ -1,3 +1,9 @@
+## [1.19.1](https://github.com/sata2500/habernexus-nextjs/compare/v1.19.0...v1.19.1) (2026-01-15)
+
+### 🐛 Hata Düzeltmeleri
+
+* /haberler sayfasında hata düzeltmesi ([af3eae8](https://github.com/sata2500/habernexus-nextjs/commit/af3eae8326959d31e8316e9bd6459401b3663232))
+
 ## [1.19.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.18.0...v1.19.0) (2026-01-15)
 
 ### ✨ Yeni Özellikler
