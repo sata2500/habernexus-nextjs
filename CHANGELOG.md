@@ -1,3 +1,9 @@
+## [1.19.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.18.0...v1.19.0) (2026-01-15)
+
+### ✨ Yeni Özellikler
+
+* Footer sayfaları ve genel iyileştirmeler ([3061183](https://github.com/sata2500/habernexus-nextjs/commit/306118366fbae6112e2f301ee5801baff19d6c5f))
+
 ## [1.18.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.17.0...v1.18.0) (2026-01-15)
 
 ### ✨ Yeni Özellikler
