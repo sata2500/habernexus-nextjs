@@ -241,9 +241,12 @@ export async function processFeed(
         )
 
         // Determine category if not set
+        // Default categories for the system
+        const defaultCategories = ['Teknoloji', 'Ekonomi', 'Spor', 'Sağlık', 'Bilim', 'Dünya', 'Kültür-Sanat', 'Gündem']
         const category = feed.category || await determineCategory(
           generatedContent.title,
-          generatedContent.content
+          generatedContent.content,
+          defaultCategories
         )
 
         // Handle image selection and optimization
@@ -443,7 +446,7 @@ export async function getEngineStatus(): Promise<{
   ])
 
   return {
-    isConfigured: await isGeminiConfigured(),
+    isConfigured: isGeminiConfigured(),
     isImageGenEnabled: imageGenEnabled,
     isRssImageOptEnabled: rssImageOptEnabled,
     activeFeeds,

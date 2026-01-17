@@ -15,6 +15,7 @@ import {
   MessageCircle,
   LogOut,
   ChevronRight,
+  ChevronDown,
   Sparkles,
   FileText,
   Image as ImageIcon,
@@ -22,34 +23,81 @@ import {
   AlertTriangle,
   Menu,
   X,
-  Key
+  FileCode,
+  Mail
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const sidebarItems = [
-  { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { name: 'Makaleler', href: '/admin/makaleler', icon: Newspaper },
-  { name: 'RSS Kaynakları', href: '/admin/rss', icon: Rss },
-  { name: 'Yorumlar', href: '/admin/yorumlar', icon: MessageCircle },
-  { name: 'Kullanıcılar', href: '/admin/kullanicilar', icon: Users },
-  { name: 'Duygu Analizi', href: '/admin/duygu-analizi', icon: Sparkles },
-  { name: 'Analitik', href: '/admin/analitik', icon: BarChart3 },
-  { name: 'AI Promptları', href: '/admin/promptlar', icon: FileText },
-  { name: 'API Anahtarları', href: '/admin/api-anahtarlari', icon: Key },
-  { name: 'Görsel Ayarları', href: '/admin/gorsel-ayarlari', icon: ImageIcon },
-  { name: 'Görsel Hataları', href: '/admin/gorsel-hatalari', icon: AlertTriangle },
-  { name: 'Test Ortamı', href: '/admin/test-ortami', icon: FlaskConical },
-  { name: 'Ayarlar', href: '/admin/ayarlar', icon: Settings },
+// Menü grupları
+interface MenuItem {
+  name: string
+  href: string
+  icon: React.ElementType
+}
+
+interface MenuGroup {
+  name: string
+  items: MenuItem[]
+}
+
+const menuGroups: MenuGroup[] = [
+  {
+    name: '',
+    items: [
+      { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+      { name: 'Analitik', href: '/admin/analitik', icon: BarChart3 },
+    ]
+  },
+  {
+    name: 'İçerik',
+    items: [
+      { name: 'Makaleler', href: '/admin/makaleler', icon: Newspaper },
+      { name: 'Yorumlar', href: '/admin/yorumlar', icon: MessageCircle },
+      { name: 'RSS Kaynakları', href: '/admin/rss', icon: Rss },
+    ]
+  },
+  {
+    name: 'Yönetim',
+    items: [
+      { name: 'Kullanıcılar', href: '/admin/kullanicilar', icon: Users },
+      { name: 'İletişim Mesajları', href: '/admin/iletisim', icon: Mail },
+    ]
+  },
+  {
+    name: 'AI Stüdyosu',
+    items: [
+      { name: 'AI Promptları', href: '/admin/promptlar', icon: FileText },
+      { name: 'Duygu Analizi', href: '/admin/duygu-analizi', icon: Sparkles },
+      { name: 'Test Ortamı', href: '/admin/test-ortami', icon: FlaskConical },
+    ]
+  },
+  {
+    name: 'Ayarlar',
+    items: [
+      { name: 'Genel Ayarlar', href: '/admin/ayarlar', icon: Settings },
+      { name: 'Ortam Değişkenleri', href: '/admin/ortam-degiskenleri', icon: FileCode },
+      { name: 'Görsel Ayarları', href: '/admin/gorsel-ayarlari', icon: ImageIcon },
+    ]
+  },
+  {
+    name: 'Hata İzleme',
+    items: [
+      { name: 'Görsel Hataları', href: '/admin/gorsel-hatalari', icon: AlertTriangle },
+    ]
+  },
 ]
+
+// Tüm menü öğelerini düz liste olarak al (sayfa başlığı için)
+const allMenuItems = menuGroups.flatMap(group => group.items)
 
 // Sayfa başlıklarını URL'den belirle
 function getPageTitle(pathname: string): string {
   // Tam eşleşme kontrolü
-  const exactMatch = sidebarItems.find(item => item.href === pathname)
+  const exactMatch = allMenuItems.find(item => item.href === pathname)
   if (exactMatch) return exactMatch.name
   
   // Alt sayfa kontrolü (örn: /admin/makaleler/yeni)
-  const parentMatch = sidebarItems.find(item => 
+  const parentMatch = allMenuItems.find(item => 
     pathname.startsWith(item.href) && item.href !== '/admin'
   )
   if (parentMatch) return parentMatch.name
@@ -74,6 +122,7 @@ export default function AdminLayout({
   const router = useRouter()
   const { data: session, status } = useSession()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
   
   // Loading state
   if (status === 'loading') {
@@ -101,6 +150,24 @@ export default function AdminLayout({
   // Mobil menüde link tıklandığında menüyü kapat
   const handleMobileNavClick = () => {
     setIsMobileMenuOpen(false)
+  }
+
+  // Grup açma/kapama
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(groupName)) {
+        newSet.delete(groupName)
+      } else {
+        newSet.add(groupName)
+      }
+      return newSet
+    })
+  }
+
+  // Grup içinde aktif öğe var mı kontrol et
+  const hasActiveItem = (items: MenuItem[]) => {
+    return items.some(item => isActivePath(pathname, item.href))
   }
 
   return (
@@ -140,35 +207,68 @@ export default function AdminLayout({
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon
-              const isActive = isActivePath(pathname, item.href)
+          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+            {menuGroups.map((group, groupIndex) => {
+              const isCollapsed = collapsedGroups.has(group.name)
+              const hasActive = hasActiveItem(group.items)
+              
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={handleMobileNavClick}
-                  className={cn(
-                    'flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors group',
-                    isActive
-                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                <div key={groupIndex} className={group.name ? 'mt-4' : ''}>
+                  {/* Grup başlığı */}
+                  {group.name && (
+                    <button
+                      onClick={() => toggleGroup(group.name)}
+                      className={cn(
+                        "flex items-center justify-between w-full px-3 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors",
+                        hasActive
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                      )}
+                    >
+                      <span>{group.name}</span>
+                      <ChevronDown className={cn(
+                        "w-4 h-4 transition-transform",
+                        isCollapsed ? "-rotate-90" : ""
+                      )} />
+                    </button>
                   )}
-                >
-                  <Icon className={cn(
-                    'w-5 h-5',
-                    isActive
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-gray-500 group-hover:text-blue-600'
-                  )} />
-                  <span className={cn(
-                    'font-medium',
-                    isActive
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'group-hover:text-blue-600'
-                  )}>{item.name}</span>
-                </Link>
+                  
+                  {/* Grup öğeleri */}
+                  {!isCollapsed && (
+                    <div className={group.name ? 'mt-1 space-y-1' : 'space-y-1'}>
+                      {group.items.map((item) => {
+                        const Icon = item.icon
+                        const isActive = isActivePath(pathname, item.href)
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={handleMobileNavClick}
+                            className={cn(
+                              'flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-colors group',
+                              isActive
+                                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            )}
+                          >
+                            <Icon className={cn(
+                              'w-5 h-5',
+                              isActive
+                                ? 'text-blue-600 dark:text-blue-400'
+                                : 'text-gray-500 group-hover:text-blue-600'
+                            )} />
+                            <span className={cn(
+                              'font-medium text-sm',
+                              isActive
+                                ? 'text-blue-600 dark:text-blue-400'
+                                : 'group-hover:text-blue-600'
+                            )}>{item.name}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               )
             })}
           </nav>

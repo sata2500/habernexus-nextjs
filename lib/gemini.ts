@@ -3,47 +3,48 @@ import { prisma } from '@/lib/prisma'
 import { getDefaultModel, isValidModel } from '@/lib/gemini-models'
 import { getPromptByType, interpolatePrompt } from '@/lib/prompts'
 import { PromptType } from '@prisma/client'
-import { getGeminiApiKey } from '@/lib/api-keys'
 
 /**
  * Google Gemini AI Service
  * Handles AI content generation for news articles
  * 
- * @version 4.0.0
+ * @version 3.0.0
  * @lastUpdated 17 January 2026
- * 
- * Changes in v4.0.0:
- * - Updated to use API keys from database with fallback to .env
- * - Added lazy initialization with dynamic API key retrieval
- * - Improved error handling for missing API keys
  * 
  * Changes in v3.0.0:
  * - Added prompt template support from database
  * - Prompts can now be customized via admin panel
  */
 
-// Initialize the Gemini client lazily
+// Initialize the Gemini client lazily to avoid issues when API key is not set
 let genAI: GoogleGenAI | null = null
-let currentApiKey: string | null = null
 
 /**
  * Get or create the Gemini client
- * Uses API key from database with fallback to environment variable
  */
-async function getGenAIClient(): Promise<GoogleGenAI> {
-  const apiKey = await getGeminiApiKey()
-  
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured. Please add it via Admin Panel or .env file.')
-  }
-  
-  // Reinitialize if API key changed
-  if (!genAI || currentApiKey !== apiKey) {
+function getGenAIClient(): GoogleGenAI {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not configured in .env file')
+    }
     genAI = new GoogleGenAI({ apiKey })
-    currentApiKey = apiKey
   }
-  
   return genAI
+}
+
+/**
+ * Reset the Gemini client (useful when API key changes)
+ */
+export function resetGenAIClient(): void {
+  genAI = null
+}
+
+/**
+ * Check if Gemini API is configured
+ */
+export function isGeminiConfigured(): boolean {
+  return !!process.env.GEMINI_API_KEY
 }
 
 /**
@@ -101,7 +102,7 @@ export async function generateArticle(
   excerpt: string
   slug: string
 }> {
-  const client = await getGenAIClient()
+  const client = getGenAIClient()
   const modelName = modelOverride && isValidModel(modelOverride) 
     ? modelOverride 
     : await getConfiguredModel('content')
@@ -195,7 +196,7 @@ export async function generateSummary(
   content: string,
   modelOverride?: string
 ): Promise<string> {
-  const client = await getGenAIClient()
+  const client = getGenAIClient()
   const modelName = modelOverride && isValidModel(modelOverride)
     ? modelOverride
     : await getConfiguredModel('summary')
@@ -240,7 +241,7 @@ export async function analyzeSentiment(
   content: string,
   modelOverride?: string
 ): Promise<SentimentResult> {
-  const client = await getGenAIClient()
+  const client = getGenAIClient()
   const modelName = modelOverride && isValidModel(modelOverride)
     ? modelOverride
     : await getConfiguredModel('sentiment')
@@ -366,36 +367,26 @@ export async function batchAnalyzeSentiment(
 export async function determineCategory(
   title: string,
   content: string,
+  availableCategories: string[],
   modelOverride?: string
 ): Promise<string> {
-  const client = await getGenAIClient()
+  const client = getGenAIClient()
   const modelName = modelOverride && isValidModel(modelOverride)
     ? modelOverride
     : await getConfiguredModel('category')
-
-  const categories = [
-    'Gündem',
-    'Ekonomi',
-    'Teknoloji',
-    'Spor',
-    'Sağlık',
-    'Kültür-Sanat',
-    'Dünya',
-    'Bilim',
-  ]
 
   // Get prompt template from database
   let promptTemplate = await getPromptByType('CATEGORY' as PromptType)
   
   // Fallback to hardcoded prompt if not found
   if (!promptTemplate) {
-    promptTemplate = `Aşağıdaki haber başlığı ve içeriğine göre en uygun kategoriyi seç.
+    promptTemplate = `Aşağıdaki haber başlığı ve içeriğine göre en uygun kategoriyi belirle.
 
 BAŞLIK: {{title}}
 
 İÇERİK: {{content}}
 
-KATEGORİLER: {{categories}}
+MEVCUT KATEGORİLER: {{categories}}
 
 Sadece kategori adını yaz, başka bir şey ekleme.`
   }
@@ -403,7 +394,7 @@ Sadece kategori adını yaz, başka bir şey ekleme.`
   const prompt = interpolatePrompt(promptTemplate, {
     title,
     content: content.substring(0, 500),
-    categories: categories.join(', '),
+    categories: availableCategories.join(', '),
   })
 
   try {
@@ -412,20 +403,33 @@ Sadece kategori adını yaz, başka bir şey ekleme.`
       contents: prompt,
       config: {
         temperature: 0.3,
-        maxOutputTokens: 32,
+        maxOutputTokens: 50,
       },
     })
 
-    const category = response.text?.trim() || 'Gündem'
-    return categories.includes(category) ? category : 'Gündem'
+    const category = response.text?.trim() || ''
+    
+    // Validate that the returned category is in the available list
+    if (availableCategories.includes(category)) {
+      return category
+    }
+    
+    // Try to find a partial match
+    const lowerCategory = category.toLowerCase()
+    const match = availableCategories.find(c => 
+      c.toLowerCase().includes(lowerCategory) || 
+      lowerCategory.includes(c.toLowerCase())
+    )
+    
+    return match || availableCategories[0] || 'Genel'
   } catch (error) {
     console.error('Gemini category error:', error)
-    return 'Gündem'
+    return availableCategories[0] || 'Genel'
   }
 }
 
 /**
- * Generate SEO-friendly slug from title
+ * Generate a URL-friendly slug from title
  */
 function generateSlug(title: string): string {
   return title
@@ -436,37 +440,17 @@ function generateSlug(title: string): string {
     .replace(/ı/g, 'i')
     .replace(/ö/g, 'o')
     .replace(/ç/g, 'c')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9]/g, '-')
     .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
     .substring(0, 100)
-    .replace(/-$/, '')
 }
 
 /**
- * Check if Gemini API is configured
- * Now checks both database and environment variable
+ * Get current content prompt template
+ * Used for displaying in admin panel
  */
-export async function isGeminiConfigured(): Promise<boolean> {
-  const apiKey = await getGeminiApiKey()
-  return !!apiKey
-}
-
-/**
- * Get current model configuration
- */
-export async function getCurrentModelConfig(): Promise<{
-  content: string
-  sentiment: string
-  category: string
-  summary: string
-}> {
-  const [content, sentiment, category, summary] = await Promise.all([
-    getConfiguredModel('content'),
-    getConfiguredModel('sentiment'),
-    getConfiguredModel('category'),
-    getConfiguredModel('summary'),
-  ])
-  
-  return { content, sentiment, category, summary }
+export async function getCurrentContentPrompt(): Promise<string> {
+  const template = await getPromptByType('CONTENT' as PromptType)
+  return template || 'No content prompt template found'
 }
