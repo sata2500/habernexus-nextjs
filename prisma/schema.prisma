@@ -40,6 +40,17 @@ enum PromptType {
   SUMMARY      // Summary generation
 }
 
+// Notification type enum
+enum NotificationType {
+  FOLLOW           // Someone followed you
+  COMMENT          // Someone commented on your article
+  COMMENT_REPLY    // Someone replied to your comment
+  COMMENT_LIKE     // Someone liked your comment
+  ARTICLE_LIKE     // Someone liked your article
+  ARTICLE_BOOKMARK // Someone bookmarked your article
+  SYSTEM           // System notification
+}
+
 // User model - All users in the system (Auth.js compatible)
 model User {
   id            String          @id @default(cuid())
@@ -50,6 +61,13 @@ model User {
   role          Role            @default(USER)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  
+  // Profile fields (Community features)
+  username      String?         @unique // URL-friendly unique username
+  bio           String?         // Short biography
+  website       String?         // Personal website URL
+  location      String?         // User's location
+  coverImage    String?         // Profile cover image URL
   
   // Auth.js relations
   accounts      Account[]
@@ -63,6 +81,14 @@ model User {
   comments      Comment[]       // User's comments
   commentLikes  CommentLike[]   // User's likes on comments
   preferences   UserPreferences? // User's personalization preferences
+  
+  // Community relations
+  followers     Follow[]        @relation("Following") // Users who follow this user
+  following     Follow[]        @relation("Followers") // Users this user follows
+  notifications Notification[]  @relation("NotificationOwner") // Notifications for this user
+  actorNotifications Notification[] @relation("NotificationActor") // Notifications triggered by this user
+  
+  @@index([username])
 }
 
 // Auth.js Account model - OAuth accounts linked to users
@@ -133,6 +159,42 @@ model AuthorProfile {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+// Follow model - User follow relationships
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   // The user who is following
+  followingId String   // The user being followed
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  follower    User     @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// Notification model - User notifications
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String           // The user who receives the notification
+  actorId   String?          // The user who triggered the notification (optional for system notifications)
+  type      NotificationType // Type of notification
+  message   String           // Notification message
+  link      String?          // Link to the related content
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  
+  // Relations
+  user      User             @relation("NotificationOwner", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?            @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
 // Article model - Published content
 model Article {
   id             String    @id @default(cuid())
@@ -162,6 +224,7 @@ model Article {
   @@index([publishedAt])
   @@index([viewCount])
   @@index([sentiment])
+  @@index([authorId])
 }
 
 // RSS Feed source model

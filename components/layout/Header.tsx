@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { Menu, X, Search, User, Moon, Sun, LogOut, Settings } from 'lucide-react'
 import { NAV_ITEMS, SITE_CONFIG } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { NotificationBell } from '@/components/notifications'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -34,6 +35,16 @@ export default function Header() {
       setIsSearchOpen(false)
       setSearchQuery('')
     }
+  }
+
+  // Get profile URL
+  const getProfileUrl = () => {
+    if (session?.user) {
+      // Use username if available, otherwise use id
+      const identifier = (session.user as { username?: string }).username || session.user.id
+      return `/profil/${identifier}`
+    }
+    return '/profil'
   }
 
   return (
@@ -108,6 +119,9 @@ export default function Header() {
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
+            {/* Notification Bell - Only for authenticated users */}
+            {status === 'authenticated' && <NotificationBell />}
+
             {/* User Menu - Authenticated */}
             {status === 'authenticated' && session?.user ? (
               <div className="relative">
@@ -146,6 +160,16 @@ export default function Header() {
                         {session.user.role}
                       </span>
                     </div>
+
+                    {/* Profile Link */}
+                    <Link
+                      href={getProfileUrl()}
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Profilim</span>
+                    </Link>
 
                     {/* Admin Link - Only for ADMIN role */}
                     {session.user.role === 'ADMIN' && (
@@ -228,6 +252,24 @@ export default function Header() {
             
             {status === 'authenticated' && session?.user ? (
               <>
+                {/* Profile Link - Mobile */}
+                <Link
+                  href={getProfileUrl()}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="px-4 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-800"
+                >
+                  Profilim
+                </Link>
+
+                {/* Notifications Link - Mobile */}
+                <Link
+                  href="/bildirimler"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="px-4 py-3 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors dark:text-gray-300 dark:hover:text-blue-400 dark:hover:bg-gray-800"
+                >
+                  Bildirimler
+                </Link>
+
                 {session.user.role === 'ADMIN' && (
                   <Link
                     href="/admin"
