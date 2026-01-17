@@ -1,31 +1,19 @@
-# HaberNexus Geliştirme Yol Haritası
+# HaberNexus Geliştirme Yol Haritası (v4.0 ve Sonrası)
 
-**Son Güncelleme:** 18 Ocak 2026
-
-Bu doküman, HaberNexus projesinin geçmiş başarılarını, mevcut durumunu ve gelecek vizyonunu içerir. Yol haritası, hem insan geliştiricilerin hem de AI ajanlarının katkılarını yönlendirmek için tasarlanmıştır ve projenin temel geliştirme protokollerine sıkı sıkıya bağlıdır.
-
-## 🎯 Vizyon
-
-HaberNexus'u, herkesin kendi akıllı, tam otomatik, kişiselleştirilmiş ve para kazanılabilir haber platformunu kolayca kurabileceği bir ekosisteme dönüştürmek.
+**Son Güncelleme:** 18 Ocak 2026  
+**Oluşturan:** Manus AI Agent
 
 ---
 
-## ✅ Tamamlanan Sürümler (v1.0 - v3.0)
+## 🎯 Vizyon: v4.0 ve Ötesi
 
-Platform, v1'den v3'e kadar olan süreçte temel işlevselliğini, admin panelini ve topluluk özelliklerini başarıyla tamamlamıştır. Bu sürümlerde aşağıdaki temel yetenekler kazanılmıştır:
+HaberNexus, v1-v3 sürümleriyle sağlam bir temel oluşturdu: tam otomasyon, topluluk özellikleri ve güçlü bir admin paneli. **v4.0 ve sonrası için vizyonumuz, platformu bir içerik merkezinden, akıllı, kişiselleştirilmiş ve para kazanılabilir bir ekosisteme dönüştürmektir.** Bu, daha derin AI entegrasyonları, gelişmiş kullanıcı deneyimi ve sürdürülebilir gelir modelleri üzerine odaklanmayı gerektirir.
 
-- **Tam Otomatik İçerik Motoru:** RSS kaynaklarından AI ile özgün içerik ve görsel üretimi.
-- **Gelişmiş Admin Paneli:** Kullanıcı, makale, RSS ve ayar yönetimi.
-- **Topluluk Özellikleri:** Kullanıcı profilleri, takip sistemi ve bildirimler.
-- **Geliştirici Otomasyonu:** Otomatik CI/CD, sürüm yönetimi (semantic-release) ve wiki senkronizasyonu.
-
-*Detaylı sürüm geçmişi için `CHANGELOG.md` dosyasına bakınız.*
+Proje, AI ajanlarının geliştirdiği sıkı ve disiplinli **Birleşik Ajan Geliştirme Çerçevesi**'ne sadık kalarak ilerlemeye devam edecektir. Her özellik, `AI_DEVELOPMENT_GUIDE.md`'de belirtilen 8 aşamalı sürece uygun olarak geliştirilecektir.
 
 ---
 
-## 🔮 Gelecek Vizyonu: v4.0 ve Ötesi
-
-Proje, sağlam temelleri üzerine inşa edilecek yeni ve gelişmiş özelliklerle bir sonraki aşamaya geçmeye hazırdır. Gelecek sürümler, platformu bir içerik merkezinden, akıllı ve gelir üreten bir ekosisteme dönüştürmeye odaklanacaktır.
+## 📅 Sürüm Planı: v4.0 - v6.0
 
 ### v4.0: Gelişmiş AI ve İçerik Zekası
 
@@ -49,7 +37,8 @@ Proje, sağlam temelleri üzerine inşa edilecek yeni ve gelişmiş özelliklerl
 |---|---|---|
 | ⬜ | **Premium Abonelik Sistemi:** | Belirli içeriklere veya özelliklere (örn. reklamsız gezinme, özel analizler) sadece abone olan kullanıcıların erişebilmesi. `Stripe` veya `Lemon Squeezy` gibi ödeme altyapılarıyla entegrasyon. |
 | ⬜ | **Yönetilebilir Reklam Alanları:** | Admin panelinden yönetilebilen dinamik reklam alanları (örn. ana sayfa, makale arası). Google AdSense veya özel reklam banner'ları için slotlar oluşturulacak. |
-| ⬜ | **Sponsorlu İçerik Yönetimi:** | Adminlerin sponsorlu makaleleri kolayca işaretleyip yönetebileceği bir sistem. Bu makaleler özel bir etiketle gösterilecek. |
+| ⬜ | **Sponsorlu İçerik Yönetimi:** | 
+Adminlerin sponsorlu makaleleri kolayca işaretleyip yönetebileceği bir sistem. Bu makaleler özel bir etiketle gösterilecek. |
 | ⬜ | **"Bana bir kahve ısmarla" Entegrasyonu:** | Kullanıcıların içerik üreticilerine (yazarlara veya platform sahibine) doğrudan bağış yapabilmesi için `Buy Me a Coffee` veya `Ko-fi` gibi platformların entegrasyonu. |
 | ⬜ | **Ücretli Newsletter:** | Premium abonelere özel, derinlemesine analizler veya özel içerikler sunan ücretli bir bülten katmanı oluşturma. |
 
