@@ -21,7 +21,8 @@ import {
   FlaskConical,
   AlertTriangle,
   Menu,
-  X
+  X,
+  Key
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +35,7 @@ const sidebarItems = [
   { name: 'Duygu Analizi', href: '/admin/duygu-analizi', icon: Sparkles },
   { name: 'Analitik', href: '/admin/analitik', icon: BarChart3 },
   { name: 'AI Promptları', href: '/admin/promptlar', icon: FileText },
+  { name: 'API Anahtarları', href: '/admin/api-anahtarlari', icon: Key },
   { name: 'Görsel Ayarları', href: '/admin/gorsel-ayarlari', icon: ImageIcon },
   { name: 'Görsel Hataları', href: '/admin/gorsel-hatalari', icon: AlertTriangle },
   { name: 'Test Ortamı', href: '/admin/test-ortami', icon: FlaskConical },

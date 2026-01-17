@@ -141,6 +141,22 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 
 ---
 
+### v2.2: Güvenlik ve API Yönetimi 🚧
+
+**Durum:** Devam Ediyor  
+**Tahmini Tamamlanma:** Ocak 2026  
+**Amaç:** Admin paneline API anahtarı yönetimi ve güvenlik iyileştirmeleri eklemek.
+
+| Durum | Özellik | Geliştirici Notu |
+|---|---|---|
+| ✅ | API Anahtarları Yönetim Sayfası | Admin panelden API anahtarlarını görüntüleme, ekleme, düzenleme ve silme. |
+| ✅ | API Anahtarı Şifreleme | AES-256-GCM ile veritabanında güvenli saklama. |
+| ✅ | API Anahtarı Maskeleme | Frontend'de anahtarların maskelenmiş gösterimi. |
+| ⏳ | Denetim Kaydı (Audit Log) | Kritik admin eylemlerinin kaydı. |
+| ⏳ | Ayarlar Sayfası Yeniden Düzenleme | Ayarların kategorilere ayrılması. |
+
+---
+
 ## 🔮 Gelecek Vizyonu
 
 - **Gelişmiş AI Özellikleri:** Çoklu dil desteği, video özetleme, sesli haber okuma.
@@ -174,6 +190,9 @@ Bu proje AI ajanları ile birlikte geliştirilmektedir. Bu sayede geleneksel gel
 
 ### v2.1 Admin Panel İyileştirmeleri İlerlemesi
 - **Tamamlanan:** 7/7 özellik (%100) ✅
+
+### v2.2 Güvenlik ve API Yönetimi İlerlemesi
+- **Tamamlanan:** 3/5 özellik (%60) 🚧
 
 ---
 
