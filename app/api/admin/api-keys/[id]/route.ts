@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { encrypt, decrypt, maskApiKey, isEncryptionConfigured } from '@/lib/encryption'
+import { clearApiKeyCache } from '@/lib/api-keys'
 
 /**
  * API Key Detail API
@@ -164,6 +165,9 @@ export async function PUT(
       actualValue = updatedKey.value
     }
 
+    // Clear cache after updating key
+    clearApiKeyCache()
+
     return NextResponse.json({
       success: true,
       apiKey: {
@@ -229,6 +233,9 @@ export async function DELETE(
     await prisma.apiKey.delete({
       where: { id }
     })
+
+    // Clear cache after deleting key
+    clearApiKeyCache()
 
     return NextResponse.json({
       success: true,

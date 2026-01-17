@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { encrypt, decrypt, maskApiKey, isEncryptionConfigured } from '@/lib/encryption'
+import { clearApiKeyCache } from '@/lib/api-keys'
 
 /**
  * API Keys Management API
@@ -122,6 +123,9 @@ export async function POST(request: NextRequest) {
         isRequired: isRequired || false,
       }
     })
+
+    // Clear cache after creating new key
+    clearApiKeyCache()
 
     return NextResponse.json({
       success: true,

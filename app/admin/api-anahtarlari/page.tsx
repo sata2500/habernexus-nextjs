@@ -17,7 +17,10 @@ import {
   Sparkles,
   Globe,
   Copy,
-  Check
+  Check,
+  Download,
+  FileCode,
+  ArrowRight
 } from 'lucide-react'
 
 interface ApiKey {
@@ -33,6 +36,29 @@ interface ApiKey {
   lastUsed: string | null
   createdAt: string
   updatedAt: string
+}
+
+interface EnvKeyStatus {
+  key: string
+  name: string
+  description: string
+  category: string
+  isRequired: boolean
+  isInDatabase: boolean
+  isInEnv: boolean
+  maskedEnvValue: string | null
+  canSync: boolean
+  status: 'synced' | 'pending' | 'missing'
+}
+
+interface SyncStatus {
+  keys: EnvKeyStatus[]
+  summary: {
+    total: number
+    synced: number
+    pending: number
+    missing: number
+  }
 }
 
 interface FormData {
@@ -59,11 +85,21 @@ const categoryConfig: Record<string, { label: string; icon: React.ElementType; c
   general: { label: 'Genel', icon: Globe, color: 'text-gray-600 bg-gray-100 dark:bg-gray-700' },
 }
 
+const statusConfig: Record<string, { label: string; color: string }> = {
+  synced: { label: 'Senkronize', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+  pending: { label: 'Bekliyor', color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400' },
+  missing: { label: 'Eksik', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+}
+
 export default function ApiKeysPage() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
+  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'database' | 'env'>('database')
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -81,6 +117,9 @@ export default function ApiKeysPage() {
   
   // Delete confirmation
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  
+  // Sync state
+  const [syncing, setSyncing] = useState(false)
 
   const fetchApiKeys = useCallback(async () => {
     try {
@@ -96,9 +135,21 @@ export default function ApiKeysPage() {
     }
   }, [])
 
+  const fetchSyncStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/api-keys/sync')
+      if (!response.ok) throw new Error('Sync durumu yüklenemedi')
+      const data = await response.json()
+      setSyncStatus(data)
+    } catch (err) {
+      console.error('Sync status error:', err)
+    }
+  }, [])
+
   useEffect(() => {
     fetchApiKeys()
-  }, [fetchApiKeys])
+    fetchSyncStatus()
+  }, [fetchApiKeys, fetchSyncStatus])
 
   const handleRevealKey = async (id: string) => {
     if (revealedKeys.has(id)) {
@@ -195,6 +246,7 @@ export default function ApiKeysPage() {
       setTimeout(() => setSuccess(null), 3000)
       handleCloseModal()
       fetchApiKeys()
+      fetchSyncStatus()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Bir hata oluştu')
     } finally {
@@ -235,8 +287,67 @@ export default function ApiKeysPage() {
       setTimeout(() => setSuccess(null), 3000)
       setDeleteConfirm(null)
       fetchApiKeys()
+      fetchSyncStatus()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Bir hata oluştu')
+    }
+  }
+
+  const handleSyncAll = async () => {
+    try {
+      setSyncing(true)
+      setError(null)
+      
+      const response = await fetch('/api/admin/api-keys/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Senkronizasyon başarısız')
+      }
+
+      const data = await response.json()
+      
+      setSuccess(`${data.summary.synced} anahtar başarıyla senkronize edildi`)
+      setTimeout(() => setSuccess(null), 3000)
+      
+      fetchApiKeys()
+      fetchSyncStatus()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bir hata oluştu')
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  const handleSyncSingle = async (keyName: string) => {
+    try {
+      setSyncing(true)
+      setError(null)
+      
+      const response = await fetch('/api/admin/api-keys/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keys: [keyName] }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Senkronizasyon başarısız')
+      }
+
+      setSuccess(`${keyName} başarıyla senkronize edildi`)
+      setTimeout(() => setSuccess(null), 3000)
+      
+      fetchApiKeys()
+      fetchSyncStatus()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bir hata oluştu')
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -296,71 +407,318 @@ export default function ApiKeysPage() {
         </div>
       )}
 
-      {/* Info Box */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-        <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Güvenlik Bilgisi</h3>
-        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-          <li>• API anahtarları veritabanında şifrelenmiş olarak saklanır</li>
-          <li>• Anahtarlar varsayılan olarak maskelenmiş gösterilir</li>
-          <li>• Zorunlu anahtarlar silinmeden önce işareti kaldırılmalıdır</li>
-          <li>• Değişiklikler anında uygulanır, sunucu yeniden başlatma gerekmez</li>
-        </ul>
+      {/* Tabs */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <nav className="flex gap-4">
+          <button
+            onClick={() => setActiveTab('database')}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'database'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Key className="w-4 h-4" />
+              Veritabanı Anahtarları
+              <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-700">
+                {apiKeys.length}
+              </span>
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('env')}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'env'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <FileCode className="w-4 h-4" />
+              .env Senkronizasyonu
+              {syncStatus && syncStatus.summary.pending > 0 && (
+                <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                  {syncStatus.summary.pending} bekliyor
+                </span>
+              )}
+            </div>
+          </button>
+        </nav>
       </div>
 
-      {/* API Keys List */}
-      {Object.entries(groupedKeys).length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-          <Key className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Henüz API anahtarı yok
-          </h3>
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
-            İlk API anahtarınızı ekleyerek başlayın
-          </p>
-          <button
-            onClick={() => handleOpenModal()}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <Plus className="w-4 h-4" />
-            API Anahtarı Ekle
-          </button>
-        </div>
-      ) : (
-        Object.entries(groupedKeys).map(([category, keys]) => {
-          const config = categoryConfig[category] || categoryConfig.general
-          const CategoryIcon = config.icon
-          
-          return (
-            <div key={category} className="bg-white dark:bg-gray-800 rounded-lg shadow">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <div className={`p-1.5 rounded ${config.color}`}>
-                    <CategoryIcon className="w-4 h-4" />
-                  </div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {config.label}
-                  </h2>
-                  <span className="text-sm text-gray-500">({keys.length})</span>
-                </div>
+      {/* Database Keys Tab */}
+      {activeTab === 'database' && (
+        <>
+          {/* Info Box */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Güvenlik Bilgisi</h3>
+            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+              <li>• API anahtarları veritabanında şifrelenmiş olarak saklanır</li>
+              <li>• Anahtarlar varsayılan olarak maskelenmiş gösterilir</li>
+              <li>• Zorunlu anahtarlar silinmeden önce işareti kaldırılmalıdır</li>
+              <li>• Değişiklikler anında uygulanır, sunucu yeniden başlatma gerekmez</li>
+            </ul>
+          </div>
+
+          {/* API Keys List */}
+          {Object.entries(groupedKeys).length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+              <Key className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                Henüz API anahtarı yok
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                .env dosyasındaki anahtarları senkronize edin veya yeni bir anahtar ekleyin
+              </p>
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={() => setActiveTab('env')}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
+                >
+                  <Download className="w-4 h-4" />
+                  .env&apos;den Senkronize Et
+                </button>
+                <button
+                  onClick={() => handleOpenModal()}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <Plus className="w-4 h-4" />
+                  Manuel Ekle
+                </button>
               </div>
+            </div>
+          ) : (
+            Object.entries(groupedKeys).map(([category, keys]) => {
+              const config = categoryConfig[category] || categoryConfig.general
+              const CategoryIcon = config.icon
               
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                {keys.map((key) => (
-                  <div key={key.id} className="p-6">
+              return (
+                <div key={category} className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded ${config.color}`}>
+                        <CategoryIcon className="w-4 h-4" />
+                      </div>
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {config.label}
+                      </h2>
+                      <span className="text-sm text-gray-500">({keys.length})</span>
+                    </div>
+                  </div>
+                  
+                  <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {keys.map((key) => (
+                      <div key={key.id} className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                {key.name}
+                              </h3>
+                              <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                key.isActive 
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                              }`}>
+                                {key.isActive ? 'Aktif' : 'Pasif'}
+                              </span>
+                              {key.isRequired && (
+                                <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                  Zorunlu
+                                </span>
+                              )}
+                            </div>
+                            
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">
+                              {key.key}
+                            </p>
+                            
+                            {key.description && (
+                              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                                {key.description}
+                              </p>
+                            )}
+                            
+                            {/* Value display */}
+                            <div className="flex items-center gap-2 mt-3">
+                              <div className="flex-1 max-w-md">
+                                <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg font-mono text-sm">
+                                  <span className="text-gray-700 dark:text-gray-300 truncate">
+                                    {revealedKeys.has(key.id) 
+                                      ? revealedValues[key.id] 
+                                      : key.maskedValue}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              <button
+                                onClick={() => handleRevealKey(key.id)}
+                                disabled={loadingReveal === key.id}
+                                className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                title={revealedKeys.has(key.id) ? 'Gizle' : 'Göster'}
+                              >
+                                {loadingReveal === key.id ? (
+                                  <RefreshCw className="w-4 h-4 animate-spin" />
+                                ) : revealedKeys.has(key.id) ? (
+                                  <EyeOff className="w-4 h-4" />
+                                ) : (
+                                  <Eye className="w-4 h-4" />
+                                )}
+                              </button>
+                              
+                              {revealedKeys.has(key.id) && (
+                                <button
+                                  onClick={() => handleCopyKey(key.id)}
+                                  className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                                  title="Kopyala"
+                                >
+                                  {copiedKey === key.id ? (
+                                    <Check className="w-4 h-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                            
+                            {key.lastUsed && (
+                              <p className="text-xs text-gray-400 mt-2">
+                                Son kullanım: {new Date(key.lastUsed).toLocaleString('tr-TR')}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {/* Actions */}
+                          <div className="flex items-center gap-2 ml-4">
+                            <button
+                              onClick={() => handleToggleActive(key)}
+                              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                                key.isActive
+                                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                  : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400'
+                              }`}
+                            >
+                              {key.isActive ? 'Pasif Yap' : 'Aktif Yap'}
+                            </button>
+                            
+                            <button
+                              onClick={() => handleOpenModal(key)}
+                              className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                              title="Düzenle"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            
+                            {deleteConfirm === key.id ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleDelete(key.id)}
+                                  className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                                >
+                                  Onayla
+                                </button>
+                                <button
+                                  onClick={() => setDeleteConfirm(null)}
+                                  className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300"
+                                >
+                                  İptal
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setDeleteConfirm(key.id)}
+                                className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                                title="Sil"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </>
+      )}
+
+      {/* .env Sync Tab */}
+      {activeTab === 'env' && syncStatus && (
+        <>
+          {/* Sync Info Box */}
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+            <h3 className="font-medium text-amber-800 dark:text-amber-200 mb-2">.env Senkronizasyonu</h3>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+              .env dosyasındaki API anahtarlarını veritabanına aktararak admin panelden yönetilebilir hale getirin. 
+              Senkronize edilen anahtarlar şifrelenmiş olarak saklanır ve .env dosyasından bağımsız çalışır.
+            </p>
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-amber-700 dark:text-amber-300">
+                <strong>{syncStatus.summary.synced}</strong> senkronize
+              </span>
+              <span className="text-amber-700 dark:text-amber-300">
+                <strong>{syncStatus.summary.pending}</strong> bekliyor
+              </span>
+              <span className="text-amber-700 dark:text-amber-300">
+                <strong>{syncStatus.summary.missing}</strong> eksik
+              </span>
+            </div>
+          </div>
+
+          {/* Sync All Button */}
+          {syncStatus.summary.pending > 0 && (
+            <div className="flex justify-end">
+              <button
+                onClick={handleSyncAll}
+                disabled={syncing}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 transition-colors"
+              >
+                {syncing ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4" />
+                )}
+                Tümünü Senkronize Et
+              </button>
+            </div>
+          )}
+
+          {/* Env Keys List */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <FileCode className="w-5 h-5 text-gray-500" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  .env Anahtarları
+                </h2>
+              </div>
+            </div>
+            
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {syncStatus.keys.map((envKey) => {
+                const config = categoryConfig[envKey.category] || categoryConfig.general
+                const status = statusConfig[envKey.status]
+                const CategoryIcon = config.icon
+                
+                return (
+                  <div key={envKey.key} className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
+                          <div className={`p-1 rounded ${config.color}`}>
+                            <CategoryIcon className="w-3 h-3" />
+                          </div>
                           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                            {key.name}
+                            {envKey.name}
                           </h3>
-                          <span className={`px-2 py-0.5 text-xs rounded-full ${
-                            key.isActive 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
-                          }`}>
-                            {key.isActive ? 'Aktif' : 'Pasif'}
+                          <span className={`px-2 py-0.5 text-xs rounded-full ${status.color}`}>
+                            {status.label}
                           </span>
-                          {key.isRequired && (
+                          {envKey.isRequired && (
                             <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
                               Zorunlu
                             </span>
@@ -368,117 +726,64 @@ export default function ApiKeysPage() {
                         </div>
                         
                         <p className="text-sm text-gray-500 dark:text-gray-400 font-mono mb-2">
-                          {key.key}
+                          {envKey.key}
                         </p>
                         
-                        {key.description && (
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                            {key.description}
-                          </p>
-                        )}
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                          {envKey.description}
+                        </p>
                         
                         {/* Value display */}
-                        <div className="flex items-center gap-2 mt-3">
-                          <div className="flex-1 max-w-md">
-                            <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg font-mono text-sm">
-                              <span className="text-gray-700 dark:text-gray-300 truncate">
-                                {revealedKeys.has(key.id) 
-                                  ? revealedValues[key.id] 
-                                  : key.maskedValue}
-                              </span>
+                        {envKey.isInEnv && envKey.maskedEnvValue && (
+                          <div className="flex items-center gap-2 mt-3">
+                            <span className="text-xs text-gray-500">.env değeri:</span>
+                            <div className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded font-mono text-sm text-gray-700 dark:text-gray-300">
+                              {envKey.maskedEnvValue}
                             </div>
                           </div>
-                          
-                          <button
-                            onClick={() => handleRevealKey(key.id)}
-                            disabled={loadingReveal === key.id}
-                            className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                            title={revealedKeys.has(key.id) ? 'Gizle' : 'Göster'}
-                          >
-                            {loadingReveal === key.id ? (
-                              <RefreshCw className="w-4 h-4 animate-spin" />
-                            ) : revealedKeys.has(key.id) ? (
-                              <EyeOff className="w-4 h-4" />
-                            ) : (
-                              <Eye className="w-4 h-4" />
-                            )}
-                          </button>
-                          
-                          {revealedKeys.has(key.id) && (
-                            <button
-                              onClick={() => handleCopyKey(key.id)}
-                              className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                              title="Kopyala"
-                            >
-                              {copiedKey === key.id ? (
-                                <Check className="w-4 h-4 text-green-600" />
-                              ) : (
-                                <Copy className="w-4 h-4" />
-                              )}
-                            </button>
-                          )}
-                        </div>
+                        )}
                         
-                        {key.lastUsed && (
-                          <p className="text-xs text-gray-400 mt-2">
-                            Son kullanım: {new Date(key.lastUsed).toLocaleString('tr-TR')}
-                          </p>
+                        {!envKey.isInEnv && (
+                          <div className="flex items-center gap-2 mt-3 text-red-600 dark:text-red-400">
+                            <AlertCircle className="w-4 h-4" />
+                            <span className="text-sm">.env dosyasında bulunamadı</span>
+                          </div>
                         )}
                       </div>
                       
                       {/* Actions */}
                       <div className="flex items-center gap-2 ml-4">
-                        <button
-                          onClick={() => handleToggleActive(key)}
-                          className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
-                            key.isActive
-                              ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                              : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400'
-                          }`}
-                        >
-                          {key.isActive ? 'Pasif Yap' : 'Aktif Yap'}
-                        </button>
-                        
-                        <button
-                          onClick={() => handleOpenModal(key)}
-                          className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-                          title="Düzenle"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        
-                        {deleteConfirm === key.id ? (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleDelete(key.id)}
-                              className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                            >
-                              Onayla
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirm(null)}
-                              className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300"
-                            >
-                              İptal
-                            </button>
-                          </div>
-                        ) : (
+                        {envKey.canSync && (
                           <button
-                            onClick={() => setDeleteConfirm(key.id)}
-                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                            title="Sil"
+                            onClick={() => handleSyncSingle(envKey.key)}
+                            disabled={syncing}
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 rounded-lg transition-colors disabled:opacity-50"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {syncing ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <>
+                                <ArrowRight className="w-4 h-4" />
+                                Senkronize Et
+                              </>
+                            )}
                           </button>
+                        )}
+                        
+                        {envKey.isInDatabase && (
+                          <span className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-700 dark:text-green-400">
+                            <CheckCircle className="w-4 h-4" />
+                            Veritabanında
+                          </span>
                         )}
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                )
+              })}
             </div>
-          )
-        })
+          </div>
+        </>
       )}
 
       {/* Modal */}

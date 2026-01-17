@@ -3,23 +3,48 @@ import { prisma } from '@/lib/prisma'
 import { getDefaultModel, isValidModel } from '@/lib/gemini-models'
 import { getPromptByType, interpolatePrompt } from '@/lib/prompts'
 import { PromptType } from '@prisma/client'
+import { getGeminiApiKey } from '@/lib/api-keys'
 
 /**
  * Google Gemini AI Service
  * Handles AI content generation for news articles
  * 
- * @version 3.0.0
- * @lastUpdated 13 January 2026
+ * @version 4.0.0
+ * @lastUpdated 17 January 2026
+ * 
+ * Changes in v4.0.0:
+ * - Updated to use API keys from database with fallback to .env
+ * - Added lazy initialization with dynamic API key retrieval
+ * - Improved error handling for missing API keys
  * 
  * Changes in v3.0.0:
  * - Added prompt template support from database
  * - Prompts can now be customized via admin panel
  */
 
-// Initialize the Gemini client
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-})
+// Initialize the Gemini client lazily
+let genAI: GoogleGenAI | null = null
+let currentApiKey: string | null = null
+
+/**
+ * Get or create the Gemini client
+ * Uses API key from database with fallback to environment variable
+ */
+async function getGenAIClient(): Promise<GoogleGenAI> {
+  const apiKey = await getGeminiApiKey()
+  
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured. Please add it via Admin Panel or .env file.')
+  }
+  
+  // Reinitialize if API key changed
+  if (!genAI || currentApiKey !== apiKey) {
+    genAI = new GoogleGenAI({ apiKey })
+    currentApiKey = apiKey
+  }
+  
+  return genAI
+}
 
 /**
  * Get the configured model for a specific use case from system settings
@@ -76,6 +101,7 @@ export async function generateArticle(
   excerpt: string
   slug: string
 }> {
+  const client = await getGenAIClient()
   const modelName = modelOverride && isValidModel(modelOverride) 
     ? modelOverride 
     : await getConfiguredModel('content')
@@ -122,7 +148,7 @@ KURALLAR:
   })
 
   try {
-    const response = await genAI.models.generateContent({
+    const response = await client.models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -169,6 +195,7 @@ export async function generateSummary(
   content: string,
   modelOverride?: string
 ): Promise<string> {
+  const client = await getGenAIClient()
   const modelName = modelOverride && isValidModel(modelOverride)
     ? modelOverride
     : await getConfiguredModel('summary')
@@ -188,7 +215,7 @@ Sadece özeti yaz, başka bir şey ekleme.`
   const prompt = interpolatePrompt(promptTemplate, { content })
 
   try {
-    const response = await genAI.models.generateContent({
+    const response = await client.models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -213,6 +240,7 @@ export async function analyzeSentiment(
   content: string,
   modelOverride?: string
 ): Promise<SentimentResult> {
+  const client = await getGenAIClient()
   const modelName = modelOverride && isValidModel(modelOverride)
     ? modelOverride
     : await getConfiguredModel('sentiment')
@@ -252,7 +280,7 @@ KRİTERLER:
   })
 
   try {
-    const response = await genAI.models.generateContent({
+    const response = await client.models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -340,6 +368,7 @@ export async function determineCategory(
   content: string,
   modelOverride?: string
 ): Promise<string> {
+  const client = await getGenAIClient()
   const modelName = modelOverride && isValidModel(modelOverride)
     ? modelOverride
     : await getConfiguredModel('category')
@@ -378,7 +407,7 @@ Sadece kategori adını yaz, başka bir şey ekleme.`
   })
 
   try {
-    const response = await genAI.models.generateContent({
+    const response = await client.models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -416,9 +445,11 @@ function generateSlug(title: string): string {
 
 /**
  * Check if Gemini API is configured
+ * Now checks both database and environment variable
  */
-export function isGeminiConfigured(): boolean {
-  return !!process.env.GEMINI_API_KEY
+export async function isGeminiConfigured(): Promise<boolean> {
+  const apiKey = await getGeminiApiKey()
+  return !!apiKey
 }
 
 /**

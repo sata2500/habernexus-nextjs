@@ -59,41 +59,43 @@ model ApiKey {
 ## 4. Uygulama Adımları
 
 ### Adım 1: Prisma Şeması Güncelleme
-- [ ] `ApiKey` modelini `schema.prisma`'ya ekle
-- [ ] `npx prisma generate` çalıştır
-- [ ] `npx prisma db push` çalıştır
-- [ ] Doğrulama: `npx tsc --noEmit`
+- [x] `ApiKey` modelini `schema.prisma`'ya ekle
+- [x] `npx prisma generate` çalıştır
+- [x] `npx prisma db push` çalıştır
+- [x] Doğrulama: `npx tsc --noEmit`
 
 ### Adım 2: Şifreleme Utility Oluşturma
-- [ ] `lib/encryption.ts` dosyası oluştur
-- [ ] `encrypt()` ve `decrypt()` fonksiyonları ekle
-- [ ] Doğrulama: `npx tsc --noEmit`
+- [x] `lib/encryption.ts` dosyası oluştur
+- [x] `encrypt()` ve `decrypt()` fonksiyonları ekle
+- [x] Doğrulama: `npx tsc --noEmit`
 
 ### Adım 3: API Route'ları Oluşturma
-- [ ] `app/api/admin/api-keys/route.ts` - GET (liste), POST (ekle)
-- [ ] `app/api/admin/api-keys/[id]/route.ts` - GET (detay), PUT (güncelle), DELETE (sil)
-- [ ] Doğrulama: `npm run lint && npm run build`
+- [x] `app/api/admin/api-keys/route.ts` - GET (liste), POST (ekle)
+- [x] `app/api/admin/api-keys/[id]/route.ts` - GET (detay), PUT (güncelle), DELETE (sil)
+- [x] `app/api/admin/api-keys/sync/route.ts` - GET (sync durumu), POST (sync)
+- [x] Doğrulama: `npm run lint && npm run build`
 
 ### Adım 4: Admin Panel Sayfası Oluşturma
-- [ ] `app/admin/api-anahtarlari/page.tsx` oluştur
-- [ ] API anahtarları listesi bileşeni
-- [ ] Ekleme/düzenleme modal bileşeni
-- [ ] Doğrulama: `npm run build`
+- [x] `app/admin/api-anahtarlari/page.tsx` oluştur
+- [x] API anahtarları listesi bileşeni
+- [x] Ekleme/düzenleme modal bileşeni
+- [x] .env senkronizasyon arayüzü
+- [x] Doğrulama: `npm run build`
 
 ### Adım 5: Sidebar'a Menü Ekleme
-- [ ] `app/admin/layout.tsx` güncelle
-- [ ] Yeni menü öğesi ekle
-- [ ] Doğrulama: `npm run build`
+- [x] `app/admin/layout.tsx` güncelle
+- [x] Yeni menü öğesi ekle
+- [x] Doğrulama: `npm run build`
 
 ### Adım 6: Mevcut API Key Kullanımını Güncelleme
-- [ ] `lib/gemini.ts` güncelle - veritabanından API key okuma
-- [ ] `lib/imagen.ts` güncelle - veritabanından API key okuma
-- [ ] Fallback olarak `.env` değerlerini kullan
-- [ ] Doğrulama: `npm run build && npm run dev`
+- [x] `lib/gemini.ts` güncelle - veritabanından API key okuma
+- [x] `lib/imagen.ts` güncelle - veritabanından API key okuma
+- [x] Fallback olarak `.env` değerlerini kullan
+- [x] Doğrulama: `npm run build && npm run dev`
 
 ### Adım 7: Migration Script
-- [ ] Mevcut `.env` API anahtarlarını veritabanına aktaran script
-- [ ] İlk kurulumda otomatik çalışacak
+- [x] Mevcut `.env` API anahtarlarını veritabanına aktaran sync API
+- [x] Admin panelden tek tıkla senkronizasyon
 
 ## 5. UI/UX Tasarımı
 

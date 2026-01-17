@@ -443,7 +443,7 @@ export async function getEngineStatus(): Promise<{
   ])
 
   return {
-    isConfigured: isGeminiConfigured(),
+    isConfigured: await isGeminiConfigured(),
     isImageGenEnabled: imageGenEnabled,
     isRssImageOptEnabled: rssImageOptEnabled,
     activeFeeds,

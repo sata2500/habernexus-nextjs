@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getPromptByType, interpolatePrompt, getImageStyleForCategory } from '@/lib/prompts'
 import { PromptType } from '@prisma/client'
 import { logImageError, logImageStats, classifyErrorType } from '@/lib/image-error-tracker'
+import { getGeminiApiKey } from '@/lib/api-keys'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -10,8 +11,13 @@ import * as path from 'path'
  * Imagen Image Generation Service
  * Handles AI-powered image generation for news articles
  * 
- * @version 4.0.0
- * @lastUpdated 14 January 2026
+ * @version 5.0.0
+ * @lastUpdated 17 January 2026
+ * 
+ * Changes in v5.0.0:
+ * - Updated to use API keys from database with fallback to .env
+ * - Added lazy initialization with dynamic API key retrieval
+ * - Improved error handling for missing API keys
  * 
  * Changes in v4.0.0:
  * - Updated to use Imagen 4.0 models (Imagen 3.0 deprecated)
@@ -31,15 +37,25 @@ import * as path from 'path'
 
 // Initialize the Gemini client lazily to avoid issues when API key is not set
 let genAI: GoogleGenAI | null = null
+let currentApiKey: string | null = null
 
-function getGenAIClient(): GoogleGenAI {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY environment variable is not set')
-    }
-    genAI = new GoogleGenAI({ apiKey })
+/**
+ * Get or create the Gemini client
+ * Uses API key from database with fallback to environment variable
+ */
+async function getGenAIClient(): Promise<GoogleGenAI> {
+  const apiKey = await getGeminiApiKey()
+  
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY is not configured. Please add it via Admin Panel or .env file.')
   }
+  
+  // Reinitialize if API key changed
+  if (!genAI || currentApiKey !== apiKey) {
+    genAI = new GoogleGenAI({ apiKey })
+    currentApiKey = apiKey
+  }
+  
   return genAI
 }
 
@@ -168,7 +184,8 @@ export async function generateArticleImage(
   const startTime = Date.now()
 
   // Check if API key is configured
-  if (!process.env.GEMINI_API_KEY) {
+  const apiKey = await getGeminiApiKey()
+  if (!apiKey) {
     console.warn('[Imagen] API key not configured, using placeholder')
     await logImageError({
       articleId,
@@ -181,14 +198,14 @@ export async function generateArticleImage(
     return {
       success: false,
       imageUrl: null,
-      error: 'API key not configured',
+      error: 'API key not configured. Please add GEMINI_API_KEY via Admin Panel or .env file.',
     }
   }
 
   let model: string = ''
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const client = getGenAIClient()
+      const client = await getGenAIClient()
       model = modelOverride || await getConfiguredImageModel()
       const prompt = await generateImagePrompt(title, category)
 
@@ -439,9 +456,10 @@ async function saveGeneratedImage(
 
 /**
  * Check if Imagen API is configured and working
+ * Now checks both database and environment variable
  */
 export async function isImagenConfigured(): Promise<boolean> {
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = await getGeminiApiKey()
   if (!apiKey) {
     return false
   }
@@ -464,15 +482,16 @@ export async function testImagenConnection(): Promise<{
   model?: string
 }> {
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    const apiKey = await getGeminiApiKey()
+    if (!apiKey) {
       return {
         success: false,
-        error: 'API key not configured',
+        error: 'API key not configured. Please add GEMINI_API_KEY via Admin Panel or .env file.',
       }
     }
     
     const model = await getConfiguredImageModel()
-    const client = getGenAIClient()
+    const client = await getGenAIClient()
     
     // Try a simple test generation with a safe prompt
     console.log('[Imagen] Testing API connection...')
