@@ -1,3 +1,21 @@
+## [1.20.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.19.1...v1.20.0) (2026-01-17)
+
+### ✨ Yeni Özellikler
+
+* **admin:** add environment variables management system ([d4bbb8e](https://github.com/sata2500/habernexus-nextjs/commit/d4bbb8ecb5236996b3982665ebf5950e1741fbee))
+
+### ♻️ Kod İyileştirmeleri
+
+* İyileştirme raporunu docs klasöründe uygun yere taşıma ([207d0f2](https://github.com/sata2500/habernexus-nextjs/commit/207d0f2356c57580bd969201d3e781711b6793d4))
+
+### 📚 Dokümantasyon
+
+* add development report for env management feature ([3941d40](https://github.com/sata2500/habernexus-nextjs/commit/3941d409076968018350e2e0c677814f06b18694))
+
+### 🔧 Bakım
+
+* **release:** 1.19.2 [skip ci] ([923e4c9](https://github.com/sata2500/habernexus-nextjs/commit/923e4c9de6fe5bad7e5f8ab9b6cfcc0ba6959b8f))
+
 ## [1.19.2](https://github.com/sata2500/habernexus-nextjs/compare/v1.19.1...v1.19.2) (2026-01-17)
 
 ### ♻️ Kod İyileştirmeleri
