@@ -1,3 +1,14 @@
+## [3.1.0](https://github.com/sata2500/habernexus-nextjs/compare/v3.0.0...v3.1.0) (2026-01-18)
+
+### ✨ Yeni Özellikler
+
+* **admin:** add comprehensive version management system ([cc94f42](https://github.com/sata2500/habernexus-nextjs/commit/cc94f42deda3c073d861adeb88696f1ba61e3095))
+
+### 📚 Dokümantasyon
+
+* update roadmap with v4.0-v6.0 vision and add GitHub audit report ([7da24fb](https://github.com/sata2500/habernexus-nextjs/commit/7da24fb71cc99ed12d12cba8a5b4667ff1705d5d))
+* v3.0.0 release notes eklendi ([4df16d8](https://github.com/sata2500/habernexus-nextjs/commit/4df16d89123853eae1b76af04c034f1a3c1854bf))
+
 ## [1.20.0](https://github.com/sata2500/habernexus-nextjs/compare/v1.19.1...v1.20.0) (2026-01-17)
 
 ### ✨ Yeni Özellikler
