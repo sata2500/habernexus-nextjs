@@ -413,3 +413,33 @@ model ContactMessage {
   @@index([isRead])
   @@index([createdAt])
 }
+
+
+// Deployment settings model - For managing auto-deployment configuration
+model DeploymentSettings {
+  id                String   @id @default(cuid())
+  key               String   @unique // Setting key (e.g., "webhook_enabled", "cooldown_period")
+  value             String            // Setting value (JSON for complex settings)
+  description       String?           // Description of the setting
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// Deployment history model - For tracking deployment operations
+model DeploymentHistory {
+  id                String   @id @default(cuid())
+  type              String   // "auto" | "manual" | "rollback"
+  status            String   // "pending" | "running" | "success" | "failed"
+  fromVersion       String?  // Previous version/commit
+  toVersion         String   // Target version/commit
+  triggeredBy       String?  // User who triggered (for manual deployments)
+  startedAt         DateTime @default(now())
+  completedAt       DateTime?
+  duration          Int?     // Duration in seconds
+  logs              String?  // Deployment logs (JSON array)
+  errorMessage      String?  // Error message if failed
+  
+  @@index([status])
+  @@index([startedAt])
+  @@index([type])
+}

@@ -22,7 +22,8 @@ import {
   AlertTriangle,
   Menu,
   X,
-  FileCode
+  FileCode,
+  GitBranch
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -39,6 +40,7 @@ const sidebarItems = [
   { name: 'Görsel Hataları', href: '/admin/gorsel-hatalari', icon: AlertTriangle },
   { name: 'Test Ortamı', href: '/admin/test-ortami', icon: FlaskConical },
   { name: 'Ortam Değişkenleri', href: '/admin/env-yonetimi', icon: FileCode },
+  { name: 'Sürüm Yönetimi', href: '/admin/surum-yonetimi', icon: GitBranch },
   { name: 'Ayarlar', href: '/admin/ayarlar', icon: Settings },
 ]
 
