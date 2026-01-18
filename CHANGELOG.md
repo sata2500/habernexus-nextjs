@@ -1,3 +1,9 @@
+## [3.1.1](https://github.com/sata2500/habernexus-nextjs/compare/v3.1.0...v3.1.1) (2026-01-18)
+
+### 🐛 Hata Düzeltmeleri
+
+* **install:** v3.0.0 - npm ci arka plan işlem hatası düzeltildi ([d93d9a6](https://github.com/sata2500/habernexus-nextjs/commit/d93d9a6f81edd6fc03ae2e0b49da40b1100ff6bd))
+
 ## [3.1.0](https://github.com/sata2500/habernexus-nextjs/compare/v3.0.0...v3.1.0) (2026-01-18)
 
 ### ✨ Yeni Özellikler
