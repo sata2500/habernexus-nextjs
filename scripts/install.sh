@@ -3,7 +3,7 @@
 # ╔═══════════════════════════════════════════════════════════════════════════╗
 # ║                                                                           ║
 # ║   HaberNexus - Profesyonel Otomatik Kurulum Sistemi                       ║
-# ║   Sürüm: 2.1.0                                                            ║
+# ║   Sürüm: 3.0.0                                                            ║
 # ║   Desteklenen Sistemler: Ubuntu 22.04 LTS, Ubuntu 24.04 LTS               ║
 # ║                                                                           ║
 # ║   Tek Satırlık Kurulum:                                                   ║
@@ -11,13 +11,14 @@
 # ║                                                                           ║
 # ╚═══════════════════════════════════════════════════════════════════════════╝
 
-set -euo pipefail
+# Strict mode - ancak pipe hatalarını özel olarak ele alacağız
+set -uo pipefail
 
 # ═══════════════════════════════════════════════════════════════════════════
 # YAPILANDIRMA DEĞİŞKENLERİ
 # ═══════════════════════════════════════════════════════════════════════════
 
-readonly SCRIPT_VERSION="2.1.0"
+readonly SCRIPT_VERSION="3.0.0"
 readonly GITHUB_REPO="https://github.com/sata2500/habernexus-nextjs.git"
 readonly INSTALL_DIR="/var/www/habernexus"
 readonly NODE_VERSION="22"
@@ -32,6 +33,11 @@ ENABLE_AUTO_DEPLOY="false"
 WEBHOOK_PORT="9000"
 WEBHOOK_SECRET=""
 LOG_DIR="/var/log/habernexus"
+
+# GitHub entegrasyonu (isteğe bağlı)
+GITHUB_PAT=""
+GITHUB_REPO_OWNER=""
+GITHUB_REPO_NAME=""
 
 # ═══════════════════════════════════════════════════════════════════════════
 # RENK TANIMLARI
@@ -105,8 +111,8 @@ progress_bar() {
     printf "] ${percentage}%%${NC}"
 }
 
-# Spinner animasyonu
-spinner() {
+# Geliştirilmiş spinner animasyonu - hata yönetimi ile
+spinner_with_status() {
     local pid=$1
     local message=$2
     local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
@@ -118,6 +124,50 @@ spinner() {
         sleep 0.1
     done
     printf "\r"
+    
+    # İşlem çıkış kodunu kontrol et
+    wait $pid
+    return $?
+}
+
+# Arka planda komut çalıştır ve hata yönetimi yap
+run_with_spinner() {
+    local message="$1"
+    shift
+    local cmd="$@"
+    
+    print_step "$message"
+    
+    # Komutu arka planda çalıştır
+    eval "$cmd" >> "$LOG_FILE" 2>&1 &
+    local pid=$!
+    
+    # Spinner ile bekle
+    local spin='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+    local i=0
+    
+    while kill -0 $pid 2>/dev/null; do
+        i=$(( (i+1) % 10 ))
+        printf "\r  ${CYAN}${spin:$i:1}${NC} ${DIM}İşlem devam ediyor...${NC}"
+        sleep 0.1
+    done
+    printf "\r                                    \r"
+    
+    # İşlem çıkış kodunu kontrol et
+    wait $pid
+    local exit_code=$?
+    
+    if [[ $exit_code -ne 0 ]]; then
+        print_error "$message başarısız oldu (kod: $exit_code)"
+        print_info "Detaylı log: $LOG_FILE"
+        print_info "Son 20 satır log:"
+        tail -20 "$LOG_FILE" | while read line; do
+            echo -e "    ${DIM}$line${NC}"
+        done
+        return $exit_code
+    fi
+    
+    return 0
 }
 
 # Hata yakalama
@@ -126,6 +176,10 @@ error_handler() {
     local error_code=$2
     print_error "Hata oluştu (satır: $line_no, kod: $error_code)"
     print_info "Detaylı log: $LOG_FILE"
+    print_info "Son 30 satır log:"
+    tail -30 "$LOG_FILE" 2>/dev/null | while read line; do
+        echo -e "    ${DIM}$line${NC}"
+    done
     exit 1
 }
 
@@ -385,6 +439,22 @@ get_user_input() {
     fi
     echo ""
     
+    # GitHub Entegrasyonu (Sürüm Yönetimi için - isteğe bağlı)
+    echo -e "${CYAN}7. GitHub Entegrasyonu (İsteğe Bağlı)${NC}"
+    echo -e "${GRAY}   Admin panelinden sürüm yönetimi için gereklidir.${NC}"
+    echo -e "${GRAY}   Boş bırakabilirsiniz, daha sonra .env dosyasından ekleyebilirsiniz.${NC}"
+    echo ""
+    local github_choice
+    ask_input "   GitHub entegrasyonunu yapılandırmak istiyor musunuz? (e/h)" github_choice "h"
+    if [[ $github_choice =~ ^[Ee]$ ]]; then
+        echo -e "${GRAY}   GitHub Personal Access Token (PAT):${NC}"
+        echo -e "${GRAY}   https://github.com/settings/tokens adresinden oluşturun${NC}"
+        ask_input "   GitHub PAT" GITHUB_PAT
+        ask_input "   GitHub Kullanıcı Adı" GITHUB_REPO_OWNER
+        ask_input "   Repository Adı" GITHUB_REPO_NAME "habernexus-nextjs"
+    fi
+    echo ""
+    
     # Özet
     print_header "YAPILANDIRMA ÖZETİ"
     echo -e "  ${WHITE}Domain:${NC}              $SITE_DOMAIN"
@@ -395,6 +465,11 @@ get_user_input() {
         echo -e "  ${WHITE}Otomatik Güncelleme:${NC} ${GREEN}Etkin${NC} (Port: $WEBHOOK_PORT)"
     else
         echo -e "  ${WHITE}Otomatik Güncelleme:${NC} ${GRAY}Devre Dışı${NC}"
+    fi
+    if [[ -n "$GITHUB_PAT" ]]; then
+        echo -e "  ${WHITE}GitHub Entegrasyonu:${NC} ${GREEN}Etkin${NC}"
+    else
+        echo -e "  ${WHITE}GitHub Entegrasyonu:${NC} ${GRAY}Devre Dışı${NC}"
     fi
     echo ""
     
@@ -537,12 +612,29 @@ install_dependencies() {
     
     print_step "Bağımlılıklar yükleniyor (bu birkaç dakika sürebilir)..."
     
-    npm ci --production=false >> "$LOG_FILE" 2>&1 &
-    local pid=$!
-    spinner $pid "Paketler yükleniyor..."
-    wait $pid
-    
-    print_success "Bağımlılıklar yüklendi"
+    # npm ci komutunu doğrudan çalıştır ve hata durumunu yakala
+    # --production=false ile devDependencies dahil tüm bağımlılıkları yükle
+    # --loglevel=error ile sadece hataları göster
+    if npm ci --production=false --loglevel=error >> "$LOG_FILE" 2>&1; then
+        print_success "Bağımlılıklar yüklendi"
+    else
+        local exit_code=$?
+        print_error "npm ci başarısız oldu (kod: $exit_code)"
+        print_info "npm install ile tekrar deneniyor..."
+        
+        # npm ci başarısız olursa npm install dene
+        if npm install --loglevel=error >> "$LOG_FILE" 2>&1; then
+            print_success "Bağımlılıklar yüklendi (npm install ile)"
+        else
+            print_error "Bağımlılık yüklemesi başarısız oldu"
+            print_info "Detaylı log: $LOG_FILE"
+            print_info "Son 20 satır log:"
+            tail -20 "$LOG_FILE" | while read line; do
+                echo -e "    ${DIM}$line${NC}"
+            done
+            exit 1
+        fi
+    fi
 }
 
 create_env_file() {
@@ -559,29 +651,56 @@ create_env_file() {
 # ═══════════════════════════════════════════════════════════════════════════
 # HaberNexus Environment Configuration
 # Oluşturulma Tarihi: $(date '+%Y-%m-%d %H:%M:%S')
+# Script Sürümü: ${SCRIPT_VERSION}
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Database (SQLite)
+# -------------------------------------------
+# Database (SQLite - Prisma)
+# -------------------------------------------
 DATABASE_URL="file:./data.db"
 
-# Auth.js v5
+# -------------------------------------------
+# Auth.js v5 Configuration
+# -------------------------------------------
 AUTH_SECRET="${auth_secret}"
 AUTH_TRUST_HOST=true
 AUTH_URL="https://${SITE_DOMAIN}"
 
+# -------------------------------------------
 # Google OAuth 2.0
+# -------------------------------------------
 GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID}"
 GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET}"
 
+# -------------------------------------------
 # Gemini AI API
+# -------------------------------------------
 GEMINI_API_KEY="${GEMINI_API_KEY}"
 
+# -------------------------------------------
 # Site Configuration
+# -------------------------------------------
 NEXT_PUBLIC_SITE_URL="https://${SITE_DOMAIN}"
 NEXT_PUBLIC_SITE_NAME="HaberNexus"
 
+# -------------------------------------------
 # Node Environment
+# -------------------------------------------
 NODE_ENV="production"
+
+# -------------------------------------------
+# GitHub Integration (Sürüm Yönetimi için)
+# -------------------------------------------
+GITHUB_PAT="${GITHUB_PAT}"
+GITHUB_REPO_OWNER="${GITHUB_REPO_OWNER}"
+GITHUB_REPO_NAME="${GITHUB_REPO_NAME}"
+
+# -------------------------------------------
+# Webhook Server Configuration
+# -------------------------------------------
+WEBHOOK_PORT=${WEBHOOK_PORT}
+INSTALL_DIR="${INSTALL_DIR}"
+LOG_DIR="${LOG_DIR}"
 EOF
     
     chmod 600 .env
@@ -609,12 +728,19 @@ build_project() {
     
     print_step "Production build alınıyor (bu birkaç dakika sürebilir)..."
     
-    npm run build >> "$LOG_FILE" 2>&1 &
-    local pid=$!
-    spinner $pid "Build işlemi devam ediyor..."
-    wait $pid
-    
-    print_success "Build tamamlandı"
+    # Build komutunu doğrudan çalıştır ve hata durumunu yakala
+    if npm run build >> "$LOG_FILE" 2>&1; then
+        print_success "Build tamamlandı"
+    else
+        local exit_code=$?
+        print_error "Build başarısız oldu (kod: $exit_code)"
+        print_info "Detaylı log: $LOG_FILE"
+        print_info "Son 30 satır log:"
+        tail -30 "$LOG_FILE" | while read line; do
+            echo -e "    ${DIM}$line${NC}"
+        done
+        exit 1
+    fi
 }
 
 configure_pm2() {
@@ -879,6 +1005,11 @@ setup_auto_deploy() {
     chmod 600 "$secret_file"
     print_success "Webhook secret oluşturuldu"
     
+    # .env dosyasına webhook secret ekle
+    echo "" >> "$INSTALL_DIR/.env"
+    echo "# Webhook Secret (Auto-Deploy için)" >> "$INSTALL_DIR/.env"
+    echo "WEBHOOK_SECRET=\"${WEBHOOK_SECRET}\"" >> "$INSTALL_DIR/.env"
+    
     # Log dizinini oluştur
     print_step "Log dizini hazırlanıyor..."
     sudo mkdir -p "$LOG_DIR"
@@ -1011,8 +1142,17 @@ case "$1" in
     backup)
         cd $INSTALL_DIR && bash scripts/backup.sh
         ;;
+    health)
+        curl -s http://localhost:3000/api/health 2>/dev/null || echo "Uygulama yanıt vermiyor"
+        ;;
+    env)
+        cat $INSTALL_DIR/.env
+        ;;
+    version)
+        cd $INSTALL_DIR && cat package.json | grep '"version"' | head -1
+        ;;
     *)
-        echo "HaberNexus Yönetim Aracı"
+        echo "HaberNexus Yönetim Aracı v3.0"
         echo ""
         echo "Kullanım: habernexus [komut]"
         echo ""
@@ -1024,6 +1164,9 @@ case "$1" in
         echo "  logs     - Logları görüntüle (logs [satır sayısı])"
         echo "  update   - Güncelleme yap"
         echo "  backup   - Yedekleme al"
+        echo "  health   - Sağlık kontrolü"
+        echo "  env      - Environment değişkenlerini görüntüle"
+        echo "  version  - Sürüm bilgisi"
         ;;
 esac
 SCRIPT_EOF
@@ -1114,6 +1257,8 @@ EOF
     echo -e "  ${YELLOW}habernexus logs${NC}     - Logları görüntüle"
     echo -e "  ${YELLOW}habernexus restart${NC}  - Uygulamayı yeniden başlat"
     echo -e "  ${YELLOW}habernexus update${NC}   - Güncelleme yap"
+    echo -e "  ${YELLOW}habernexus health${NC}   - Sağlık kontrolü"
+    echo -e "  ${YELLOW}habernexus version${NC}  - Sürüm bilgisi"
     echo ""
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${WHITE}  SONRAKİ ADIMLAR${NC}"
@@ -1140,6 +1285,8 @@ EOF
 main() {
     # Log dosyası başlat
     echo "HaberNexus Kurulum Logu - $(date)" > "$LOG_FILE"
+    echo "Script Sürümü: ${SCRIPT_VERSION}" >> "$LOG_FILE"
+    echo "---" >> "$LOG_FILE"
     
     # Banner
     print_banner
