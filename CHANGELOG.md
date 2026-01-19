@@ -1,3 +1,13 @@
+## [3.2.0](https://github.com/sata2500/habernexus-nextjs/compare/v3.1.1...v3.2.0) (2026-01-19)
+
+### ✨ Yeni Özellikler
+
+* **admin:** add data transfer system for migration ([99bf9f6](https://github.com/sata2500/habernexus-nextjs/commit/99bf9f6e8dddb9a511ad1796a35cb0b3b102349f))
+
+### 📚 Dokümantasyon
+
+* add development report for data transfer system ([2bed00b](https://github.com/sata2500/habernexus-nextjs/commit/2bed00b03efeeb6bb21e0ae208b57c6bd68e4327))
+
 ## [3.1.1](https://github.com/sata2500/habernexus-nextjs/compare/v3.1.0...v3.1.1) (2026-01-18)
 
 ### 🐛 Hata Düzeltmeleri
