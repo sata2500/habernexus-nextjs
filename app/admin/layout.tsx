@@ -13,9 +13,10 @@ import { LoadingState } from '@/components/admin/ui'
  * Özellikler:
  * - Gruplandırılmış sidebar navigasyonu
  * - Collapsible menü grupları
- * - Dark mode toggle
+ * - Dark mode toggle (sadece header'da)
  * - Responsive tasarım
  * - Geliştirilmiş breadcrumb
+ * - Overflow kontrolü
  */
 export default function AdminLayout({
   children,
@@ -48,21 +49,23 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 overflow-x-hidden">
       {/* Sidebar */}
       <Sidebar
         isMobileMenuOpen={isMobileMenuOpen}
         onMobileMenuClose={() => setIsMobileMenuOpen(false)}
       />
 
-      {/* Main Content */}
-      <div className="md:pl-64">
+      {/* Main Content - Sidebar genişliği kadar padding */}
+      <div className="md:pl-64 min-h-screen flex flex-col">
         {/* Header */}
         <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
 
-        {/* Page Content */}
-        <main className="p-4 sm:p-6">
-          {children}
+        {/* Page Content - Overflow kontrolü ile */}
+        <main className="flex-1 p-4 sm:p-6 overflow-x-hidden">
+          <div className="max-w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>
