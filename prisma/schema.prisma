@@ -443,3 +443,25 @@ model DeploymentHistory {
   @@index([startedAt])
   @@index([type])
 }
+
+
+// Data transfer model - For managing data migration between instances
+model DataTransfer {
+  id          String   @id @default(cuid())
+  code        String   @unique // Transfer code (UUID format)
+  secretKey   String   // Encryption key hash for verification
+  status      String   @default("pending") // "pending" | "ready" | "used" | "expired"
+  fileName    String?  // Generated export file name
+  fileSize    Int?     // File size in bytes
+  tablesCount Int?     // Number of tables exported
+  recordsCount Int?    // Total number of records exported
+  expiresAt   DateTime // Expiration time (24 hours from creation)
+  createdAt   DateTime @default(now())
+  usedAt      DateTime? // When the transfer was imported
+  createdBy   String   // Admin user ID who created the transfer
+  usedBy      String?  // Admin user ID who imported the transfer
+  
+  @@index([code])
+  @@index([status])
+  @@index([expiresAt])
+}

@@ -66,6 +66,7 @@ Proje, sağlam temelleri üzerine inşa edilecek yeni ve gelişmiş özelliklerl
 | ⬜ | **Mobil Uygulama (Capacitor/Tauri):** | Mevcut PWA'yı, native mobil özelliklere erişebilen (örn. push bildirimleri) bir mobil uygulamaya dönüştürmek için `Capacitor.js` veya `Tauri` gibi teknolojiler araştırılacak. |
 | ⬜ | **Plugin/Eklenti Mimarisi:** | Üçüncü parti geliştiricilerin veya platform sahiplerinin kendi özelliklerini ekleyebileceği bir eklenti sistemi için altyapı oluşturulması. Bu, projenin ekosistemini genişletecektir. |
 | ⬜ | **Veritabanı Optimizasyonu:** | Büyük veri setleri için performans iyileştirmeleri. Gerekli alanlara ek indeksler eklenmesi, yavaş sorguların tespiti ve optimize edilmesi. `pg_stat_statements` gibi araçlar kullanılabilir. |
+| ✅ | **Veri Aktarım Sistemi:** | Admin paneli üzerinden tüm veritabanını şifreli bir paket olarak dışa aktarma ve başka bir kuruluma içe aktarma. Sunucu taşıma ve yedekleme işlemlerini basitleştirir. |
 
 ---
 
