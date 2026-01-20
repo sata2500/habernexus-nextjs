@@ -17,11 +17,13 @@ import { isImagenConfigured } from '@/lib/imagen'
  * Trigger content generation with specified mode
  * 
  * Body options:
- * - mode: 'quick' | 'standard' | 'preview' | 'test' (default: 'standard')
+ * - mode: 'standard' | 'preview' | 'test' (default: 'standard')
  * - maxTopics: number (optional)
- * - feedId: string (optional, for quick mode single feed)
+ * - feedId: string (optional, for single feed processing)
  * 
- * @version 2.0.0
+ * Note: Quick mode has been removed in v3.0.0 - only standard quality mode is supported.
+ * 
+ * @version 3.0.0
  * @lastUpdated 20 January 2026
  */
 
@@ -93,7 +95,8 @@ export async function POST(request: Request) {
             mode = 'test'
             break
           case 'quick':
-            mode = 'quick'
+            // Quick mode removed - fallback to standard
+            mode = 'standard'
             break
           case 'run':
           default:

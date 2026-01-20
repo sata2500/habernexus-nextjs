@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
+import Link from 'next/link'
 import { 
   Brain, 
   Settings, 
@@ -26,17 +26,20 @@ import {
   Rss,
   Eye,
   BarChart3,
-  Timer
+  Timer,
+  ExternalLink
 } from 'lucide-react'
-import { CATEGORY_NAMES } from '@/lib/constants'
 
 /**
  * İçerik Üretim Merkezi - Birleşik Admin Sayfası
  * 
- * Tüm içerik üretimi ayarlarını, testlerini ve kontrollerini
+ * Tüm içerik üretimi ayarlarını ve kontrollerini
  * tek bir güçlü arayüzde birleştirir.
  * 
- * @version 1.0.0
+ * Testler ayrı test sayfasına taşındı.
+ * Hızlı mod kaldırıldı - sadece standart kaliteli üretim.
+ * 
+ * @version 2.0.0
  * @lastUpdated 20 January 2026
  */
 
@@ -99,24 +102,6 @@ interface SettingsState {
   articles_per_run: string
 }
 
-interface TestResult {
-  type: 'content' | 'image' | 'rss'
-  success: boolean
-  data?: {
-    title?: string
-    content?: string
-    excerpt?: string
-    imageUrl?: string
-    duration?: number
-    model?: string
-    provider?: string
-    itemCount?: number
-    sampleItems?: Array<{ title: string; imageUrl?: string }>
-  }
-  error?: string
-  timestamp: Date
-}
-
 interface PipelineResult {
   success: boolean
   mode: string
@@ -132,6 +117,16 @@ interface PipelineResult {
     qualityScore: number
     imageSource: string
   }>
+}
+
+interface SchedulerStatus {
+  isRunning: boolean
+  currentSchedule: string
+  scheduleDescription: string
+  lastRun: string | null
+  nextRun: string | null
+  runCount: number
+  lastError: string | null
 }
 
 // ============================================
@@ -307,7 +302,7 @@ function StatusCard({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${status ? statusColors[status] : 'bg-gray-100 dark:bg-gray-700'}`}>
           <Icon className="w-5 h-5" />
@@ -327,29 +322,21 @@ function StatusCard({
 
 export default function ContentCenterPage() {
   // Tab state
-  const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'prompts' | 'tests' | 'production'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'prompts' | 'production'>('overview')
   
   // Data states
   const [status, setStatus] = useState<EngineStatus | null>(null)
   const [settings, setSettings] = useState<SettingsState>(defaultSettings)
   const [prompts, setPrompts] = useState<PromptTemplate[]>([])
-  const [testResults, setTestResults] = useState<TestResult[]>([])
   const [pipelineResult, setPipelineResult] = useState<PipelineResult | null>(null)
-  const [rssFeeds, setRssFeeds] = useState<Array<{ id: string; name: string; url: string; category: string }>>([])
+  const [schedulerStatus, setSchedulerStatus] = useState<SchedulerStatus | null>(null)
   
   // UI states
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [testing, setTesting] = useState<string | null>(null)
   const [running, setRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
-  
-  // Test form states
-  const [testTitle, setTestTitle] = useState('Yapay zeka teknolojisinde yeni gelişmeler')
-  const [testCategory, setTestCategory] = useState('Teknoloji')
-  const [testRssUrl, setTestRssUrl] = useState('')
-  const [selectedRssFeed, setSelectedRssFeed] = useState('')
 
   // ============================================
   // Data Fetching
@@ -357,11 +344,11 @@ export default function ContentCenterPage() {
 
   const fetchAllData = useCallback(async () => {
     try {
-      const [statusRes, settingsRes, promptsRes, feedsRes] = await Promise.all([
+      const [statusRes, settingsRes, promptsRes, schedulerRes] = await Promise.all([
         fetch('/api/admin/content-engine'),
         fetch('/api/admin/settings'),
         fetch('/api/admin/prompts'),
-        fetch('/api/admin/rss'),
+        fetch('/api/admin/scheduler'),
       ])
 
       if (statusRes.ok) {
@@ -379,9 +366,9 @@ export default function ContentCenterPage() {
         setPrompts(data)
       }
 
-      if (feedsRes.ok) {
-        const data = await feedsRes.json()
-        setRssFeeds(data)
+      if (schedulerRes.ok) {
+        const data = await schedulerRes.json()
+        setSchedulerStatus(data)
       }
     } catch (err) {
       console.error('Failed to fetch data:', err)
@@ -393,6 +380,13 @@ export default function ContentCenterPage() {
 
   useEffect(() => {
     fetchAllData()
+    // Scheduler durumunu periyodik olarak güncelle
+    const interval = setInterval(() => {
+      fetch('/api/admin/scheduler').then(res => res.ok && res.json()).then(data => {
+        if (data) setSchedulerStatus(data)
+      }).catch(() => {})
+    }, 30000)
+    return () => clearInterval(interval)
   }, [fetchAllData])
 
   // ============================================
@@ -481,130 +475,10 @@ export default function ContentCenterPage() {
   }
 
   // ============================================
-  // Test Handlers
-  // ============================================
-
-  const runContentTest = async () => {
-    setTesting('content')
-    const startTime = Date.now()
-    
-    try {
-      const response = await fetch('/api/admin/content-engine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'test' }),
-      })
-      
-      const data = await response.json()
-      
-      setTestResults(prev => [{
-        type: 'content',
-        success: data.success,
-        data: {
-          title: data.testArticle?.title,
-          content: data.testArticle?.excerpt,
-          duration: Date.now() - startTime,
-          model: settings.ai_model_content,
-        },
-        error: data.errors?.[0],
-        timestamp: new Date(),
-      }, ...prev.slice(0, 9)])
-    } catch (err) {
-      setTestResults(prev => [{
-        type: 'content',
-        success: false,
-        error: err instanceof Error ? err.message : 'Test başarısız',
-        timestamp: new Date(),
-      }, ...prev.slice(0, 9)])
-    } finally {
-      setTesting(null)
-    }
-  }
-
-  const runImageTest = async () => {
-    setTesting('image')
-    const startTime = Date.now()
-    
-    try {
-      const response = await fetch('/api/admin/imagen-test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: testTitle,
-          category: testCategory,
-          model: settings.ai_model_image,
-        }),
-      })
-      
-      const data = await response.json()
-      
-      setTestResults(prev => [{
-        type: 'image',
-        success: data.success,
-        data: {
-          imageUrl: data.imageUrl,
-          duration: Date.now() - startTime,
-          model: settings.ai_model_image,
-          provider: data.provider,
-        },
-        error: data.error,
-        timestamp: new Date(),
-      }, ...prev.slice(0, 9)])
-    } catch (err) {
-      setTestResults(prev => [{
-        type: 'image',
-        success: false,
-        error: err instanceof Error ? err.message : 'Test başarısız',
-        timestamp: new Date(),
-      }, ...prev.slice(0, 9)])
-    } finally {
-      setTesting(null)
-    }
-  }
-
-  const runRssTest = async () => {
-    const url = testRssUrl || rssFeeds.find(f => f.id === selectedRssFeed)?.url
-    if (!url) return
-    
-    setTesting('rss')
-    
-    try {
-      const response = await fetch('/api/admin/test-rss', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      })
-      
-      const data = await response.json()
-      
-      setTestResults(prev => [{
-        type: 'rss',
-        success: data.success,
-        data: {
-          title: data.title,
-          itemCount: data.itemCount,
-          sampleItems: data.sampleItems,
-        },
-        error: data.error,
-        timestamp: new Date(),
-      }, ...prev.slice(0, 9)])
-    } catch (err) {
-      setTestResults(prev => [{
-        type: 'rss',
-        success: false,
-        error: err instanceof Error ? err.message : 'Test başarısız',
-        timestamp: new Date(),
-      }, ...prev.slice(0, 9)])
-    } finally {
-      setTesting(null)
-    }
-  }
-
-  // ============================================
   // Production Handlers
   // ============================================
 
-  const runProduction = async (mode: 'quick' | 'standard') => {
+  const runProduction = async () => {
     setRunning(true)
     setPipelineResult(null)
     
@@ -613,8 +487,8 @@ export default function ContentCenterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          action: mode === 'quick' ? 'quick' : 'run',
-          mode,
+          action: 'run',
+          mode: 'standard',
           maxTopics: parseInt(settings.articles_per_run) || 5,
         }),
       })
@@ -625,9 +499,32 @@ export default function ContentCenterPage() {
     } catch (err) {
       setPipelineResult({
         success: false,
-        mode,
+        mode: 'standard',
         errors: [err instanceof Error ? err.message : 'Üretim başarısız'],
       })
+    } finally {
+      setRunning(false)
+    }
+  }
+
+  const handleTriggerScheduler = async () => {
+    setRunning(true)
+    try {
+      const response = await fetch('/api/admin/scheduler', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'trigger' }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        setSuccess(true)
+        setTimeout(() => setSuccess(false), 3000)
+      } else {
+        setError(data.message || 'İçerik üretimi başlatılamadı')
+      }
+      fetchAllData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bir hata oluştu')
     } finally {
       setRunning(false)
     }
@@ -656,7 +553,7 @@ export default function ContentCenterPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">İçerik Üretim Merkezi</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Tüm içerik üretimi ayarları, testleri ve kontrolleri
+              AI ayarları, promptlar ve içerik üretimi kontrolleri
             </p>
           </div>
         </div>
@@ -693,7 +590,6 @@ export default function ContentCenterPage() {
             { id: 'overview', label: 'Genel Bakış', icon: Eye },
             { id: 'settings', label: 'AI Ayarları', icon: Settings },
             { id: 'prompts', label: 'Promptlar', icon: FileText },
-            { id: 'tests', label: 'Test Merkezi', icon: TestTube },
             { id: 'production', label: 'Üretim', icon: Play },
           ].map((tab) => (
             <button
@@ -745,6 +641,57 @@ export default function ContentCenterPage() {
               />
             </div>
 
+            {/* Scheduler Status */}
+            {schedulerStatus && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Timer className="w-5 h-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Zamanlayıcı Durumu</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      schedulerStatus.isRunning 
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
+                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                    }`}>
+                      {schedulerStatus.isRunning ? 'Aktif' : 'Pasif'}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Zamanlama</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {schedulerStatus.scheduleDescription || schedulerStatus.currentSchedule}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Son Çalışma</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {schedulerStatus.lastRun 
+                        ? new Date(schedulerStatus.lastRun).toLocaleString('tr-TR')
+                        : 'Henüz çalışmadı'}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Sonraki Çalışma</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {schedulerStatus.nextRun 
+                        ? new Date(schedulerStatus.nextRun).toLocaleString('tr-TR')
+                        : '-'}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Toplam Çalışma</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {schedulerStatus.runCount} kez
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Statistics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Article Stats */}
@@ -786,28 +733,28 @@ export default function ContentCenterPage() {
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hızlı İşlemler</h3>
               <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => setActiveTab('tests')}
+                <Link
+                  href="/admin/testler"
                   className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
                 >
                   <TestTube className="w-4 h-4" />
-                  Sistem Testi
-                </button>
+                  Sistem Testleri
+                  <ExternalLink className="w-3 h-3" />
+                </Link>
                 <button
-                  onClick={() => runProduction('quick')}
-                  disabled={running}
-                  className="flex items-center gap-2 px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-lg hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors disabled:opacity-50"
-                >
-                  <Zap className="w-4 h-4" />
-                  Hızlı Üretim
-                </button>
-                <button
-                  onClick={() => runProduction('standard')}
-                  disabled={running}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50"
+                  onClick={() => setActiveTab('production')}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
                 >
                   <Play className="w-4 h-4" />
-                  Standart Üretim
+                  İçerik Üret
+                </button>
+                <button
+                  onClick={handleTriggerScheduler}
+                  disabled={running}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50"
+                >
+                  {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Timer className="w-4 h-4" />}
+                  Zamanlayıcıyı Tetikle
                 </button>
               </div>
             </div>
@@ -938,6 +885,18 @@ export default function ContentCenterPage() {
         {/* Prompts Tab */}
         {activeTab === 'prompts' && (
           <div className="space-y-4">
+            {/* Info Banner */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div>
+                <p className="text-blue-800 dark:text-blue-200 font-medium">Prompt Değişkenleri</p>
+                <p className="text-blue-700 dark:text-blue-300 text-sm mt-1">
+                  Promptlarda <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded">{'{{değişken}}'}</code> formatında değişkenler kullanabilirsiniz. 
+                  Sistem bu değişkenleri otomatik olarak doldurur.
+                </p>
+              </div>
+            </div>
+
             {prompts.length === 0 ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -965,240 +924,54 @@ export default function ContentCenterPage() {
           </div>
         )}
 
-        {/* Tests Tab */}
-        {activeTab === 'tests' && (
-          <div className="space-y-6">
-            {/* Test Controls */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Content Test */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <FileText className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white">İçerik Üretim Testi</h3>
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  Seçili model ile içerik üretimini test edin.
-                </p>
-                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Model</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {TEXT_MODELS.find(m => m.id === settings.ai_model_content)?.name || settings.ai_model_content}
-                  </p>
-                </div>
-                <button
-                  onClick={runContentTest}
-                  disabled={testing === 'content'}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {testing === 'content' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                  {testing === 'content' ? 'Test Ediliyor...' : 'Testi Başlat'}
-                </button>
-              </div>
-
-              {/* Image Test */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <ImageIcon className="w-5 h-5 text-purple-600" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Görsel Üretim Testi</h3>
-                </div>
-                <div className="space-y-3 mb-4">
-                  <div>
-                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Başlık</label>
-                    <input
-                      type="text"
-                      value={testTitle}
-                      onChange={(e) => setTestTitle(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Kategori</label>
-                    <select
-                      value={testCategory}
-                      onChange={(e) => setTestCategory(e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      {CATEGORY_NAMES.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <button
-                  onClick={runImageTest}
-                  disabled={testing === 'image' || !testTitle}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-                >
-                  {testing === 'image' ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
-                  {testing === 'image' ? 'Üretiliyor...' : 'Görsel Üret'}
-                </button>
-              </div>
-
-              {/* RSS Test */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Rss className="w-5 h-5 text-orange-600" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white">RSS Kaynak Testi</h3>
-                </div>
-                <div className="space-y-3 mb-4">
-                  <div>
-                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Kayıtlı RSS</label>
-                    <select
-                      value={selectedRssFeed}
-                      onChange={(e) => { setSelectedRssFeed(e.target.value); setTestRssUrl(''); }}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    >
-                      <option value="">Seçin...</option>
-                      {rssFeeds.map((feed) => (
-                        <option key={feed.id} value={feed.id}>{feed.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">veya Özel URL</label>
-                    <input
-                      type="url"
-                      value={testRssUrl}
-                      onChange={(e) => { setTestRssUrl(e.target.value); setSelectedRssFeed(''); }}
-                      placeholder="https://..."
-                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={runRssTest}
-                  disabled={testing === 'rss' || (!selectedRssFeed && !testRssUrl)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50"
-                >
-                  {testing === 'rss' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Rss className="w-4 h-4" />}
-                  {testing === 'rss' ? 'Test Ediliyor...' : 'RSS Testi'}
-                </button>
-              </div>
-            </div>
-
-            {/* Test Results */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Test Sonuçları</h3>
-              {testResults.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <TestTube className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Henüz test yapılmadı</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {testResults.map((result, index) => (
-                    <div
-                      key={index}
-                      className={`p-4 rounded-lg border ${
-                        result.success
-                          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                          : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          {result.success ? (
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                          ) : (
-                            <XCircle className="w-5 h-5 text-red-600" />
-                          )}
-                          <span className={`font-medium ${result.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'}`}>
-                            {result.type === 'content' ? 'İçerik Testi' : result.type === 'image' ? 'Görsel Testi' : 'RSS Testi'}
-                          </span>
-                          {result.data?.duration && (
-                            <span className="text-xs text-gray-500">({(result.data.duration / 1000).toFixed(1)}s)</span>
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          {result.timestamp.toLocaleTimeString('tr-TR')}
-                        </span>
-                      </div>
-                      
-                      {result.success && result.data && (
-                        <div className="mt-2 space-y-2">
-                          {result.type === 'content' && result.data.title && (
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-white">{result.data.title}</p>
-                              {result.data.content && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{result.data.content}</p>
-                              )}
-                            </div>
-                          )}
-                          {result.type === 'image' && result.data.imageUrl && (
-                            <div className="relative aspect-video max-w-md">
-                              <Image
-                                src={result.data.imageUrl}
-                                alt="Generated"
-                                fill
-                                className="rounded-lg object-cover"
-                                unoptimized
-                              />
-                            </div>
-                          )}
-                          {result.type === 'rss' && (
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              <p><strong>Başlık:</strong> {result.data.title}</p>
-                              <p><strong>Öğe Sayısı:</strong> {result.data.itemCount}</p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      
-                      {!result.success && result.error && (
-                        <p className="text-sm text-red-700 dark:text-red-300 mt-2">{result.error}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Production Tab */}
         {activeTab === 'production' && (
           <div className="space-y-6">
             {/* Production Controls */}
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">İçerik Üretimi</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Quick Mode */}
-                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Zap className="w-5 h-5 text-yellow-600" />
-                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Hızlı Mod</h4>
+              
+              {/* Standard Mode */}
+              <div className="p-6 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
+                    <Brain className="w-6 h-6 text-green-600" />
                   </div>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
-                    RSS içeriklerini doğrudan makaleye dönüştürür. Araştırma yapmaz, hızlı sonuç verir.
-                  </p>
-                  <button
-                    onClick={() => runProduction('quick')}
-                    disabled={running}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50"
-                  >
-                    {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                    {running ? 'Çalışıyor...' : 'Hızlı Üretim Başlat'}
-                  </button>
+                  <div>
+                    <h4 className="font-semibold text-green-800 dark:text-green-200 text-lg">Standart İçerik Üretimi</h4>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      Tam pipeline: Konu seçimi, araştırma, sentez ve yayınlama
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Üretilecek Makale</p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white">{settings.articles_per_run}</p>
+                  </div>
+                  <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">İçerik Modeli</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {TEXT_MODELS.find(m => m.id === settings.ai_model_content)?.name || settings.ai_model_content}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Görsel Modeli</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {IMAGE_MODELS.find(m => m.id === settings.ai_model_image)?.name || settings.ai_model_image}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Standard Mode */}
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Brain className="w-5 h-5 text-green-600" />
-                    <h4 className="font-semibold text-green-800 dark:text-green-200">Standart Mod</h4>
-                  </div>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-4">
-                    Tam pipeline: Konu seçimi, araştırma, sentez ve yayınlama. Daha kaliteli içerik üretir.
-                  </p>
-                  <button
-                    onClick={() => runProduction('standard')}
-                    disabled={running}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                  >
-                    {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                    {running ? 'Çalışıyor...' : 'Standart Üretim Başlat'}
-                  </button>
-                </div>
+                <button
+                  onClick={runProduction}
+                  disabled={running}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium text-lg transition-colors"
+                >
+                  {running ? <Loader2 className="w-5 h-5 animate-spin" /> : <Play className="w-5 h-5" />}
+                  {running ? 'Üretim Devam Ediyor...' : 'İçerik Üretimini Başlat'}
+                </button>
               </div>
             </div>
 
@@ -1350,59 +1123,49 @@ function PromptCard({
         </div>
       </div>
 
-      {/* Expanded Content */}
+      {/* Content */}
       {isExpanded && (
-        <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
-          {/* Variables Info */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-blue-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-200">Kullanılabilir Değişkenler</p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {variables.map((variable) => (
-                    <code 
-                      key={variable}
-                      className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 rounded font-mono"
-                    >
-                      {`{{${variable}}}`}
-                    </code>
-                  ))}
-                </div>
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          {/* Variables */}
+          {variables.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Kullanılabilir Değişkenler:</p>
+              <div className="flex flex-wrap gap-2">
+                {variables.map((v) => (
+                  <code key={v} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded">
+                    {`{{${v}}}`}
+                  </code>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Template Editor */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Prompt Şablonu
-            </label>
-            <textarea
-              value={editedTemplate}
-              onChange={(e) => setEditedTemplate(e.target.value)}
-              rows={12}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-            />
-          </div>
+          {/* Editor */}
+          <textarea
+            value={editedTemplate}
+            onChange={(e) => setEditedTemplate(e.target.value)}
+            rows={12}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-blue-500"
+          />
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-2">
-            <button
-              onClick={handleReset}
-              disabled={saving || !hasChanges}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Geri Al
-            </button>
+          <div className="flex items-center justify-end gap-2 mt-4">
+            {hasChanges && (
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-1 px-3 py-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Sıfırla
+              </button>
+            )}
             <button
               onClick={handleSave}
               disabled={saving || !hasChanges}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              {saving ? 'Kaydediliyor...' : 'Kaydet'}
+              Kaydet
             </button>
           </div>
         </div>

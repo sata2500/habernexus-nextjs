@@ -5,8 +5,13 @@ import { PromptType } from '@prisma/client'
  * Prompt Management Service
  * Handles AI prompt templates for content and image generation
  * 
- * @version 2.0.0
- * @lastUpdated 13 January 2026
+ * @version 3.0.0
+ * @lastUpdated 20 January 2026
+ * 
+ * Changes in v3.0.0:
+ * - Enhanced content generation prompt with web research instructions
+ * - Improved image generation prompts for better quality
+ * - Added support for Gemini's Google Search grounding
  */
 
 /**
@@ -17,9 +22,9 @@ export const DEFAULT_PROMPTS = {
   CONTENT: {
     name: 'content_generation',
     displayName: 'İçerik Üretim Promptu',
-    description: 'RSS kaynaklarından gelen haberleri özgün içeriğe dönüştürmek için kullanılır',
+    description: 'RSS kaynaklarından gelen haberleri internette araştırarak özgün içeriğe dönüştürür. Gemini\'nin Google Search özelliğini kullanarak güncel ve doğrulanmış bilgiler toplar.',
     type: 'CONTENT' as PromptType,
-    template: `Sen profesyonel bir haber editörüsün. Aşağıdaki haber kaynağını kullanarak özgün, SEO dostu ve okuyucu için değerli bir Türkçe haber makalesi oluştur.
+    template: `Sen profesyonel bir araştırmacı haber editörüsün. Aşağıdaki haber kaynağını kullanarak kapsamlı bir araştırma yap ve özgün, SEO dostu, okuyucu için değerli bir Türkçe haber makalesi oluştur.
 
 KAYNAK BAŞLIK: {{title}}
 
@@ -27,17 +32,24 @@ KAYNAK İÇERİK: {{content}}
 
 KATEGORİ: {{category}}
 
-GÖREV:
-1. Özgün ve dikkat çekici bir başlık yaz (maksimum 80 karakter)
-2. Makale içeriğini yaz (minimum 300 kelime, maksimum 800 kelime)
-3. Kısa bir özet yaz (maksimum 160 karakter, SEO meta description için)
-4. URL-friendly bir slug oluştur (Türkçe karakterler olmadan, tire ile ayrılmış)
+ÖNEMLİ: Bu konuyu internette araştır! Google Search kullanarak güncel ve doğrulanmış bilgiler topla.
 
-KURALLAR:
-- İçerik %100 özgün olmalı, kaynak metni birebir kopyalama
-- Tarafsız ve profesyonel bir dil kullan
+GÖREV:
+1. Bu konuyu internette detaylıca araştır
+2. Birden fazla güvenilir kaynaktan bilgi sentezle
+3. Özgün ve dikkat çekici bir başlık yaz (maksimum 80 karakter)
+4. Kapsamlı makale içeriği yaz (minimum 400 kelime, maksimum 1000 kelime)
+5. SEO için kısa özet yaz (maksimum 160 karakter)
+6. URL-friendly slug oluştur (Türkçe karaktersiz, tire ile ayrılmış)
+
+YAZI KURALLARI:
+- İçerik %100 özgün olmalı, kaynak metni kopyalama
+- Tarafsız ve profesyonel gazetecilik dili kullan
 - Gerçeklere dayalı bilgi ver, spekülasyon yapma
-- Okuyucuya değer katan, bilgilendirici bir içerik oluştur
+- Konuyu derinlemesine araştır ve zenginleştir
+- 5N1K sorularını yanıtla (Kim, Ne, Nerede, Ne zaman, Neden, Nasıl)
+- Okuyucuya değer katan, bilgilendirici içerik oluştur
+- Paragrafları mantıklı bir akışla düzenle
 
 ÇIKTI FORMATI (JSON):
 {
@@ -52,7 +64,7 @@ KURALLAR:
   IMAGE: {
     name: 'image_generation',
     displayName: 'Görsel Üretim Promptu',
-    description: 'Haberler için AI ile görsel üretmek için kullanılır',
+    description: 'Haberler için AI ile profesyonel kalitede görsel üretmek için kullanılır',
     type: 'IMAGE' as PromptType,
     template: `An ultra-realistic, dynamic, and emotionally resonant photograph capturing the essence of a news story.
 
@@ -347,7 +359,21 @@ export async function seedDefaultPrompts() {
         results.push({ name: promptData.name, status: 'created' })
         console.log(`[Prompts] Created default prompt: ${promptData.name}`)
       } else {
-        results.push({ name: promptData.name, status: 'exists' })
+        // Update existing prompt with new template if it's a default prompt
+        if (existing.isDefault) {
+          await prisma.promptTemplate.update({
+            where: { name: promptData.name },
+            data: {
+              template: promptData.template,
+              description: promptData.description,
+              updatedAt: new Date(),
+            },
+          })
+          results.push({ name: promptData.name, status: 'updated' })
+          console.log(`[Prompts] Updated default prompt: ${promptData.name}`)
+        } else {
+          results.push({ name: promptData.name, status: 'exists' })
+        }
       }
     }
 

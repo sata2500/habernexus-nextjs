@@ -8,12 +8,13 @@ import { PromptType } from '@prisma/client'
  * Google Gemini AI Service
  * Handles AI content generation for news articles
  * 
- * @version 3.0.0
- * @lastUpdated 13 January 2026
+ * @version 4.0.0
+ * @lastUpdated 20 January 2026
  * 
- * Changes in v3.0.0:
- * - Added prompt template support from database
- * - Prompts can now be customized via admin panel
+ * Changes in v4.0.0:
+ * - Added Google Search grounding support for real-time web research
+ * - Improved content generation with web-sourced information
+ * - Enhanced prompts for better article quality
  */
 
 // Initialize the Gemini client
@@ -62,20 +63,27 @@ export interface SentimentResult {
 }
 
 /**
- * Generate a news article from RSS content
- * Now uses customizable prompts from database
+ * Article generation result with sources
+ */
+export interface ArticleGenerationResult {
+  title: string
+  content: string
+  excerpt: string
+  slug: string
+  sources?: Array<{ title: string; url: string }>
+  searchQueries?: string[]
+}
+
+/**
+ * Generate a news article from RSS content with Google Search grounding
+ * Uses Gemini's web search capability to research and enrich the content
  */
 export async function generateArticle(
   sourceTitle: string,
   sourceContent: string,
   category: string,
   modelOverride?: string
-): Promise<{
-  title: string
-  content: string
-  excerpt: string
-  slug: string
-}> {
+): Promise<ArticleGenerationResult> {
   const modelName = modelOverride && isValidModel(modelOverride) 
     ? modelOverride 
     : await getConfiguredModel('content')
@@ -83,9 +91,9 @@ export async function generateArticle(
   // Get prompt template from database
   let promptTemplate = await getPromptByType('CONTENT' as PromptType)
   
-  // Fallback to hardcoded prompt if not found
+  // Fallback to enhanced prompt with web research instructions
   if (!promptTemplate) {
-    promptTemplate = `Sen profesyonel bir haber editörüsün. Aşağıdaki haber kaynağını kullanarak özgün, SEO dostu ve okuyucu için değerli bir Türkçe haber makalesi oluştur.
+    promptTemplate = `Sen profesyonel bir araştırmacı haber editörüsün. Aşağıdaki haber kaynağını kullanarak kapsamlı bir araştırma yap ve özgün, SEO dostu, okuyucu için değerli bir Türkçe haber makalesi oluştur.
 
 KAYNAK BAŞLIK: {{title}}
 
@@ -94,16 +102,20 @@ KAYNAK İÇERİK: {{content}}
 KATEGORİ: {{category}}
 
 GÖREV:
-1. Özgün ve dikkat çekici bir başlık yaz (maksimum 80 karakter)
-2. Makale içeriğini yaz (minimum 300 kelime, maksimum 800 kelime)
-3. Kısa bir özet yaz (maksimum 160 karakter, SEO meta description için)
-4. URL-friendly bir slug oluştur (Türkçe karakterler olmadan, tire ile ayrılmış)
+1. Bu konuyu internette araştır ve güncel bilgileri topla
+2. Birden fazla kaynaktan bilgi sentezle
+3. Özgün ve dikkat çekici bir başlık yaz (maksimum 80 karakter)
+4. Makale içeriğini yaz (minimum 400 kelime, maksimum 1000 kelime)
+5. Kısa bir özet yaz (maksimum 160 karakter, SEO meta description için)
+6. URL-friendly bir slug oluştur (Türkçe karakterler olmadan, tire ile ayrılmış)
 
 KURALLAR:
 - İçerik %100 özgün olmalı, kaynak metni birebir kopyalama
 - Tarafsız ve profesyonel bir dil kullan
 - Gerçeklere dayalı bilgi ver, spekülasyon yapma
 - Okuyucuya değer katan, bilgilendirici bir içerik oluştur
+- Konuyu derinlemesine araştır ve zenginleştir
+- Güncel ve doğrulanmış bilgiler kullan
 
 ÇIKTI FORMATI (JSON):
 {
@@ -122,6 +134,7 @@ KURALLAR:
   })
 
   try {
+    // Use Google Search grounding for real-time web research
     const response = await genAI.models.generateContent({
       model: modelName,
       contents: prompt,
@@ -129,11 +142,37 @@ KURALLAR:
         temperature: 0.7,
         topP: 0.9,
         topK: 40,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 4096,
+        tools: [{ googleSearch: {} }],
       },
     })
 
     const text = response.text || ''
+    
+    // Extract grounding metadata if available
+    let sources: Array<{ title: string; url: string }> = []
+    let searchQueries: string[] = []
+    
+    // Check for grounding metadata in the response
+    const candidate = response.candidates?.[0]
+    if (candidate?.groundingMetadata) {
+      const metadata = candidate.groundingMetadata
+      
+      // Extract search queries
+      if (metadata.webSearchQueries) {
+        searchQueries = metadata.webSearchQueries
+      }
+      
+      // Extract source URLs
+      if (metadata.groundingChunks) {
+        sources = metadata.groundingChunks
+          .filter((chunk: { web?: { uri?: string; title?: string } }) => chunk.web?.uri)
+          .map((chunk: { web?: { uri?: string; title?: string } }) => ({
+            title: chunk.web?.title || 'Kaynak',
+            url: chunk.web?.uri || '',
+          }))
+      }
+    }
     
     // Clean markdown code blocks and parse JSON
     const cleanText = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim()
@@ -151,11 +190,15 @@ KURALLAR:
       result = JSON.parse(jsonMatch[0])
     }
     
+    console.log(`[Gemini] Article generated with ${sources.length} sources, ${searchQueries.length} search queries`)
+    
     return {
       title: result.title || sourceTitle,
       content: result.content || sourceContent,
       excerpt: result.excerpt || sourceTitle.substring(0, 160),
       slug: result.slug || generateSlug(sourceTitle),
+      sources: sources.length > 0 ? sources : undefined,
+      searchQueries: searchQueries.length > 0 ? searchQueries : undefined,
     }
   } catch (error) {
     console.error('Gemini API error:', error)

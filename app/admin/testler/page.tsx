@@ -7,7 +7,6 @@ import {
   Play, 
   CheckCircle, 
   XCircle,
-  AlertCircle,
   RefreshCw,
   Image as ImageIcon,
   FileText,
@@ -19,10 +18,7 @@ import {
   Zap,
   ChevronDown,
   ChevronUp,
-  Copy,
-  Download,
   Trash2,
-  Eye,
   BarChart3
 } from 'lucide-react'
 import { CATEGORY_NAMES } from '@/lib/constants'
@@ -169,7 +165,7 @@ export default function TestsPage() {
   
   // Data
   const [feeds, setFeeds] = useState<RssFeed[]>([])
-  const [prompts, setPrompts] = useState<PromptTemplate[]>([])
+  const [, setPrompts] = useState<PromptTemplate[]>([])
   const [stats, setStats] = useState<SystemStats | null>(null)
   
   // Form states

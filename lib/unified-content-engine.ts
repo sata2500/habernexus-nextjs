@@ -34,6 +34,7 @@ import { synthesizeContent, synthesizeMultiple } from '@/lib/content-synthesizer
 // Types and Interfaces
 // ============================================
 
+// Note: 'quick' mode is deprecated and redirects to 'standard'
 export type ContentEngineMode = 'quick' | 'standard' | 'preview' | 'test'
 
 export interface PipelineStage {
@@ -922,9 +923,12 @@ export async function runContentEngine(
   const maxTopics = options.maxTopics || config.maxTopics
 
   // Run appropriate mode
+  // Note: 'quick' mode is deprecated and now redirects to 'standard'
   switch (mode) {
     case 'quick':
-      return runQuickMode({ ...config, maxTopics }, options.feedId)
+      // Quick mode deprecated - use standard mode for consistent quality
+      console.log('[UnifiedEngine] Quick mode is deprecated, using standard mode')
+      return runStandardMode({ ...config, maxTopics })
     
     case 'standard':
       return runStandardMode({ ...config, maxTopics })
