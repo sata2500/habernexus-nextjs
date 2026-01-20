@@ -217,7 +217,7 @@ KURALLAR:
         try {
           // Find the complete JSON object
           let depth = 0
-          let startIndex = text.indexOf(match)
+          const startIndex = text.indexOf(match)
           let endIndex = startIndex
           
           for (let i = startIndex; i < text.length; i++) {
