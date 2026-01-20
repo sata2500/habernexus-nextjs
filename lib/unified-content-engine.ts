@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { fetchRssFeed } from '@/lib/rss'
 import { generateArticle, determineCategory, isGeminiConfigured } from '@/lib/gemini'
-import { generateArticleImage, getPlaceholderImage, isImagenConfigured } from '@/lib/imagen'
+import { generateImage, getPlaceholderImage, isImageGenerationConfigured } from '@/lib/image-generator'
 import { downloadAndOptimizeImage, shouldUseRssImage, getImagePlacement } from '@/lib/image-optimizer'
 import { selectTopics, getTopicSelectionSettings } from '@/lib/topic-selector'
 import { researchTopic, researchTopics, isResearchAgentConfigured } from '@/lib/research-agent'
@@ -14,8 +14,14 @@ import { synthesizeContent, synthesizeMultiple } from '@/lib/content-synthesizer
  * Consolidates both simple and advanced content generation into a single,
  * configurable system with multiple operation modes.
  * 
- * @version 1.0.0
+ * @version 2.0.0
  * @lastUpdated 20 January 2026
+ * 
+ * Changes in v2.0.0:
+ * - Integrated unified image-generator module
+ * - Support for both Imagen 4.0 and Nano Banana Pro
+ * - Improved error handling and logging
+ * - Optimized pipeline performance
  * 
  * Modes:
  * - quick: Direct RSS to article conversion (fast, simple)
@@ -272,13 +278,13 @@ async function processImage(
   }
 
   // Try AI image generation if no RSS image
-  if (!imageUrl && config.enableImageGeneration && await isImagenConfigured()) {
+  if (!imageUrl && config.enableImageGeneration && await isImageGenerationConfigured()) {
     try {
-      const imageResult = await generateArticleImage(title, category, content)
+      const imageResult = await generateImage(title, category)
       if (imageResult.success && imageResult.imageUrl) {
         imageUrl = imageResult.imageUrl
         imageSource = 'ai'
-        console.log(`[UnifiedEngine] AI image generated`)
+        console.log(`[UnifiedEngine] AI image generated via ${imageResult.provider}/${imageResult.model}`)
       }
     } catch (error) {
       console.warn(`[UnifiedEngine] AI image generation failed: ${error}`)

@@ -1,28 +1,34 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Settings, Save, AlertCircle, CheckCircle, RefreshCw, Sparkles, Zap, Crown, Clock, Play, Timer, ExternalLink } from 'lucide-react'
-import Link from 'next/link'
+import { 
+  Settings, 
+  Save, 
+  AlertCircle, 
+  CheckCircle, 
+  RefreshCw, 
+  Sparkles, 
+  Zap, 
+  Crown, 
+  Clock, 
+  Play, 
+  Timer,
+  Image as ImageIcon,
+  Brain
+} from 'lucide-react'
 
 /**
- * Gemini Model Configuration
- * All available models with their properties
+ * Optimized Settings Page v2.0
+ * 
+ * Simplified and unified settings management
+ * - Combined AI model and image settings
+ * - Cleaner UI with better organization
+ * - Improved model selection with recommendations
  */
-interface GeminiModel {
-  id: string
-  name: string
-  description: string
-  tier: 'premium' | 'standard' | 'lite'
-  isExperimental: boolean
-  isDeprecated: boolean
-}
 
-interface ModelGroup {
-  title: string
-  models: string[]
-  badge: string
-  badgeColor: string
-}
+// ============================================
+// Types
+// ============================================
 
 interface SchedulerStatus {
   isRunning: boolean
@@ -34,113 +40,61 @@ interface SchedulerStatus {
   lastError: string | null
 }
 
-const GEMINI_MODELS: Record<string, GeminiModel> = {
-  // Gemini 3 Series (Latest)
-  'gemini-3-pro-preview': {
-    id: 'gemini-3-pro-preview',
-    name: 'Gemini 3 Pro',
-    description: 'En akıllı model - Multimodal anlama ve agentic görevler için ideal',
-    tier: 'premium',
-    isExperimental: true,
-    isDeprecated: false,
-  },
-  'gemini-3-flash-preview': {
-    id: 'gemini-3-flash-preview',
-    name: 'Gemini 3 Flash',
-    description: 'Hız ve zeka dengesi - Ölçeklenebilir görevler için',
-    tier: 'standard',
-    isExperimental: true,
-    isDeprecated: false,
-  },
-
-  // Gemini 2.5 Series (Recommended)
-  'gemini-2.5-flash': {
-    id: 'gemini-2.5-flash',
-    name: 'Gemini 2.5 Flash',
-    description: 'En iyi fiyat-performans - Genel kullanım için önerilen',
-    tier: 'standard',
-    isExperimental: false,
-    isDeprecated: false,
-  },
-  'gemini-2.5-flash-lite': {
-    id: 'gemini-2.5-flash-lite',
-    name: 'Gemini 2.5 Flash-Lite',
-    description: 'Ultra hızlı - Yüksek hacimli basit görevler için',
-    tier: 'lite',
-    isExperimental: false,
-    isDeprecated: false,
-  },
-  'gemini-2.5-pro': {
-    id: 'gemini-2.5-pro',
-    name: 'Gemini 2.5 Pro',
-    description: 'Gelişmiş düşünme - Karmaşık analiz ve muhakeme için',
-    tier: 'premium',
-    isExperimental: false,
-    isDeprecated: false,
-  },
-
-  // Gemini 2.0 Series (Previous Generation)
-  'gemini-2.0-flash': {
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
-    description: 'Stabil workhorse - Güvenilir genel kullanım',
-    tier: 'standard',
-    isExperimental: false,
-    isDeprecated: false,
-  },
-  'gemini-2.0-flash-lite': {
-    id: 'gemini-2.0-flash-lite',
-    name: 'Gemini 2.0 Flash-Lite',
-    description: 'Hızlı ve ekonomik - Basit görevler için',
-    tier: 'lite',
-    isExperimental: false,
-    isDeprecated: false,
-  },
-
-  // Gemini 1.5 Series (Legacy)
-  'gemini-1.5-flash': {
-    id: 'gemini-1.5-flash',
-    name: 'Gemini 1.5 Flash',
-    description: 'Eski nesil - Yakında kullanımdan kaldırılacak',
-    tier: 'standard',
-    isExperimental: false,
-    isDeprecated: true,
-  },
-  'gemini-1.5-pro': {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
-    description: 'Eski nesil Pro - Yakında kullanımdan kaldırılacak',
-    tier: 'premium',
-    isExperimental: false,
-    isDeprecated: true,
-  },
+interface SettingsState {
+  // Site Settings
+  site_name: string
+  site_description: string
+  default_category: string
+  
+  // AI Model Settings
+  ai_model_content: string
+  ai_model_sentiment: string
+  ai_model_category: string
+  ai_model_summary: string
+  
+  // Image Settings
+  ai_model_image: string
+  enable_image_generation: string
+  enable_rss_image_optimization: string
+  
+  // Scheduler Settings
+  cron_schedule: string
+  articles_per_run: string
 }
 
-const MODEL_GROUPS: ModelGroup[] = [
-  {
-    title: 'Gemini 3 Serisi (En Yeni)',
-    models: ['gemini-3-pro-preview', 'gemini-3-flash-preview'],
-    badge: 'Yeni',
-    badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  },
-  {
-    title: 'Gemini 2.5 Serisi (Önerilen)',
-    models: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'],
-    badge: 'Önerilen',
-    badgeColor: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  },
-  {
-    title: 'Gemini 2.0 Serisi (Stabil)',
-    models: ['gemini-2.0-flash', 'gemini-2.0-flash-lite'],
-    badge: 'Stabil',
-    badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  },
-  {
-    title: 'Gemini 1.5 Serisi (Eski)',
-    models: ['gemini-1.5-flash', 'gemini-1.5-pro'],
-    badge: 'Kullanımdan Kaldırılacak',
-    badgeColor: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  },
+// ============================================
+// Model Configurations
+// ============================================
+
+interface ModelOption {
+  id: string
+  name: string
+  description: string
+  tier: 'premium' | 'standard' | 'lite'
+  isRecommended?: boolean
+  group: string
+}
+
+const TEXT_MODELS: ModelOption[] = [
+  // Gemini 3 Series
+  { id: 'gemini-3-pro', name: 'Gemini 3 Pro', description: 'En akıllı model', tier: 'premium', group: 'Gemini 3' },
+  { id: 'gemini-3-flash', name: 'Gemini 3 Flash', description: 'Hız ve zeka dengesi', tier: 'standard', isRecommended: true, group: 'Gemini 3' },
+  // Gemini 2.5 Series
+  { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'En iyi fiyat-performans', tier: 'standard', isRecommended: true, group: 'Gemini 2.5' },
+  { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash-Lite', description: 'Ultra hızlı', tier: 'lite', group: 'Gemini 2.5' },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'Gelişmiş düşünme', tier: 'premium', group: 'Gemini 2.5' },
+  // Gemini 2.0 Series
+  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', description: 'Stabil workhorse', tier: 'standard', group: 'Gemini 2.0' },
+  { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', description: 'Hızlı ve ekonomik', tier: 'lite', group: 'Gemini 2.0' },
+]
+
+const IMAGE_MODELS: ModelOption[] = [
+  // Imagen 4.0
+  { id: 'imagen-4.0-fast-generate-001', name: 'Imagen 4.0 Fast', description: 'Hızlı (~5s)', tier: 'standard', isRecommended: true, group: 'Imagen' },
+  { id: 'imagen-4.0-generate-001', name: 'Imagen 4.0 Standard', description: 'Yüksek kalite (~8s)', tier: 'standard', group: 'Imagen' },
+  { id: 'imagen-4.0-ultra-generate-001', name: 'Imagen 4.0 Ultra', description: '2K çözünürlük (~10s)', tier: 'premium', group: 'Imagen' },
+  // Nano Banana
+  { id: 'gemini-2.0-flash-exp-image-generation', name: 'Nano Banana', description: 'Gemini tabanlı (~8s)', tier: 'standard', group: 'Nano Banana' },
 ]
 
 const CRON_PRESETS = [
@@ -150,51 +104,42 @@ const CRON_PRESETS = [
   { label: 'Her 2 saatte', value: '0 */2 * * *' },
   { label: 'Her 4 saatte', value: '0 */4 * * *' },
   { label: 'Her 6 saatte', value: '0 */6 * * *' },
-  { label: 'Her 12 saatte', value: '0 */12 * * *' },
   { label: 'Günde bir (gece yarısı)', value: '0 0 * * *' },
   { label: 'Günde bir (sabah 8)', value: '0 8 * * *' },
-  { label: 'Özel...', value: 'custom' },
 ]
 
-interface SettingsState {
-  site_name: string
-  site_description: string
-  ai_model_content: string
-  ai_model_sentiment: string
-  ai_model_category: string
-  ai_model_summary: string
-  ai_model_image: string
-  enable_image_generation: string
-  cron_schedule: string
-  articles_per_run: string
-  default_category: string
-}
+const CATEGORIES = ['Gündem', 'Teknoloji', 'Ekonomi', 'Spor', 'Sağlık', 'Bilim', 'Dünya']
 
 const defaultSettings: SettingsState = {
   site_name: 'HaberNexus',
   site_description: 'Yeni Nesil AI Destekli Haber Platformu',
+  default_category: 'Gündem',
   ai_model_content: 'gemini-2.5-flash',
   ai_model_sentiment: 'gemini-2.5-flash',
   ai_model_category: 'gemini-2.5-flash-lite',
   ai_model_summary: 'gemini-2.5-flash-lite',
-  ai_model_image: 'imagen-3.0-generate-002',
+  ai_model_image: 'imagen-4.0-fast-generate-001',
   enable_image_generation: 'true',
+  enable_rss_image_optimization: 'true',
   cron_schedule: '0 */6 * * *',
   articles_per_run: '5',
-  default_category: 'Gündem',
 }
+
+// ============================================
+// Components
+// ============================================
 
 function TierBadge({ tier }: { tier: 'premium' | 'standard' | 'lite' }) {
   const config = {
-    premium: { icon: Crown, color: 'text-amber-500', label: 'Premium' },
-    standard: { icon: Zap, color: 'text-blue-500', label: 'Standart' },
-    lite: { icon: Clock, color: 'text-green-500', label: 'Lite' },
+    premium: { icon: Crown, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+    standard: { icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+    lite: { icon: Clock, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-900/20' },
   }
-  const { icon: Icon, color, label } = config[tier]
+  const { icon: Icon, color, bg } = config[tier]
   return (
-    <span className={`inline-flex items-center gap-1 text-xs ${color}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs ${color} ${bg}`}>
       <Icon className="w-3 h-3" />
-      {label}
+      {tier === 'premium' ? 'Premium' : tier === 'standard' ? 'Standart' : 'Lite'}
     </span>
   )
 }
@@ -204,13 +149,16 @@ function ModelSelect({
   onChange,
   label,
   description,
+  models,
 }: {
   value: string
   onChange: (value: string) => void
   label: string
   description: string
+  models: ModelOption[]
 }) {
-  const selectedModel = GEMINI_MODELS[value]
+  const selectedModel = models.find(m => m.id === value)
+  const groups = [...new Set(models.map(m => m.group))]
 
   return (
     <div className="space-y-2">
@@ -220,37 +168,59 @@ function ModelSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
       >
-        {MODEL_GROUPS.map((group) => (
-          <optgroup key={group.title} label={group.title}>
-            {group.models.map((modelId) => {
-              const model = GEMINI_MODELS[modelId]
-              if (!model) return null
-              return (
-                <option key={modelId} value={modelId} disabled={model.isDeprecated}>
-                  {model.name} {model.isExperimental ? '(Deneysel)' : ''} {model.isDeprecated ? '(Kullanımdan Kaldırılacak)' : ''}
-                </option>
-              )
-            })}
+        {groups.map((group) => (
+          <optgroup key={group} label={group}>
+            {models.filter(m => m.group === group).map((model) => (
+              <option key={model.id} value={model.id}>
+                {model.name} - {model.description} {model.isRecommended ? '⭐' : ''}
+              </option>
+            ))}
           </optgroup>
         ))}
       </select>
-      <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
-      {selectedModel && (
-        <div className="flex items-center gap-2 mt-1">
-          <TierBadge tier={selectedModel.tier} />
-          {selectedModel.isExperimental && (
-            <span className="inline-flex items-center gap-1 text-xs text-purple-600 dark:text-purple-400">
-              <Sparkles className="w-3 h-3" />
-              Deneysel
-            </span>
-          )}
-        </div>
-      )}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+        {selectedModel && <TierBadge tier={selectedModel.tier} />}
+      </div>
     </div>
   )
 }
+
+function Toggle({
+  checked,
+  onChange,
+  label,
+  description,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  label: string
+  description: string
+}) {
+  return (
+    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+      <div>
+        <p className="font-medium text-gray-900 dark:text-white text-sm">{label}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
+      </div>
+      <label className="relative inline-flex items-center cursor-pointer">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="sr-only peer"
+        />
+        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+  )
+}
+
+// ============================================
+// Main Component
+// ============================================
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SettingsState>(defaultSettings)
@@ -260,6 +230,7 @@ export default function SettingsPage() {
   const [success, setSuccess] = useState(false)
   const [schedulerStatus, setSchedulerStatus] = useState<SchedulerStatus | null>(null)
   const [triggeringScheduler, setTriggeringScheduler] = useState(false)
+  const [activeTab, setActiveTab] = useState<'general' | 'ai' | 'scheduler'>('general')
 
   const fetchSchedulerStatus = useCallback(async () => {
     try {
@@ -276,8 +247,6 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchSettings()
     fetchSchedulerStatus()
-    
-    // Refresh scheduler status every 30 seconds
     const interval = setInterval(fetchSchedulerStatus, 30000)
     return () => clearInterval(interval)
   }, [fetchSchedulerStatus])
@@ -365,7 +334,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -382,11 +351,7 @@ export default function SettingsPage() {
           disabled={saving}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {saving ? (
-            <RefreshCw className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
+          {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? 'Kaydediliyor...' : 'Kaydet'}
         </button>
       </div>
@@ -406,73 +371,37 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Settings Sections */}
-      <div className="grid gap-6">
-        {/* Scheduler Status Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Timer className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Zamanlayıcı Durumu</h2>
-            </div>
+      {/* Tabs */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <nav className="flex gap-4">
+          {[
+            { id: 'general', label: 'Genel', icon: Settings },
+            { id: 'ai', label: 'AI & Görsel', icon: Brain },
+            { id: 'scheduler', label: 'Zamanlayıcı', icon: Timer },
+          ].map((tab) => (
             <button
-              onClick={handleTriggerScheduler}
-              disabled={triggeringScheduler}
-              className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
             >
-              {triggeringScheduler ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Play className="w-4 h-4" />
-              )}
-              {triggeringScheduler ? 'Çalışıyor...' : 'Şimdi Çalıştır'}
+              <tab.icon className="w-4 h-4" />
+              {tab.label}
             </button>
-          </div>
-          
-          {schedulerStatus ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Durum</p>
-                <p className={`text-sm font-medium ${schedulerStatus.isRunning ? 'text-green-600' : 'text-yellow-600'}`}>
-                  {schedulerStatus.isRunning ? 'Aktif' : 'Pasif'}
-                </p>
-              </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Zamanlama</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {schedulerStatus.scheduleDescription || schedulerStatus.currentSchedule}
-                </p>
-              </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Son Çalışma</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {schedulerStatus.lastRun 
-                    ? new Date(schedulerStatus.lastRun).toLocaleString('tr-TR')
-                    : 'Henüz çalışmadı'}
-                </p>
-              </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                <p className="text-xs text-gray-500 dark:text-gray-400">Toplam Çalışma</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {schedulerStatus.runCount} kez
-                </p>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500">Zamanlayıcı durumu yükleniyor...</p>
-          )}
-          
-          {schedulerStatus?.lastError && (
-            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <p className="text-xs text-red-600 dark:text-red-400">Son Hata: {schedulerStatus.lastError}</p>
-            </div>
-          )}
-        </div>
+          ))}
+        </nav>
+      </div>
 
-        {/* Site Ayarları */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Site Ayarları</h2>
-          <div className="grid gap-4">
+      {/* Tab Content */}
+      <div className="space-y-6">
+        {/* General Tab */}
+        {activeTab === 'general' && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Site Ayarları</h2>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Site Adı
@@ -481,9 +410,10 @@ export default function SettingsPage() {
                 type="text"
                 value={settings.site_name}
                 onChange={(e) => handleChange('site_name', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Site Açıklaması
@@ -492,9 +422,10 @@ export default function SettingsPage() {
                 value={settings.site_description}
                 onChange={(e) => handleChange('site_description', e.target.value)}
                 rows={2}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Varsayılan Kategori
@@ -502,183 +433,190 @@ export default function SettingsPage() {
               <select
                 value={settings.default_category}
                 onChange={(e) => handleChange('default_category', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               >
-                <option value="Gündem">Gündem</option>
-                <option value="Teknoloji">Teknoloji</option>
-                <option value="Ekonomi">Ekonomi</option>
-                <option value="Spor">Spor</option>
-                <option value="Sağlık">Sağlık</option>
-                <option value="Bilim">Bilim</option>
-                <option value="Dünya">Dünya</option>
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* AI Model Ayarları */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">AI Model Ayarları</h2>
-          </div>
-          
-          {/* Model Info Box */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Model Seçimi Hakkında</h3>
-            <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-              <li>• <strong>Premium</strong> modeller en yüksek kaliteyi sunar ancak daha yavaş ve pahalıdır</li>
-              <li>• <strong>Standart</strong> modeller iyi bir denge sağlar ve çoğu kullanım için önerilir</li>
-              <li>• <strong>Lite</strong> modeller hızlı ve ekonomiktir, basit görevler için idealdir</li>
-              <li>• <strong>Deneysel</strong> modeller en yeni özellikleri içerir ancak değişebilir</li>
-            </ul>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <ModelSelect
-              value={settings.ai_model_content}
-              onChange={(value) => handleChange('ai_model_content', value)}
-              label="İçerik Üretim Modeli"
-              description="Haber makaleleri oluşturmak için kullanılır"
-            />
-            <ModelSelect
-              value={settings.ai_model_sentiment}
-              onChange={(value) => handleChange('ai_model_sentiment', value)}
-              label="Duygu Analizi Modeli"
-              description="Makale duygu analizi için kullanılır"
-            />
-            <ModelSelect
-              value={settings.ai_model_category}
-              onChange={(value) => handleChange('ai_model_category', value)}
-              label="Kategori Belirleme Modeli"
-              description="Otomatik kategori tespiti için kullanılır"
-            />
-            <ModelSelect
-              value={settings.ai_model_summary}
-              onChange={(value) => handleChange('ai_model_summary', value)}
-              label="Özet Oluşturma Modeli"
-              description="Makale özetleri için kullanılır"
-            />
-          </div>
-
-          {/* Görsel Ayarları Yönlendirmesi */}
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <div>
-                <h3 className="text-md font-medium text-gray-900 dark:text-white">Görsel Üretim Ayarları</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  AI görsel üretimi ve optimizasyon ayarları için ayrı sayfaya gidin
-                </p>
+        {/* AI & Image Tab */}
+        {activeTab === 'ai' && (
+          <div className="space-y-6">
+            {/* Text Models */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-purple-600" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Metin AI Modelleri</h2>
               </div>
-              <Link
-                href="/admin/gorsel-ayarlari"
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <span>Görsel Ayarları</span>
-                <ExternalLink className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
 
-        {/* Otomasyon Ayarları */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Timer className="w-5 h-5 text-green-600" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Otomasyon Ayarları</h2>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Zamanlama
-              </label>
-              <select
-                value={CRON_PRESETS.some(p => p.value === settings.cron_schedule) ? settings.cron_schedule : 'custom'}
-                onChange={(e) => {
-                  if (e.target.value !== 'custom') {
-                    handleChange('cron_schedule', e.target.value)
-                  }
-                }}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {CRON_PRESETS.map((preset) => (
-                  <option key={preset.value} value={preset.value}>
-                    {preset.label}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-xs text-gray-500">İçerik üretim motorunun ne sıklıkla çalışacağı</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <ModelSelect
+                  value={settings.ai_model_content}
+                  onChange={(value) => handleChange('ai_model_content', value)}
+                  label="İçerik Üretim"
+                  description="Haber makaleleri oluşturma"
+                  models={TEXT_MODELS}
+                />
+                <ModelSelect
+                  value={settings.ai_model_sentiment}
+                  onChange={(value) => handleChange('ai_model_sentiment', value)}
+                  label="Duygu Analizi"
+                  description="Makale duygu tespiti"
+                  models={TEXT_MODELS}
+                />
+                <ModelSelect
+                  value={settings.ai_model_category}
+                  onChange={(value) => handleChange('ai_model_category', value)}
+                  label="Kategori Belirleme"
+                  description="Otomatik kategori tespiti"
+                  models={TEXT_MODELS}
+                />
+                <ModelSelect
+                  value={settings.ai_model_summary}
+                  onChange={(value) => handleChange('ai_model_summary', value)}
+                  label="Özet Oluşturma"
+                  description="Makale özetleri"
+                  models={TEXT_MODELS}
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Çalışma Başına Makale Sayısı
-              </label>
-              <input
-                type="number"
-                min="1"
-                max="20"
-                value={settings.articles_per_run}
-                onChange={(e) => handleChange('articles_per_run', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="mt-1 text-xs text-gray-500">Her çalışmada üretilecek maksimum makale sayısı</p>
-            </div>
-          </div>
-          
-          {/* Custom Cron Input - Sadece "Özel" seçiliğinde veya mevcut değer preset listesinde değilse göster */}
-          {!CRON_PRESETS.some(p => p.value === settings.cron_schedule && p.value !== 'custom') && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Özel Cron İfadesi
-              </label>
-              <input
-                type="text"
-                value={settings.cron_schedule === 'custom' ? '' : settings.cron_schedule}
-                onChange={(e) => handleChange('cron_schedule', e.target.value)}
-                placeholder="*/15 * * * *"
-                className="w-full md:w-1/2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Format: dakika saat gün ay haftanın_günü (örn: &quot;*/15 * * * *&quot; = her 15 dakikada)
-              </p>
-            </div>
-          )}
-        </div>
 
-        {/* Model Referans Tablosu */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Model Referans Tablosu</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Model</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Seviye</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Açıklama</th>
-                  <th className="text-left py-2 px-3 font-medium text-gray-700 dark:text-gray-300">Durum</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.values(GEMINI_MODELS).map((model) => (
-                  <tr key={model.id} className="border-b border-gray-100 dark:border-gray-700/50">
-                    <td className="py-2 px-3 font-mono text-xs text-gray-900 dark:text-white">{model.id}</td>
-                    <td className="py-2 px-3"><TierBadge tier={model.tier} /></td>
-                    <td className="py-2 px-3 text-gray-600 dark:text-gray-400">{model.description}</td>
-                    <td className="py-2 px-3">
-                      {model.isDeprecated ? (
-                        <span className="text-xs text-yellow-600 dark:text-yellow-400">Kullanımdan Kaldırılacak</span>
-                      ) : model.isExperimental ? (
-                        <span className="text-xs text-purple-600 dark:text-purple-400">Deneysel</span>
-                      ) : (
-                        <span className="text-xs text-green-600 dark:text-green-400">Aktif</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {/* Image Settings */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <ImageIcon className="w-5 h-5 text-green-600" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Görsel Ayarları</h2>
+              </div>
+
+              <div className="space-y-4">
+                <Toggle
+                  checked={settings.enable_image_generation === 'true'}
+                  onChange={(checked) => handleChange('enable_image_generation', checked ? 'true' : 'false')}
+                  label="AI Görsel Üretimi"
+                  description="Haberler için otomatik AI görsel üretimi"
+                />
+
+                <Toggle
+                  checked={settings.enable_rss_image_optimization === 'true'}
+                  onChange={(checked) => handleChange('enable_rss_image_optimization', checked ? 'true' : 'false')}
+                  label="RSS Görsel Optimizasyonu"
+                  description="RSS kaynaklarından gelen görselleri optimize et"
+                />
+
+                <ModelSelect
+                  value={settings.ai_model_image}
+                  onChange={(value) => handleChange('ai_model_image', value)}
+                  label="Görsel Üretim Modeli"
+                  description="AI görsel üretimi için kullanılacak model"
+                  models={IMAGE_MODELS}
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Scheduler Tab */}
+        {activeTab === 'scheduler' && (
+          <div className="space-y-6">
+            {/* Scheduler Status */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Timer className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Zamanlayıcı Durumu</h2>
+                </div>
+                <button
+                  onClick={handleTriggerScheduler}
+                  disabled={triggeringScheduler}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {triggeringScheduler ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                  {triggeringScheduler ? 'Çalışıyor...' : 'Şimdi Çalıştır'}
+                </button>
+              </div>
+
+              {schedulerStatus ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Durum</p>
+                    <p className={`text-sm font-medium ${schedulerStatus.isRunning ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {schedulerStatus.isRunning ? 'Aktif' : 'Pasif'}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Zamanlama</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {schedulerStatus.scheduleDescription || schedulerStatus.currentSchedule}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Son Çalışma</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {schedulerStatus.lastRun 
+                        ? new Date(schedulerStatus.lastRun).toLocaleString('tr-TR')
+                        : 'Henüz çalışmadı'}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Toplam Çalışma</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {schedulerStatus.runCount} kez
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500">Zamanlayıcı durumu yükleniyor...</p>
+              )}
+
+              {schedulerStatus?.lastError && (
+                <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <p className="text-xs text-red-600 dark:text-red-400">Son Hata: {schedulerStatus.lastError}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Scheduler Settings */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Zamanlama Ayarları</h2>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Çalışma Sıklığı
+                  </label>
+                  <select
+                    value={settings.cron_schedule}
+                    onChange={(e) => handleChange('cron_schedule', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  >
+                    {CRON_PRESETS.map((preset) => (
+                      <option key={preset.value} value={preset.value}>{preset.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Her Çalışmada Makale Sayısı
+                  </label>
+                  <select
+                    value={settings.articles_per_run}
+                    onChange={(e) => handleChange('articles_per_run', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  >
+                    {[1, 2, 3, 5, 10, 15, 20].map((num) => (
+                      <option key={num} value={num.toString()}>{num} makale</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

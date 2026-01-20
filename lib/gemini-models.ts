@@ -2,8 +2,15 @@
  * Gemini Model Configuration
  * Defines all available Gemini models and their properties
  * 
- * @version 1.0.0
- * @lastUpdated 13 January 2026
+ * @version 2.0.0
+ * @lastUpdated 20 January 2026
+ * 
+ * Changes in v2.0.0:
+ * - Removed deprecated Gemini 1.5 models
+ * - Added Gemini 3 Pro and Flash stable versions
+ * - Added Nano Banana image generation models
+ * - Improved model grouping and categorization
+ * - Added image generation capability flag
  */
 
 /**
@@ -14,7 +21,12 @@ export type ModelTier = 'premium' | 'standard' | 'lite'
 /**
  * Model use case type
  */
-export type ModelUseCase = 'content' | 'sentiment' | 'category' | 'summary' | 'all'
+export type ModelUseCase = 'content' | 'sentiment' | 'category' | 'summary' | 'image' | 'all'
+
+/**
+ * Model capability type
+ */
+export type ModelCapability = 'text' | 'image' | 'multimodal'
 
 /**
  * Gemini model configuration interface
@@ -27,40 +39,56 @@ export interface GeminiModelConfig {
   contextWindow: number
   outputTokens: number
   useCases: ModelUseCase[]
+  capabilities: ModelCapability[]
   isExperimental: boolean
   isDeprecated: boolean
+  isRecommended?: boolean
 }
 
 /**
  * All available Gemini models
- * Updated: January 2026
+ * Updated: 20 January 2026
+ * 
+ * Model Categories:
+ * - Gemini 3: Latest generation, best performance
+ * - Gemini 2.5: Recommended for production, stable
+ * - Gemini 2.0: Previous generation, still supported
+ * - Nano Banana: Image generation models
  */
 export const GEMINI_MODELS: Record<string, GeminiModelConfig> = {
-  // Gemini 3 Series (Latest)
-  'gemini-3-pro-preview': {
-    id: 'gemini-3-pro-preview',
+  // ============================================
+  // Gemini 3 Series (Latest - January 2026)
+  // ============================================
+  'gemini-3-pro': {
+    id: 'gemini-3-pro',
     name: 'Gemini 3 Pro',
-    description: 'En akıllı model - Multimodal anlama ve agentic görevler için ideal',
+    description: 'En akıllı model - Multimodal anlama, agentic görevler ve karmaşık muhakeme için',
     tier: 'premium',
-    contextWindow: 1048576,
+    contextWindow: 2097152, // 2M tokens
     outputTokens: 65536,
     useCases: ['content', 'sentiment', 'category', 'summary', 'all'],
-    isExperimental: true,
+    capabilities: ['text', 'multimodal'],
+    isExperimental: false,
     isDeprecated: false,
+    isRecommended: false,
   },
-  'gemini-3-flash-preview': {
-    id: 'gemini-3-flash-preview',
+  'gemini-3-flash': {
+    id: 'gemini-3-flash',
     name: 'Gemini 3 Flash',
-    description: 'Hız ve zeka dengesi - Ölçeklenebilir görevler için',
+    description: 'Hız ve frontier zeka dengesi - Ölçeklenebilir görevler için ideal',
     tier: 'standard',
-    contextWindow: 1048576,
+    contextWindow: 1048576, // 1M tokens
     outputTokens: 65536,
     useCases: ['content', 'sentiment', 'category', 'summary', 'all'],
-    isExperimental: true,
+    capabilities: ['text', 'multimodal'],
+    isExperimental: false,
     isDeprecated: false,
+    isRecommended: true,
   },
 
-  // Gemini 2.5 Series (Recommended)
+  // ============================================
+  // Gemini 2.5 Series (Stable - Recommended)
+  // ============================================
   'gemini-2.5-flash': {
     id: 'gemini-2.5-flash',
     name: 'Gemini 2.5 Flash',
@@ -69,33 +97,41 @@ export const GEMINI_MODELS: Record<string, GeminiModelConfig> = {
     contextWindow: 1048576,
     outputTokens: 8192,
     useCases: ['content', 'sentiment', 'category', 'summary', 'all'],
+    capabilities: ['text', 'multimodal'],
     isExperimental: false,
     isDeprecated: false,
+    isRecommended: true,
   },
   'gemini-2.5-flash-lite': {
     id: 'gemini-2.5-flash-lite',
     name: 'Gemini 2.5 Flash-Lite',
-    description: 'Ultra hızlı - Yüksek hacimli basit görevler için',
+    description: 'Ultra hızlı ve ekonomik - Yüksek hacimli basit görevler için',
     tier: 'lite',
     contextWindow: 1048576,
     outputTokens: 8192,
     useCases: ['category', 'summary'],
+    capabilities: ['text'],
     isExperimental: false,
     isDeprecated: false,
+    isRecommended: false,
   },
   'gemini-2.5-pro': {
     id: 'gemini-2.5-pro',
     name: 'Gemini 2.5 Pro',
-    description: 'Gelişmiş düşünme - Karmaşık analiz ve muhakeme için',
+    description: 'Gelişmiş düşünme modeli - Karmaşık analiz, kod ve STEM için',
     tier: 'premium',
     contextWindow: 1048576,
     outputTokens: 8192,
     useCases: ['content', 'sentiment', 'all'],
+    capabilities: ['text', 'multimodal'],
     isExperimental: false,
     isDeprecated: false,
+    isRecommended: false,
   },
 
+  // ============================================
   // Gemini 2.0 Series (Previous Generation)
+  // ============================================
   'gemini-2.0-flash': {
     id: 'gemini-2.0-flash',
     name: 'Gemini 2.0 Flash',
@@ -104,8 +140,10 @@ export const GEMINI_MODELS: Record<string, GeminiModelConfig> = {
     contextWindow: 1000000,
     outputTokens: 8192,
     useCases: ['content', 'sentiment', 'category', 'summary', 'all'],
+    capabilities: ['text', 'multimodal'],
     isExperimental: false,
     isDeprecated: false,
+    isRecommended: false,
   },
   'gemini-2.0-flash-lite': {
     id: 'gemini-2.0-flash-lite',
@@ -115,34 +153,46 @@ export const GEMINI_MODELS: Record<string, GeminiModelConfig> = {
     contextWindow: 1000000,
     outputTokens: 8192,
     useCases: ['category', 'summary'],
+    capabilities: ['text'],
     isExperimental: false,
     isDeprecated: false,
-  },
-
-  // Gemini 1.5 Series (Legacy - Will be deprecated)
-  'gemini-1.5-flash': {
-    id: 'gemini-1.5-flash',
-    name: 'Gemini 1.5 Flash',
-    description: 'Eski nesil - Yakında kullanımdan kaldırılacak',
-    tier: 'standard',
-    contextWindow: 1000000,
-    outputTokens: 8192,
-    useCases: ['content', 'sentiment', 'category', 'summary', 'all'],
-    isExperimental: false,
-    isDeprecated: true,
-  },
-  'gemini-1.5-pro': {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
-    description: 'Eski nesil Pro - Yakında kullanımdan kaldırılacak',
-    tier: 'premium',
-    contextWindow: 2000000,
-    outputTokens: 8192,
-    useCases: ['content', 'sentiment', 'all'],
-    isExperimental: false,
-    isDeprecated: true,
+    isRecommended: false,
   },
 }
+
+/**
+ * Nano Banana Image Generation Models
+ * Separate from text models for clarity
+ */
+export const NANO_BANANA_MODELS: Record<string, {
+  id: string
+  name: string
+  description: string
+  tier: ModelTier
+  isRecommended: boolean
+  avgDuration: number // ms
+}> = {
+  'gemini-2.5-flash-preview-native-audio-dialog': {
+    id: 'gemini-2.5-flash-preview-native-audio-dialog',
+    name: 'Nano Banana (Gemini 2.5 Flash Image)',
+    description: 'Gemini tabanlı görsel üretimi - Hızlı ve kaliteli',
+    tier: 'standard',
+    isRecommended: true,
+    avgDuration: 8000,
+  },
+  'gemini-3-pro-image-preview': {
+    id: 'gemini-3-pro-image-preview',
+    name: 'Nano Banana Pro (Gemini 3 Pro Image)',
+    description: 'En yüksek kalite görsel üretimi - Gemini 3 Pro tabanlı',
+    tier: 'premium',
+    isRecommended: false,
+    avgDuration: 12000,
+  },
+}
+
+// ============================================
+// Helper Functions
+// ============================================
 
 /**
  * Get all available models
@@ -184,6 +234,13 @@ export function getStableModels(): GeminiModelConfig[] {
 }
 
 /**
+ * Get recommended models
+ */
+export function getRecommendedModels(): GeminiModelConfig[] {
+  return Object.values(GEMINI_MODELS).filter(model => model.isRecommended)
+}
+
+/**
  * Get model by ID
  */
 export function getModelById(id: string): GeminiModelConfig | undefined {
@@ -203,6 +260,8 @@ export function getDefaultModel(useCase: ModelUseCase): string {
       return 'gemini-2.5-flash-lite'
     case 'summary':
       return 'gemini-2.5-flash-lite'
+    case 'image':
+      return 'gemini-2.5-flash' // For image prompts, not generation
     default:
       return 'gemini-2.5-flash'
   }
@@ -229,22 +288,31 @@ export function getModelDisplayName(modelId: string): string {
 export const MODEL_GROUPS = {
   latest: {
     title: 'Gemini 3 Serisi (En Yeni)',
-    models: ['gemini-3-pro-preview', 'gemini-3-flash-preview'],
+    models: ['gemini-3-pro', 'gemini-3-flash'],
     badge: 'Yeni',
+    badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   },
   recommended: {
     title: 'Gemini 2.5 Serisi (Önerilen)',
     models: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'],
     badge: 'Önerilen',
+    badgeColor: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   },
   stable: {
     title: 'Gemini 2.0 Serisi (Stabil)',
     models: ['gemini-2.0-flash', 'gemini-2.0-flash-lite'],
     badge: 'Stabil',
+    badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   },
-  legacy: {
-    title: 'Gemini 1.5 Serisi (Eski)',
-    models: ['gemini-1.5-flash', 'gemini-1.5-pro'],
-    badge: 'Kullanımdan Kaldırılacak',
-  },
+}
+
+/**
+ * Get all model groups as array for iteration
+ */
+export function getModelGroupsArray() {
+  return [
+    MODEL_GROUPS.latest,
+    MODEL_GROUPS.recommended,
+    MODEL_GROUPS.stable,
+  ]
 }
