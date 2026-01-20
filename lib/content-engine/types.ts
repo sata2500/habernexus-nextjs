@@ -75,6 +75,7 @@ export interface TopicSelectionResult {
   selectedTopics: ScoredTopic[]
   totalTopicsAnalyzed: number
   selectionDuration: number
+  error?: string // Optional error message for better user feedback
 }
 
 // ============================================================================
@@ -213,7 +214,7 @@ export interface EngineRunResult {
  */
 export interface EngineLogEntry {
   timestamp: Date
-  level: 'info' | 'warn' | 'error'
+  level: 'info' | 'warn' | 'error' | 'debug'
   message: string
   data?: Record<string, unknown>
 }

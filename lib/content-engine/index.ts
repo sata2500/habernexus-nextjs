@@ -224,7 +224,9 @@ export async function runContentEngine(
     stats.topicsSelected = trendResult.selectedTopics.length
     
     if (trendResult.selectedTopics.length === 0) {
-      throw new Error('No topics selected for content generation')
+      // Use the detailed error message from trend analyzer if available
+      const errorMessage = trendResult.error || 'İçerik üretimi için konu seçilemedi. RSS kaynaklarınızı kontrol edin.'
+      throw new Error(errorMessage)
     }
     
     // Preview mode: Stop here

@@ -1,7 +1,7 @@
 /**
  * Content Engine v3.0 - Trend Analyzer
  * 
- * @version 3.0.0
+ * @version 3.0.1
  * @lastUpdated 20 January 2026
  * 
  * This module analyzes RSS feed items and selects trending topics
@@ -50,9 +50,38 @@ function itemsToTopics(feeds: RssFeedWithItems[]): Topic[] {
 }
 
 /**
- * Check if a topic already exists as an article
+ * Calculate similarity ratio between two strings
+ * Returns a value between 0 and 1 (1 = identical)
  */
-async function checkDuplicates(topics: Topic[]): Promise<Topic[]> {
+function calculateSimilarity(str1: string, str2: string): number {
+  const s1 = str1.toLowerCase().trim()
+  const s2 = str2.toLowerCase().trim()
+  
+  if (s1 === s2) return 1
+  if (s1.length === 0 || s2.length === 0) return 0
+  
+  // Simple word overlap similarity
+  const words1 = new Set(s1.split(/\s+/).filter(w => w.length > 3))
+  const words2 = new Set(s2.split(/\s+/).filter(w => w.length > 3))
+  
+  if (words1.size === 0 || words2.size === 0) return 0
+  
+  let overlap = 0
+  for (const word of words1) {
+    if (words2.has(word)) overlap++
+  }
+  
+  return overlap / Math.max(words1.size, words2.size)
+}
+
+/**
+ * Check if a topic already exists as an article
+ * Uses a more lenient duplicate detection algorithm
+ */
+async function checkDuplicates(
+  topics: Topic[],
+  logs: EngineLogEntry[]
+): Promise<{ uniqueTopics: Topic[]; duplicateCount: number; reason: string }> {
   // Get recent article titles (last 7 days)
   const recentArticles = await prisma.article.findMany({
     where: {
@@ -63,13 +92,28 @@ async function checkDuplicates(topics: Topic[]): Promise<Topic[]> {
     select: { title: true, slug: true },
   })
   
-  const existingTitles = new Set(
-    recentArticles.map((a) => a.title.toLowerCase().trim())
-  )
+  // If no recent articles, all topics are unique
+  if (recentArticles.length === 0) {
+    logs.push({
+      timestamp: new Date(),
+      level: 'info',
+      message: 'No recent articles found, all topics are considered unique',
+    })
+    return {
+      uniqueTopics: topics,
+      duplicateCount: 0,
+      reason: 'no_recent_articles',
+    }
+  }
+  
+  const existingTitles = recentArticles.map((a) => a.title.toLowerCase().trim())
   const existingSlugs = new Set(recentArticles.map((a) => a.slug))
   
-  // Filter out duplicates
-  return topics.filter((topic) => {
+  const uniqueTopics: Topic[] = []
+  let duplicateCount = 0
+  
+  // Filter out duplicates with more lenient checking
+  for (const topic of topics) {
     const titleLower = topic.title.toLowerCase().trim()
     const slug = topic.title
       .toLowerCase()
@@ -77,25 +121,51 @@ async function checkDuplicates(topics: Topic[]): Promise<Topic[]> {
       .replace(/\s+/g, '-')
       .substring(0, 100)
     
+    let isDuplicate = false
+    let duplicateReason = ''
+    
     // Check for exact title match
-    if (existingTitles.has(titleLower)) {
-      return false
+    if (existingTitles.includes(titleLower)) {
+      isDuplicate = true
+      duplicateReason = 'exact_title_match'
     }
     
     // Check for similar slug
-    if (existingSlugs.has(slug)) {
-      return false
+    if (!isDuplicate && existingSlugs.has(slug)) {
+      isDuplicate = true
+      duplicateReason = 'slug_match'
     }
     
-    // Check for very similar titles (Levenshtein-like check)
-    for (const existing of existingTitles) {
-      if (titleLower.includes(existing) || existing.includes(titleLower)) {
-        return false
+    // Check for high similarity (threshold: 0.7 = 70% similar)
+    // This is more lenient than the previous substring check
+    if (!isDuplicate) {
+      for (const existing of existingTitles) {
+        const similarity = calculateSimilarity(titleLower, existing)
+        if (similarity >= 0.7) {
+          isDuplicate = true
+          duplicateReason = `high_similarity (${Math.round(similarity * 100)}%)`
+          break
+        }
       }
     }
     
-    return true
-  })
+    if (isDuplicate) {
+      duplicateCount++
+      logs.push({
+        timestamp: new Date(),
+        level: 'debug',
+        message: `Duplicate topic filtered: "${topic.title.substring(0, 50)}..." (${duplicateReason})`,
+      })
+    } else {
+      uniqueTopics.push(topic)
+    }
+  }
+  
+  return {
+    uniqueTopics,
+    duplicateCount,
+    reason: duplicateCount > 0 ? 'duplicates_found' : 'all_unique',
+  }
 }
 
 /**
@@ -107,6 +177,11 @@ async function scoreTrendingTopics(
   logs: EngineLogEntry[]
 ): Promise<ScoredTopic[]> {
   if (topics.length === 0) {
+    logs.push({
+      timestamp: new Date(),
+      level: 'warn',
+      message: 'No topics available for AI scoring',
+    })
     return []
   }
   
@@ -241,19 +316,58 @@ export async function analyzeTrends(
   
   // Convert items to topics
   const allTopics = itemsToTopics(feeds)
+  
+  // Early check: if no topics from feeds
+  if (allTopics.length === 0) {
+    logs.push({
+      timestamp: new Date(),
+      level: 'warn',
+      message: 'No topics found in RSS feeds. Please check if feeds have content.',
+    })
+    
+    return {
+      selectedTopics: [],
+      totalTopicsAnalyzed: 0,
+      selectionDuration: Date.now() - startTime,
+      error: 'RSS kaynaklarından hiç konu bulunamadı. Lütfen RSS feed\'lerinizin aktif ve içerik içerdiğinden emin olun.',
+    }
+  }
+  
   logs.push({
     timestamp: new Date(),
     level: 'info',
     message: `Converted ${allTopics.length} RSS items to topics`,
   })
   
-  // Check for duplicates
-  const uniqueTopics = await checkDuplicates(allTopics)
+  // Check for duplicates with improved algorithm
+  const duplicateResult = await checkDuplicates(allTopics, logs)
+  const uniqueTopics = duplicateResult.uniqueTopics
+  
   logs.push({
     timestamp: new Date(),
     level: 'info',
-    message: `${uniqueTopics.length} unique topics after duplicate check`,
+    message: `${uniqueTopics.length} unique topics after duplicate check (${duplicateResult.duplicateCount} duplicates filtered)`,
   })
+  
+  // If all topics are duplicates, return with helpful error message
+  if (uniqueTopics.length === 0) {
+    logs.push({
+      timestamp: new Date(),
+      level: 'warn',
+      message: 'All topics were filtered as duplicates',
+      data: {
+        totalTopics: allTopics.length,
+        duplicateCount: duplicateResult.duplicateCount,
+      },
+    })
+    
+    return {
+      selectedTopics: [],
+      totalTopicsAnalyzed: allTopics.length,
+      selectionDuration: Date.now() - startTime,
+      error: `Tüm konular (${allTopics.length} adet) son 7 gün içinde yayınlanan makalelerle benzer olduğu için filtrelendi. Yeni içerik için RSS kaynaklarının güncellenmesini bekleyin veya farklı RSS kaynakları ekleyin.`,
+    }
+  }
   
   // Build topicsPerFeed map
   const topicsPerFeed = new Map<string, number>()
