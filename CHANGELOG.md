@@ -1,3 +1,14 @@
+## [5.3.2](https://github.com/sata2500/habernexus-nextjs/compare/v5.3.1...v5.3.2) (2026-01-20)
+
+### 🐛 Hata Düzeltmeleri
+
+* add RSS feed seeding and improve error diagnostics ([e6d4de6](https://github.com/sata2500/habernexus-nextjs/commit/e6d4de60eeb56f6e122c588f715c43c4eb030764))
+* **content-engine:** improve topic selection error handling and duplicate detection ([fa42f08](https://github.com/sata2500/habernexus-nextjs/commit/fa42f085e0bf9a0219575af61f02ee50a8b43b44))
+
+### 📚 Dokümantasyon
+
+* add ERROR-008 documentation - root cause analysis of 'No topics selected' error ([597c706](https://github.com/sata2500/habernexus-nextjs/commit/597c706c6377d83960d03178fa9053941482c5ee))
+
 ## [5.3.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.3.0...v5.3.1) (2026-01-20)
 
 ### 🐛 Hata Düzeltmeleri
