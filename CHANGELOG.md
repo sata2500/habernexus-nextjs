@@ -1,3 +1,9 @@
+## [5.1.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.0.0...v5.1.0) (2026-01-20)
+
+### ✨ Yeni Özellikler
+
+* İçerik Üretim Merkezi ve kapsamlı test sayfası eklendi ([e7ada5d](https://github.com/sata2500/habernexus-nextjs/commit/e7ada5d98e6fb17e68934334e46cc5e58032296b))
+
 ## [5.0.0](https://github.com/sata2500/habernexus-nextjs/compare/v4.0.0...v5.0.0) (2026-01-20)
 
 ### ⚠ BREAKING CHANGES
