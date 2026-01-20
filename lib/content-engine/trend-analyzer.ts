@@ -238,58 +238,97 @@ SEÇİM KRİTERLERİ:
 }`
 
     try {
-      const response = await genAI.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          temperature: 0.3,
-          maxOutputTokens: 1024,
-        },
-      })
+      let selectedCount = 0
       
-      const text = response.text || ''
-      const jsonMatch = text.match(/\{[\s\S]*\}/)
-      
-      if (jsonMatch) {
-        const result = JSON.parse(jsonMatch[0])
+      try {
+        const response = await genAI.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            temperature: 0.3,
+            maxOutputTokens: 1024,
+          },
+        })
         
-        if (result.selections && Array.isArray(result.selections)) {
-          for (const selection of result.selections) {
-            const topic = feedTopics[selection.index]
-            if (topic) {
-              scoredTopics.push({
-                ...topic,
-                trendScore: selection.trendScore || 50,
-                trendReason: selection.reason || '',
-                keywords: selection.keywords || [],
-              })
+        const text = response.text || ''
+        const jsonMatch = text.match(/\{[\s\S]*\}/)
+        
+        if (jsonMatch) {
+          try {
+            const result = JSON.parse(jsonMatch[0])
+            
+            if (result.selections && Array.isArray(result.selections)) {
+              for (const selection of result.selections) {
+                const topic = feedTopics[selection.index]
+                if (topic) {
+                  scoredTopics.push({
+                    ...topic,
+                    trendScore: selection.trendScore || 50,
+                    trendReason: selection.reason || '',
+                    keywords: selection.keywords || [],
+                  })
+                  selectedCount++
+                }
+              }
             }
+          } catch (parseError) {
+            logs.push({
+              timestamp: new Date(),
+              level: 'warn',
+              message: `Failed to parse AI response for feed ${feedId}, using fallback`,
+              data: { error: String(parseError) },
+            })
+            throw parseError
           }
+        } else {
+          logs.push({
+            timestamp: new Date(),
+            level: 'warn',
+            message: `No JSON found in AI response for feed ${feedId}, using fallback`,
+          })
+          throw new Error('No JSON in response')
         }
+      } catch (apiError) {
+        logs.push({
+          timestamp: new Date(),
+          level: 'warn',
+          message: `AI API error for feed ${feedId}, switching to fallback selection`,
+          data: { error: String(apiError) },
+        })
+        
+        // Fallback: select first N topics without AI scoring
+        const fallbackTopics = feedTopics.slice(0, limit).map((topic) => ({
+          ...topic,
+          trendScore: 50,
+          trendReason: 'Otomatik seçim (AI analizi başarısız)',
+          keywords: [],
+        }))
+        scoredTopics.push(...fallbackTopics)
+        selectedCount = fallbackTopics.length
       }
       
       logs.push({
         timestamp: new Date(),
         level: 'info',
-        message: `Analyzed ${feedTopics.length} topics from feed, selected ${Math.min(limit, feedTopics.length)}`,
-        data: { feedId, analyzed: feedTopics.length, selected: scoredTopics.filter(t => t.sourceFeedId === feedId).length },
+        message: `Analyzed ${feedTopics.length} topics from feed, selected ${selectedCount}`,
+        data: { feedId, analyzed: feedTopics.length, selected: selectedCount },
       })
     } catch (error) {
       logs.push({
         timestamp: new Date(),
         level: 'error',
-        message: `Error analyzing topics for feed ${feedId}`,
+        message: `Critical error analyzing topics for feed ${feedId}`,
         data: { error: String(error) },
       })
       
-      // Fallback: select first N topics without AI scoring
-      const fallbackTopics = feedTopics.slice(0, limit).map((topic) => ({
+      // Emergency fallback: select first N topics
+      const emergencyFallback = feedTopics.slice(0, Math.max(1, limit)).map((topic) => ({
         ...topic,
         trendScore: 50,
-        trendReason: 'Otomatik seçim (AI analizi başarısız)',
+        trendReason: 'Acil otomatik seçim',
         keywords: [],
       }))
-      scoredTopics.push(...fallbackTopics)
+      scoredTopics.push(...emergencyFallback)
     }
     
     // Small delay between API calls
