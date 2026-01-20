@@ -1,3 +1,9 @@
+## [5.3.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.3.0...v5.3.1) (2026-01-20)
+
+### 🐛 Hata Düzeltmeleri
+
+* Admin Dashboard - İçerik Motoru sayfası ve AI Çalıştır butonu düzeltmeleri ([8db9007](https://github.com/sata2500/habernexus-nextjs/commit/8db9007a1392c28141ccef47771dc3f95eebf694))
+
 ## [5.3.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.2.1...v5.3.0) (2026-01-20)
 
 ### ✨ Yeni Özellikler
