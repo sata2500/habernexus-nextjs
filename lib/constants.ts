@@ -10,7 +10,12 @@ export const CATEGORIES = [
 ] as const
 
 // Kategori isimlerinin listesi (admin paneli için)
-export const CATEGORY_NAMES = CATEGORIES.map(cat => cat.name)
+export const CATEGORY_NAMES_LIST = CATEGORIES.map(cat => cat.name)
+
+// Kategori isim haritası (admin paneli için)
+export const CATEGORY_NAMES: Record<string, string> = Object.fromEntries(
+  CATEGORIES.map(cat => [cat.name, cat.name])
+)
 
 // Kategori renkleri (admin paneli tablo görünümleri için)
 export const CATEGORY_COLORS: Record<string, string> = {

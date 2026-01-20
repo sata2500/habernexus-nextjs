@@ -12,7 +12,7 @@ import {
   Eye,
   Newspaper
 } from 'lucide-react'
-import { CATEGORY_NAMES } from '@/lib/constants'
+import { CATEGORY_NAMES_LIST } from '@/lib/constants'
 
 interface Article {
   id: string
@@ -237,7 +237,7 @@ export default function EditArticlePage() {
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              {CATEGORY_NAMES.map((cat) => (
+              {CATEGORY_NAMES_LIST.map((cat) => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>

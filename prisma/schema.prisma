@@ -197,21 +197,27 @@ model Notification {
 
 // Article model - Published content
 model Article {
-  id             String    @id @default(cuid())
-  title          String    // AI-generated title
-  slug           String    @unique
-  content        String    // AI-generated content (full article)
-  excerpt        String?   // Short summary
-  imageUrl       String    // AI-generated or downloaded image
-  imageSource    String?   // "ai" | "rss" | "placeholder" - Source of the image
-  videoUrl       String?   // Original news video (if available)
-  category       String    // AI-determined category
-  viewCount      Int       @default(0)
-  sentiment      Sentiment? // AI-analyzed sentiment (POSITIVE, NEGATIVE, NEUTRAL)
-  sentimentScore Float?    // Sentiment confidence score (0-1)
-  publishedAt    DateTime  @default(now())
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  title           String    // AI-generated title
+  slug            String    @unique
+  content         String    // AI-generated content (full article)
+  excerpt         String?   // Short summary
+  imageUrl        String    // AI-generated or downloaded image
+  imageSource     String?   // "ai" | "rss" | "placeholder" - Source of the image
+  videoUrl        String?   // Original news video (if available)
+  category        String    // AI-determined category
+  viewCount       Int       @default(0)
+  sentiment       Sentiment? // AI-analyzed sentiment (POSITIVE, NEGATIVE, NEUTRAL)
+  sentimentScore  Float?    // Sentiment confidence score (0-1)
+  publishedAt     DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Content Engine v3 fields
+  summaryCache    String?   // Cached AI-generated summary
+  summaryCachedAt DateTime? // Summary cache timestamp
+  sourceFeedId    String?   // Source RSS feed ID
+  researchSources String?   // JSON: Research sources used for article
   
   // Relations
   author      User          @relation(fields: [authorId], references: [id])
@@ -225,20 +231,25 @@ model Article {
   @@index([viewCount])
   @@index([sentiment])
   @@index([authorId])
+  @@index([sourceFeedId])
 }
 
 // RSS Feed source model
 model RssFeed {
-  id        String   @id @default(cuid())
-  url       String   @unique
-  name      String   // Display name
-  category  String   // Default category for articles from this feed
-  isActive  Boolean  @default(true)
-  lastFetch DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  url          String   @unique
+  name         String   // Display name
+  category     String   // Default category for articles from this feed
+  isActive     Boolean  @default(true)
+  topicsPerRun Int      @default(2)  // Number of articles to generate per run from this feed
+  authorId     String?              // Assigned author for articles from this feed
+  imageMode    String   @default("auto") // "rss" | "ai_original" | "ai_similar" | "auto"
+  lastFetch    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
   
   @@index([isActive])
+  @@index([category])
 }
 
 // System settings model - For storing configuration
@@ -464,4 +475,26 @@ model DataTransfer {
   @@index([code])
   @@index([status])
   @@index([expiresAt])
+}
+
+
+// Content Engine Run model - For tracking content generation runs
+model ContentEngineRun {
+  id              String   @id @default(cuid())
+  status          String   @default("pending") // "pending" | "running" | "completed" | "failed"
+  mode            String   @default("full")    // "full" | "preview"
+  feedsProcessed  Int      @default(0)         // Number of feeds processed
+  topicsFound     Int      @default(0)         // Number of topics found
+  topicsSelected  Int      @default(0)         // Number of topics selected
+  articlesCreated Int      @default(0)         // Number of articles created
+  imagesGenerated Int      @default(0)         // Number of images generated
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  duration        Int?                         // Duration in seconds
+  errorMessage    String?                      // Error message if failed
+  logs            String?                      // JSON: Detailed logs
+  triggeredBy     String?                      // User ID who triggered (for manual runs)
+  
+  @@index([status])
+  @@index([startedAt])
 }

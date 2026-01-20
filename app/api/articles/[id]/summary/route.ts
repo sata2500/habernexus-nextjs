@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { GoogleGenAI } from '@google/genai'
+import { getSettings } from '@/lib/content-engine'
 
 // Initialize the Gemini client
 const genAI = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || '',
 })
-
-const MODEL_NAME = 'gemini-2.0-flash'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -15,7 +14,13 @@ interface RouteParams {
 
 /**
  * GET /api/articles/[id]/summary
- * Generate AI summary for an article
+ * Generate AI summary for an article with caching support
+ * 
+ * Query params:
+ * - force: boolean - Force regenerate summary even if cached
+ * 
+ * @version 3.0.0
+ * @lastUpdated 20 January 2026
  */
 export async function GET(
   request: NextRequest,
@@ -23,6 +28,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const { searchParams } = new URL(request.url)
+    const forceRegenerate = searchParams.get('force') === 'true'
 
     // Get article from database
     const article = await prisma.article.findUnique({
@@ -32,6 +39,8 @@ export async function GET(
         title: true,
         content: true,
         excerpt: true,
+        summaryCache: true,
+        summaryCachedAt: true,
       },
     })
 
@@ -40,6 +49,27 @@ export async function GET(
         { error: 'Makale bulunamadı' },
         { status: 404 }
       )
+    }
+
+    // Check if we have a valid cached summary
+    if (!forceRegenerate && article.summaryCache && article.summaryCachedAt) {
+      const settings = await getSettings()
+      const cacheExpiry = new Date(article.summaryCachedAt)
+      cacheExpiry.setDate(cacheExpiry.getDate() + settings.summaryCacheDays)
+      
+      if (new Date() < cacheExpiry) {
+        // Return cached summary
+        try {
+          const cachedData = JSON.parse(article.summaryCache)
+          return NextResponse.json({
+            ...cachedData,
+            source: 'cache',
+            cachedAt: article.summaryCachedAt,
+          })
+        } catch {
+          // Invalid cache, continue to regenerate
+        }
+      }
     }
 
     // Check if Gemini API is configured
@@ -51,13 +81,17 @@ export async function GET(
       })
     }
 
+    // Get model from settings
+    const settings = await getSettings()
+    const modelName = settings.summaryModel || 'gemini-2.5-flash-lite'
+
     // Generate AI summary
     const prompt = `Sen profesyonel bir haber editörüsün. Aşağıdaki haber makalesini okuyucular için kısa ve öz bir şekilde özetle.
 
 BAŞLIK: ${article.title}
 
 İÇERİK:
-${article.content}
+${article.content.substring(0, 4000)}
 
 GÖREV:
 - Makalenin ana noktalarını 3-4 maddede özetle
@@ -73,7 +107,7 @@ GÖREV:
 }`
 
     const response = await genAI.models.generateContent({
-      model: MODEL_NAME,
+      model: modelName,
       contents: prompt,
       config: {
         temperature: 0.5,
@@ -97,10 +131,24 @@ GÖREV:
 
     const result = JSON.parse(jsonMatch[0])
     
-    return NextResponse.json({
+    // Prepare response data
+    const responseData = {
       summary: result.summary || article.excerpt,
       keyPoints: result.keyPoints || [],
       readingTime: result.readingTime || '3 dakika',
+    }
+    
+    // Cache the summary
+    await prisma.article.update({
+      where: { id },
+      data: {
+        summaryCache: JSON.stringify(responseData),
+        summaryCachedAt: new Date(),
+      },
+    })
+    
+    return NextResponse.json({
+      ...responseData,
       source: 'ai',
     })
   } catch (error) {

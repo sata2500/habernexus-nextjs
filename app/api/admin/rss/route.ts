@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { url, name, category } = body
+    const { url, name, category, topicsPerRun, authorId, imageMode } = body
 
     // Validate URL
     if (!url || !isValidRssUrl(url)) {
@@ -86,6 +86,9 @@ export async function POST(request: NextRequest) {
         name: name || feedData.title || 'Unnamed Feed',
         category: category || 'Gündem',
         isActive: true,
+        topicsPerRun: topicsPerRun || 2,
+        authorId: authorId || null,
+        imageMode: imageMode || 'auto',
       },
     })
 
@@ -115,7 +118,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, category, isActive } = body
+    const { id, name, category, isActive, topicsPerRun, authorId, imageMode } = body
 
     if (!id) {
       return NextResponse.json(
@@ -130,6 +133,9 @@ export async function PUT(request: NextRequest) {
         ...(name !== undefined && { name }),
         ...(category !== undefined && { category }),
         ...(isActive !== undefined && { isActive }),
+        ...(topicsPerRun !== undefined && { topicsPerRun }),
+        ...(authorId !== undefined && { authorId }),
+        ...(imageMode !== undefined && { imageMode }),
       },
     })
 

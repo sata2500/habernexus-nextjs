@@ -1,32 +1,35 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { 
-  runContentEngine, 
-  getEngineStatus, 
-  ContentEngineMode 
-} from '@/lib/unified-content-engine'
-import { isImagenConfigured } from '@/lib/imagen'
+import {
+  runContentEngine,
+  getSettings,
+  updateSettings,
+  getLastRun,
+  isEngineRunning,
+  isContentEngineConfigured,
+} from '@/lib/content-engine'
+import type { EngineConfig, ContentEngineSettings } from '@/lib/content-engine'
 
 /**
- * Unified Content Engine API
+ * Content Engine v3.0 API
  * 
  * GET /api/admin/content-engine
- * Get content engine status with detailed diagnostics
+ * Get content engine status and settings
  * 
  * POST /api/admin/content-engine
- * Trigger content generation with specified mode
+ * Run the content engine with specified configuration
  * 
- * Body options:
- * - mode: 'standard' | 'preview' | 'test' (default: 'standard')
- * - maxTopics: number (optional)
- * - feedId: string (optional, for single feed processing)
- * 
- * Note: Quick mode has been removed in v3.0.0 - only standard quality mode is supported.
+ * PUT /api/admin/content-engine
+ * Update content engine settings
  * 
  * @version 3.0.0
  * @lastUpdated 20 January 2026
  */
 
+/**
+ * GET /api/admin/content-engine
+ * Get content engine status and settings
+ */
 export async function GET() {
   try {
     const session = await auth()
@@ -38,19 +41,25 @@ export async function GET() {
       )
     }
 
-    const status = await getEngineStatus()
-    const imagenConfigured = await isImagenConfigured()
-    
-    // Add diagnostic information
+    const [settings, lastRun, running, configured] = await Promise.all([
+      getSettings(),
+      getLastRun(),
+      isEngineRunning(),
+      Promise.resolve(isContentEngineConfigured()),
+    ])
+
+    // Diagnostic information
     const diagnostics = {
       geminiApiKey: !!process.env.GEMINI_API_KEY,
-      imagenConfigured,
       nodeEnv: process.env.NODE_ENV,
       timestamp: new Date().toISOString(),
     }
 
     return NextResponse.json({
-      ...status,
+      isConfigured: configured,
+      isRunning: running,
+      lastRun,
+      settings,
       diagnostics,
     })
   } catch (error) {
@@ -65,7 +74,11 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+/**
+ * POST /api/admin/content-engine
+ * Run the content engine
+ */
+export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     
@@ -76,68 +89,94 @@ export async function POST(request: Request) {
       )
     }
 
+    // Check if configured
+    if (!isContentEngineConfigured()) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Content engine is not configured. Please set GEMINI_API_KEY.',
+        },
+        { status: 400 }
+      )
+    }
+
+    // Check if already running
+    if (await isEngineRunning()) {
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Content engine is already running',
+        },
+        { status: 409 }
+      )
+    }
+
     // Parse request body
-    let mode: ContentEngineMode = 'standard'
-    let maxTopics: number | undefined
-    let feedId: string | undefined
+    const config: EngineConfig = { mode: 'full' }
     
     try {
       const body = await request.json()
       
       // Support both old and new API formats
       if (body.action) {
-        // New format: action-based
+        // Old format: action-based
         switch (body.action) {
           case 'preview':
-            mode = 'preview'
+            config.mode = 'preview'
             break
           case 'test':
-            mode = 'test'
+            config.mode = 'preview'
+            config.dryRun = true
             break
-          case 'quick':
-            // Quick mode removed - fallback to standard
-            mode = 'standard'
-            break
-          case 'run':
           default:
-            mode = body.mode || 'standard'
+            config.mode = 'full'
         }
       } else if (body.mode) {
-        // Direct mode specification
-        mode = body.mode
+        config.mode = body.mode
       }
       
-      maxTopics = body.maxTopics
-      feedId = body.feedId
+      // Additional options
+      if (body.feedId) config.feedId = body.feedId
+      if (body.maxTopicsPerFeed) config.maxTopicsPerFeed = body.maxTopicsPerFeed
+      if (body.maxTopics) config.maxTopicsPerFeed = body.maxTopics // backward compat
+      if (body.skipImageGeneration) config.skipImageGeneration = body.skipImageGeneration
+      if (body.dryRun) config.dryRun = body.dryRun
     } catch {
       // No body or invalid JSON, use defaults
     }
 
-    console.log(`[ContentEngine API] Mode: ${mode}, maxTopics: ${maxTopics || 'default'}`)
+    console.log(`[ContentEngine API] Starting with mode: ${config.mode}`)
     
     const startTime = Date.now()
     
-    // Run the unified content engine
-    const result = await runContentEngine(mode, { maxTopics, feedId })
+    // Run the content engine
+    const result = await runContentEngine(config, session.user.id)
     
     const duration = Date.now() - startTime
     
     console.log(`[ContentEngine API] Completed in ${duration}ms`)
-    console.log(`[ContentEngine API] Mode: ${result.mode}`)
-    console.log(`[ContentEngine API] Articles published: ${result.articlesPublished}`)
-    console.log(`[ContentEngine API] Images generated (AI): ${result.imagesGenerated}`)
-    console.log(`[ContentEngine API] Images optimized (RSS): ${result.imagesOptimized}`)
+    console.log(`[ContentEngine API] Status: ${result.status}`)
+    console.log(`[ContentEngine API] Articles created: ${result.stats.articlesCreated}`)
+    console.log(`[ContentEngine API] Images generated: ${result.stats.imagesGenerated}`)
     
-    if (result.errors.length > 0) {
-      console.error('[ContentEngine API] Errors:', result.errors)
+    if (result.stats.errors.length > 0) {
+      console.error('[ContentEngine API] Errors:', result.stats.errors)
     }
 
     // Return response with backward-compatible fields
     return NextResponse.json({
-      ...result,
+      success: result.status === 'completed',
+      runId: result.runId,
+      mode: result.mode,
+      status: result.status,
+      stats: result.stats,
+      articles: result.articles,
+      duration: result.duration,
       // Backward compatibility fields
-      articlesCreated: result.articlesPublished,
-      duration,
+      articlesCreated: result.stats.articlesCreated,
+      articlesPublished: result.stats.articlesCreated,
+      imagesGenerated: result.stats.imagesGenerated,
+      errors: result.stats.errors,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
@@ -150,9 +189,56 @@ export async function POST(request: Request) {
         articlesCreated: 0,
         articlesPublished: 0,
         imagesGenerated: 0,
-        imagesOptimized: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error'],
       },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * PUT /api/admin/content-engine
+ * Update content engine settings
+ */
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const updates: Partial<ContentEngineSettings> = {}
+
+    // Validate and extract settings
+    if (body.contentModel !== undefined) updates.contentModel = body.contentModel
+    if (body.imageModel !== undefined) updates.imageModel = body.imageModel
+    if (body.summaryModel !== undefined) updates.summaryModel = body.summaryModel
+    if (body.defaultTopicsPerFeed !== undefined) updates.defaultTopicsPerFeed = parseInt(body.defaultTopicsPerFeed)
+    if (body.maxConcurrentGenerations !== undefined) updates.maxConcurrentGenerations = parseInt(body.maxConcurrentGenerations)
+    if (body.defaultImageMode !== undefined) updates.defaultImageMode = body.defaultImageMode
+    if (body.imageQuality !== undefined) updates.imageQuality = parseInt(body.imageQuality)
+    if (body.imageMaxWidth !== undefined) updates.imageMaxWidth = parseInt(body.imageMaxWidth)
+    if (body.summaryCacheDays !== undefined) updates.summaryCacheDays = parseInt(body.summaryCacheDays)
+    if (body.cronSchedule !== undefined) updates.cronSchedule = body.cronSchedule
+    if (body.isScheduleEnabled !== undefined) updates.isScheduleEnabled = body.isScheduleEnabled
+
+    await updateSettings(updates)
+
+    const settings = await getSettings()
+
+    return NextResponse.json({
+      success: true,
+      settings,
+    })
+  } catch (error) {
+    console.error('[ContentEngine API] Update settings error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

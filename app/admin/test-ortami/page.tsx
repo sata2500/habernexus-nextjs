@@ -16,7 +16,7 @@ import {
   Clock,
   Loader2
 } from 'lucide-react'
-import { CATEGORY_NAMES } from '@/lib/constants'
+import { CATEGORY_NAMES_LIST } from '@/lib/constants'
 
 interface RssFeed {
   id: string
@@ -78,7 +78,7 @@ export default function TestEnvironmentPage() {
   } | null>(null)
 
   // Merkezi kategori listesi kullanılıyor
-  const categories = CATEGORY_NAMES
+  const categories = CATEGORY_NAMES_LIST
 
   const imageModels = [
     { value: 'imagen-4.0-fast-generate-001', label: 'Imagen 4.0 Fast (Önerilen)' },
