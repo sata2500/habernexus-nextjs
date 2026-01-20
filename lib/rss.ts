@@ -1,6 +1,11 @@
 /**
  * RSS Feed Parser Service
- * Fetches and parses RSS feeds for content aggregation
+ * Fetches and parses RSS/Atom feeds for content aggregation
+ * 
+ * @version 2.0.0
+ * @lastUpdated 20 January 2026
+ * 
+ * Supports both RSS 2.0 and Atom feed formats
  */
 
 export interface RssItem {
@@ -20,13 +25,14 @@ export interface RssFeed {
 }
 
 /**
- * Fetch and parse an RSS feed
+ * Fetch and parse an RSS/Atom feed
  */
 export async function fetchRssFeed(url: string): Promise<RssFeed | null> {
   try {
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'HaberNexus/1.0 RSS Aggregator',
+        'Accept': 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
       },
       next: { revalidate: 300 }, // Cache for 5 minutes
     })
@@ -36,7 +42,13 @@ export async function fetchRssFeed(url: string): Promise<RssFeed | null> {
     }
 
     const xml = await response.text()
-    return parseRssFeed(xml)
+    
+    // Detect feed type and parse accordingly
+    if (xml.includes('<feed') && xml.includes('xmlns="http://www.w3.org/2005/Atom"')) {
+      return parseAtomFeed(xml)
+    } else {
+      return parseRssFeed(xml)
+    }
   } catch (error) {
     console.error(`Error fetching RSS feed from ${url}:`, error)
     return null
@@ -44,7 +56,94 @@ export async function fetchRssFeed(url: string): Promise<RssFeed | null> {
 }
 
 /**
- * Parse RSS XML content
+ * Parse Atom feed XML content
+ */
+function parseAtomFeed(xml: string): RssFeed {
+  const getTagContent = (text: string, tag: string): string => {
+    // Handle both <tag>content</tag> and <tag type="text">content</tag>
+    const regex = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i')
+    const match = text.match(regex)
+    if (!match) return ''
+    
+    // Handle CDATA
+    let content = match[1]
+    const cdataMatch = content.match(/<!\[CDATA\[([\s\S]*?)\]\]>/)
+    if (cdataMatch) {
+      content = cdataMatch[1]
+    }
+    
+    return content.trim()
+  }
+
+  const getAtomLink = (text: string): string => {
+    // Get href from <link rel="alternate" href="..."/>
+    const alternateMatch = text.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["'][^>]*\/?>/i)
+    if (alternateMatch) return alternateMatch[1]
+    
+    // Fallback to any link with href
+    const hrefMatch = text.match(/<link[^>]*href=["']([^"']+)["'][^>]*\/?>/i)
+    if (hrefMatch) return hrefMatch[1]
+    
+    return ''
+  }
+
+  const getImageUrl = (text: string): string => {
+    // Try enclosure tag
+    const enclosureMatch = text.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*\/?>/i)
+    if (enclosureMatch) return enclosureMatch[1]
+    
+    // Try media:content
+    const mediaMatch = text.match(/<media:content[^>]*url=["']([^"']+)["'][^>]*\/?>/i)
+    if (mediaMatch) return mediaMatch[1]
+    
+    // Try to extract from content
+    const content = getTagContent(text, 'content')
+    const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i)
+    if (imgMatch) return imgMatch[1]
+    
+    return ''
+  }
+
+  // Parse feed info
+  const feed: RssFeed = {
+    title: decodeHtmlEntities(getTagContent(xml, 'title')),
+    description: decodeHtmlEntities(getTagContent(xml, 'subtitle') || getTagContent(xml, 'summary')),
+    link: getAtomLink(xml),
+    items: [],
+  }
+
+  // Parse entries
+  const entryRegex = /<entry>([\s\S]*?)<\/entry>/gi
+  let entryMatch
+
+  while ((entryMatch = entryRegex.exec(xml)) !== null) {
+    const entryContent = entryMatch[1]
+    
+    const title = decodeHtmlEntities(getTagContent(entryContent, 'title'))
+    const link = getAtomLink(entryContent)
+    const summary = decodeHtmlEntities(stripHtml(getTagContent(entryContent, 'summary')))
+    const content = decodeHtmlEntities(stripHtml(getTagContent(entryContent, 'content')))
+    const pubDate = getTagContent(entryContent, 'published') || getTagContent(entryContent, 'updated')
+    const imageUrl = getImageUrl(entryContent)
+
+    if (title && link) {
+      feed.items.push({
+        title,
+        link,
+        description: summary || content?.substring(0, 300) || '',
+        pubDate,
+        content: content || summary,
+        imageUrl,
+      })
+    }
+  }
+
+  console.log(`[RSS] Parsed Atom feed: ${feed.title} with ${feed.items.length} entries`)
+  return feed
+}
+
+/**
+ * Parse RSS 2.0 XML content
  */
 function parseRssFeed(xml: string): RssFeed {
   // Simple XML parsing without external dependencies
@@ -74,8 +173,8 @@ function parseRssFeed(xml: string): RssFeed {
   const channelContent = channelMatch ? channelMatch[1] : xml
 
   const feed: RssFeed = {
-    title: getTagContent(channelContent, 'title'),
-    description: getTagContent(channelContent, 'description'),
+    title: decodeHtmlEntities(getTagContent(channelContent, 'title')),
+    description: decodeHtmlEntities(getTagContent(channelContent, 'description')),
     link: getTagContent(channelContent, 'link'),
     items: [],
   }
@@ -117,6 +216,7 @@ function parseRssFeed(xml: string): RssFeed {
     }
   }
 
+  console.log(`[RSS] Parsed RSS feed: ${feed.title} with ${feed.items.length} items`)
   return feed
 }
 

@@ -206,10 +206,55 @@ KURALLAR:
 
     const text = response.text || ''
     
-    // Parse JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      console.error('[TopicSelector] Invalid response format from AI')
+    // Parse JSON from response - handle multiple JSON objects
+    // Find the JSON that contains selectedTopics
+    let result: { selectedTopics?: Array<{ id: number; score: number; reasoning: string; keywords: string[] }> } | null = null
+    
+    // Try to find JSON with selectedTopics
+    const jsonMatches = text.match(/\{[\s\S]*?"selectedTopics"[\s\S]*?\}/g)
+    if (jsonMatches) {
+      for (const match of jsonMatches) {
+        try {
+          // Find the complete JSON object
+          let depth = 0
+          let startIndex = text.indexOf(match)
+          let endIndex = startIndex
+          
+          for (let i = startIndex; i < text.length; i++) {
+            if (text[i] === '{') depth++
+            if (text[i] === '}') depth--
+            if (depth === 0) {
+              endIndex = i + 1
+              break
+            }
+          }
+          
+          const jsonStr = text.substring(startIndex, endIndex)
+          const parsed = JSON.parse(jsonStr)
+          if (parsed.selectedTopics) {
+            result = parsed
+            break
+          }
+        } catch {
+          // Continue to next match
+        }
+      }
+    }
+    
+    // Fallback: try to extract any valid JSON
+    if (!result) {
+      const simpleMatch = text.match(/\{[\s\S]*\}/)
+      if (simpleMatch) {
+        try {
+          result = JSON.parse(simpleMatch[0])
+        } catch {
+          // JSON parse failed
+        }
+      }
+    }
+    
+    if (!result || !result.selectedTopics) {
+      console.warn('[TopicSelector] Could not parse AI response, using fallback')
       // Return top items without AI scoring
       return items.slice(0, maxTopics).map(item => ({
         title: item.title,
@@ -224,8 +269,6 @@ KURALLAR:
         imageUrl: item.imageUrl,
       }))
     }
-
-    const result = JSON.parse(jsonMatch[0])
     const selectedTopics: ScoredTopic[] = []
 
     for (const selected of result.selectedTopics || []) {
