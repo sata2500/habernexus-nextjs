@@ -1,7 +1,7 @@
 /**
  * Content Engine v3.0 - RSS Collector
  * 
- * @version 3.0.0
+ * @version 3.0.1
  * @lastUpdated 20 January 2026
  * 
  * This module handles RSS feed fetching and parsing.
@@ -117,6 +117,10 @@ export async function collectFromAllFeeds(
   })
   
   // Process each feed
+  let successCount = 0
+  let failureCount = 0
+  let totalItems = 0
+  
   for (const feed of feeds) {
     try {
       logs.push({
@@ -130,6 +134,17 @@ export async function collectFromAllFeeds(
       
       // Filter out items without title
       const validItems = items.filter((item) => item.title && item.title.trim().length > 0)
+      
+      if (validItems.length === 0) {
+        logs.push({
+          timestamp: new Date(),
+          level: 'warn',
+          message: `Feed returned no valid items: ${feed.name}`,
+          data: { feedId: feed.id, totalItems: items.length, validItems: validItems.length },
+        })
+        failureCount++
+        continue
+      }
       
       results.push({
         feedId: feed.id,
@@ -149,12 +164,17 @@ export async function collectFromAllFeeds(
         data: { lastFetch: new Date() },
       })
       
+      successCount++
+      totalItems += validItems.length
+      
       logs.push({
         timestamp: new Date(),
         level: 'info',
-        message: `Fetched ${validItems.length} items from ${feed.name}`,
+        message: `Successfully fetched ${validItems.length} items from ${feed.name}`,
+        data: { feedId: feed.id, itemCount: validItems.length },
       })
     } catch (error) {
+      failureCount++
       logs.push({
         timestamp: new Date(),
         level: 'error',
@@ -163,6 +183,14 @@ export async function collectFromAllFeeds(
       })
     }
   }
+  
+  // Summary log
+  logs.push({
+    timestamp: new Date(),
+    level: 'info',
+    message: `RSS Collection Summary: ${successCount}/${feeds.length} feeds successful, ${totalItems} total items`,
+    data: { successCount, failureCount, totalFeeds: feeds.length, totalItems },
+  })
   
   return results
 }
@@ -207,6 +235,16 @@ export async function collectFromFeed(
     const items = await parseFeed(feed.url)
     const validItems = items.filter((item) => item.title && item.title.trim().length > 0)
     
+    if (validItems.length === 0) {
+      logs.push({
+        timestamp: new Date(),
+        level: 'warn',
+        message: `Feed returned no valid items: ${feed.name}`,
+        data: { feedId: feed.id, totalItems: items.length },
+      })
+      return null
+    }
+    
     // Update lastFetch
     await prisma.rssFeed.update({
       where: { id: feed.id },
@@ -216,7 +254,8 @@ export async function collectFromFeed(
     logs.push({
       timestamp: new Date(),
       level: 'info',
-      message: `Fetched ${validItems.length} items from ${feed.name}`,
+      message: `Successfully fetched ${validItems.length} items from ${feed.name}`,
+      data: { feedId: feed.id, itemCount: validItems.length },
     })
     
     return {

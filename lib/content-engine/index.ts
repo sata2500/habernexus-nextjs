@@ -209,7 +209,13 @@ export async function runContentEngine(
     stats.feedsProcessed = feeds.length
     
     if (feeds.length === 0) {
-      throw new Error('No active feeds found')
+      const errorMsg = 'RSS kaynakları yapılandırılmamış. Lütfen Admin Panelinden en az bir RSS kaynağı ekleyin.'
+      logs.push({
+        timestamp: new Date(),
+        level: 'error',
+        message: errorMsg,
+      })
+      throw new Error(errorMsg)
     }
     
     // Step 2: Analyze trends and select topics
@@ -226,6 +232,16 @@ export async function runContentEngine(
     if (trendResult.selectedTopics.length === 0) {
       // Use the detailed error message from trend analyzer if available
       const errorMessage = trendResult.error || 'İçerik üretimi için konu seçilemedi. RSS kaynaklarınızı kontrol edin.'
+      logs.push({
+        timestamp: new Date(),
+        level: 'error',
+        message: errorMessage,
+        data: {
+          feedsProcessed: stats.feedsProcessed,
+          topicsFound: stats.topicsFound,
+          topicsSelected: stats.topicsSelected,
+        },
+      })
       throw new Error(errorMessage)
     }
     
