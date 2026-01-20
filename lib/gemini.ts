@@ -135,13 +135,21 @@ KURALLAR:
 
     const text = response.text || ''
     
-    // Parse JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error('Invalid response format from Gemini')
+    // Clean markdown code blocks and parse JSON
+    const cleanText = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim()
+    
+    // Try direct parse first
+    let result
+    try {
+      result = JSON.parse(cleanText)
+    } catch {
+      // Fallback to regex extraction
+      const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error('Invalid response format from Gemini')
+      }
+      result = JSON.parse(jsonMatch[0])
     }
-
-    const result = JSON.parse(jsonMatch[0])
     
     return {
       title: result.title || sourceTitle,
@@ -263,13 +271,21 @@ KRİTERLER:
 
     const text = response.text || ''
     
-    // Parse JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      throw new Error('Invalid response format from Gemini')
+    // Clean markdown code blocks and parse JSON
+    const cleanText = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim()
+    
+    // Try direct parse first
+    let result
+    try {
+      result = JSON.parse(cleanText)
+    } catch {
+      // Fallback to regex extraction
+      const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error('Invalid response format from Gemini')
+      }
+      result = JSON.parse(jsonMatch[0])
     }
-
-    const result = JSON.parse(jsonMatch[0])
     
     // Validate sentiment value
     const validSentiments = ['POSITIVE', 'NEGATIVE', 'NEUTRAL']

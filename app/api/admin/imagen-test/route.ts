@@ -1,11 +1,20 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { generateArticleImage, testImagenConnection, isImagenConfigured } from '@/lib/imagen'
+import { generateImage, testImageGeneration, isImageGenerationConfigured } from '@/lib/image-generator'
 
 /**
+ * Unified Image Generation Test API
+ * 
  * GET /api/admin/imagen-test
- * Test Imagen API connection and configuration
+ * Test image generation API connection and configuration
+ * 
+ * POST /api/admin/imagen-test
+ * Generate a test image with custom parameters
+ * 
+ * @version 2.0.0
+ * @lastUpdated 20 January 2026
  */
+
 export async function GET() {
   try {
     const session = await auth()
@@ -17,8 +26,8 @@ export async function GET() {
       )
     }
 
-    // Check if Imagen is configured
-    const configured = await isImagenConfigured()
+    // Check if image generation is configured
+    const configured = await isImageGenerationConfigured()
     
     if (!configured) {
       return NextResponse.json({
@@ -30,34 +39,31 @@ export async function GET() {
     }
 
     // Test the connection
-    const testResult = await testImagenConnection()
+    const testResult = await testImageGeneration()
 
     return NextResponse.json({
       success: testResult.success,
       configured: true,
+      provider: testResult.provider,
       model: testResult.model,
       error: testResult.error,
       message: testResult.success 
-        ? 'Imagen API is working correctly' 
-        : `Imagen API test failed: ${testResult.error}`,
+        ? `Image generation API is working correctly (${testResult.provider}/${testResult.model})` 
+        : `Image generation test failed: ${testResult.error}`,
     })
   } catch (error) {
-    console.error('Imagen test error:', error)
+    console.error('Image generation test error:', error)
     return NextResponse.json(
       { 
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
-        message: 'Failed to test Imagen API',
+        message: 'Failed to test image generation API',
       },
       { status: 500 }
     )
   }
 }
 
-/**
- * POST /api/admin/imagen-test
- * Generate a test image with custom parameters
- */
 export async function POST(request: Request) {
   try {
     const session = await auth()
@@ -79,27 +85,29 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log(`[Imagen Test] Generating test image for: ${title} (${category})`)
+    console.log(`[ImageGen Test] Generating test image for: ${title} (${category})`)
 
-    // Generate a test image
-    const result = await generateArticleImage(
+    // Generate a test image using unified image generator
+    const result = await generateImage(
       title,
       category,
-      undefined,
-      model
+      model ? { model } : undefined
     )
 
     return NextResponse.json({
       success: result.success,
       imageUrl: result.imageUrl,
+      provider: result.provider,
+      model: result.model,
+      duration: result.duration,
       error: result.error,
       retryCount: result.retryCount,
       message: result.success 
-        ? `Image generated successfully: ${result.imageUrl}` 
+        ? `Image generated successfully via ${result.provider}/${result.model}` 
         : `Image generation failed: ${result.error}`,
     })
   } catch (error) {
-    console.error('Imagen test generation error:', error)
+    console.error('Image generation test error:', error)
     return NextResponse.json(
       { 
         success: false,

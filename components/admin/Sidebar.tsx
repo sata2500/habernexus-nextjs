@@ -76,10 +76,9 @@ const menuGroups: MenuGroup[] = [
     name: 'AI & Analiz',
     icon: Bot,
     items: [
-      { name: 'Gelişmiş İçerik Motoru', href: '/admin/gelismis-icerik-motoru', icon: Bot, badge: 'Yeni' },
+      { name: 'İçerik Üretim Merkezi', href: '/admin/icerik-merkezi', icon: Bot, badge: 'Yeni' },
+      { name: 'Testler', href: '/admin/testler', icon: FlaskConical },
       { name: 'Duygu Analizi', href: '/admin/duygu-analizi', icon: Sparkles },
-      { name: 'AI Promptları', href: '/admin/promptlar', icon: FileText },
-      { name: 'Test Ortamı', href: '/admin/test-ortami', icon: FlaskConical },
     ],
   },
   {
@@ -94,7 +93,6 @@ const menuGroups: MenuGroup[] = [
     name: 'Medya',
     icon: ImageIcon,
     items: [
-      { name: 'Görsel Ayarları', href: '/admin/gorsel-ayarlari', icon: Palette },
       { name: 'Görsel Hataları', href: '/admin/gorsel-hatalari', icon: AlertTriangle },
     ],
   },
