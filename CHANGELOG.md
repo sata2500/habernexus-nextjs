@@ -1,3 +1,9 @@
+## [5.3.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.2.1...v5.3.0) (2026-01-20)
+
+### ✨ Yeni Özellikler
+
+* Content Engine v3.0 - Complete redesign ([d0929d6](https://github.com/sata2500/habernexus-nextjs/commit/d0929d6394fd69d8743de60726e02ee7797d144d))
+
 ## [5.2.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.2.0...v5.2.1) (2026-01-20)
 
 ### 🐛 Hata Düzeltmeleri
