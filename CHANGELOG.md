@@ -1,3 +1,9 @@
+## [5.2.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.1.0...v5.2.0) (2026-01-20)
+
+### ✨ Yeni Özellikler
+
+* AI ayarlarını İçerik Üretim Merkezi'nde birleştirme ve sistem sadeleştirme ([15bbf96](https://github.com/sata2500/habernexus-nextjs/commit/15bbf96b997a0c7d1a18acce9bb52b67be72fb19))
+
 ## [5.1.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.0.0...v5.1.0) (2026-01-20)
 
 ### ✨ Yeni Özellikler
