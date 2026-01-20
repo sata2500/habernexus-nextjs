@@ -24,7 +24,6 @@ interface MobileDataCardProps<T> {
 }
 
 export function MobileDataCard<T>({
-  item,
   title,
   subtitle,
   badge,

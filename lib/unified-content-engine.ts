@@ -313,7 +313,10 @@ async function processImage(
 /**
  * Quick mode: Direct RSS to article conversion
  * Similar to the original content-engine.ts
+ * 
+ * @deprecated Use runStandardMode instead
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function runQuickMode(
   config: EngineConfig,
   feedId?: string

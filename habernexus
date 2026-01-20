@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# HaberNexus Yönetim Aracı
+# Kullanım: habernexus [komut]
+
+INSTALL_DIR="/var/www/habernexus"
+PM2_APP="habernexus"
+
+case "$1" in
+    start)
+        pm2 start $PM2_APP
+        ;;
+    stop)
+        pm2 stop $PM2_APP
+        ;;
+    restart)
+        pm2 restart $PM2_APP
+        ;;
+    status)
+        pm2 status $PM2_APP
+        ;;
+    logs)
+        pm2 logs $PM2_APP --lines ${2:-100}
+        ;;
+    update)
+        cd $INSTALL_DIR && bash scripts/update.sh
+        ;;
+    backup)
+        cd $INSTALL_DIR && bash scripts/backup.sh
+        ;;
+    health)
+        curl -s http://localhost:3000/api/health 2>/dev/null || echo "Uygulama yanıt vermiyor"
+        ;;
+    env)
+        cat $INSTALL_DIR/.env
+        ;;
+    version)
+        cd $INSTALL_DIR && cat package.json | grep '"version"' | head -1
+        ;;
+    *)
+        echo "HaberNexus Yönetim Aracı v3.0"
+        echo ""
+        echo "Kullanım: habernexus [komut]"
+        echo ""
+        echo "Komutlar:"
+        echo "  start    - Uygulamayı başlat"
+        echo "  stop     - Uygulamayı durdur"
+        echo "  restart  - Uygulamayı yeniden başlat"
+        echo "  status   - Durum bilgisi"
+        echo "  logs     - Logları görüntüle (logs [satır sayısı])"
+        echo "  update   - Güncelleme yap"
+        echo "  backup   - Yedekleme al"
+        echo "  health   - Sağlık kontrolü"
+        echo "  env      - Environment değişkenlerini görüntüle"
+        echo "  version  - Sürüm bilgisi"
+        ;;
+esac

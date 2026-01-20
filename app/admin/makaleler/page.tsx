@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Newspaper, Eye, Bookmark, ThumbsUp, Trash2, ExternalLink, Edit, Plus } from 'lucide-react'
+import { Newspaper, Eye, Bookmark, ThumbsUp, Trash2, ExternalLink, Edit } from 'lucide-react'
 import { CATEGORY_COLORS } from '@/lib/constants'
 import { 
   LoadingState, 

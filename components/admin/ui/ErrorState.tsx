@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertCircle, RefreshCw, XCircle, AlertTriangle, Info } from 'lucide-react'
+import { RefreshCw, XCircle, AlertTriangle, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type ErrorSeverity = 'error' | 'warning' | 'info'

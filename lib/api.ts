@@ -5,7 +5,8 @@
  * Tutarlı hata yönetimi ve tip güvenliği sağlar.
  */
 
-import type { ApiResponse, PaginatedResponse } from '@/types/admin'
+// Types are imported but not used in this file
+// import type { ApiResponse, PaginatedResponse } from '@/types/admin'
 
 // ============================================
 // Base Configuration

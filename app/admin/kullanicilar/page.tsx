@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { Users, Shield, Edit2, Trash2, UserPlus, Mail } from 'lucide-react'
+import { Users, Shield, Edit2, Trash2, Mail } from 'lucide-react'
 import { 
   LoadingState, 
   ErrorState, 
