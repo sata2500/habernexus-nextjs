@@ -1,3 +1,9 @@
+## [5.3.2](https://github.com/sata2500/habernexus-nextjs/compare/v5.3.1...v5.3.2) (2026-01-20)
+
+### 🐛 Hata Düzeltmeleri
+
+* **content-engine:** improve topic selection error handling and duplicate detection ([fa42f08](https://github.com/sata2500/habernexus-nextjs/commit/fa42f085e0bf9a0219575af61f02ee50a8b43b44))
+
 ## [5.3.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.3.0...v5.3.1) (2026-01-20)
 
 ### 🐛 Hata Düzeltmeleri
