@@ -1,3 +1,20 @@
+## [3.5.0](https://github.com/sata2500/habernexus-nextjs/compare/v3.4.0...v3.5.0) (2026-01-20)
+
+### ✨ Yeni Özellikler
+
+* add advanced content generation system with intelligent topic selection and deep research ([120a9f2](https://github.com/sata2500/habernexus-nextjs/commit/120a9f2bc82623f300a58d8e9849d280c1de17a4))
+* **admin:** add advanced content engine admin page with preview and test modes ([7ec19ff](https://github.com/sata2500/habernexus-nextjs/commit/7ec19ffe417eba3ff21d63bfe4eff6285e1ba4d3))
+* **admin:** add advanced content engine link to sidebar navigation ([bbdbca7](https://github.com/sata2500/habernexus-nextjs/commit/bbdbca7cf06d258d9e25b8114c0baaf02b2ff2df))
+* **api:** add advanced content engine API endpoint with preview and test modes ([1caf949](https://github.com/sata2500/habernexus-nextjs/commit/1caf94987a4c6746d6af371d12309dc9cbbc1d00))
+* **content:** add advanced content engine orchestrating the complete pipeline ([7c07820](https://github.com/sata2500/habernexus-nextjs/commit/7c0782052d71c021fffe38d194b419348caaf192))
+* **content:** add content synthesizer module for article generation ([28f48dc](https://github.com/sata2500/habernexus-nextjs/commit/28f48dc6a3a34cdff532e721af5896d7025bad44))
+* **content:** add research agent module for deep web research ([a18ec3b](https://github.com/sata2500/habernexus-nextjs/commit/a18ec3bdb52d25f7b784d85531b750fbb80d0580))
+* **content:** add topic selector module for intelligent topic selection ([c1d7e1b](https://github.com/sata2500/habernexus-nextjs/commit/c1d7e1b6e556e0a4764c30b7352ec0686636237c))
+
+### 📚 Dokümantasyon
+
+* add advanced content engine documentation and development plan ([ad143e2](https://github.com/sata2500/habernexus-nextjs/commit/ad143e2f9ef320c61534015966c3045ba7780094))
+
 ## [3.4.0](https://github.com/sata2500/habernexus-nextjs/compare/v3.3.0...v3.4.0) (2026-01-19)
 
 ### ✨ Yeni Özellikler
