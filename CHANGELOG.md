@@ -1,3 +1,13 @@
+## [4.0.0](https://github.com/sata2500/habernexus-nextjs/compare/v3.5.0...v4.0.0) (2026-01-20)
+
+### ⚠ BREAKING CHANGES
+
+* Eski API endpoint'leri kaldırıldı, yeni birleşik API kullanılmalı
+
+### ✨ Yeni Özellikler
+
+* Birleşik içerik motoru (unified-content-engine) ([095838c](https://github.com/sata2500/habernexus-nextjs/commit/095838c603918b3a1c7853f3ae65006bb28a9b09))
+
 ## [3.5.0](https://github.com/sata2500/habernexus-nextjs/compare/v3.4.0...v3.5.0) (2026-01-20)
 
 ### ✨ Yeni Özellikler
