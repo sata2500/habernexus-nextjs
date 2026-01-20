@@ -1,13 +1,15 @@
 import cron, { ScheduledTask } from 'node-cron'
 import { prisma } from '@/lib/prisma'
-import { processAllFeeds } from '@/lib/content-engine'
+import { processAllFeeds } from '@/lib/unified-content-engine'
 
 /**
  * Content Generation Scheduler
  * Handles automatic content generation based on cron schedule
  * 
- * @version 1.0.0
- * @lastUpdated 13 January 2026
+ * @version 2.0.0
+ * @lastUpdated 20 January 2026
+ * 
+ * Updated to use unified content engine
  */
 
 // Singleton instance for the scheduler
@@ -115,10 +117,10 @@ class ContentScheduler {
       this.lastError = null
 
       if (result.success) {
-        console.log(`[Scheduler] Content generation completed. Articles created: ${result.articlesCreated}`)
+        console.log(`[Scheduler] Content generation completed. Articles published: ${result.articlesPublished}`)
         return { 
           success: true, 
-          message: `${result.articlesCreated} makale oluşturuldu` 
+          message: `${result.articlesPublished} makale oluşturuldu` 
         }
       } else {
         const errorMsg = result.errors.join(', ')

@@ -5,11 +5,12 @@ import {
   Rss,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Brain
 } from 'lucide-react'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { getEngineStatus } from '@/lib/content-engine'
+import { getEngineStatus } from '@/lib/unified-content-engine'
 import ContentEngineButton from './components/ContentEngineButton'
 
 async function getStats() {
@@ -64,6 +65,11 @@ export default async function AdminDashboard() {
       lastRun: engineStatus.lastGeneration 
         ? new Date(engineStatus.lastGeneration).toLocaleString('tr-TR')
         : 'Henüz çalışmadı'
+    },
+    { 
+      name: 'Araştırma Modülü', 
+      status: engineStatus.isResearchEnabled ? 'active' : 'inactive',
+      lastRun: engineStatus.isResearchEnabled ? 'Aktif' : 'Devre dışı'
     },
     { 
       name: 'RSS Tarayıcı', 
@@ -205,7 +211,7 @@ export default async function AdminDashboard() {
       {/* Quick Actions */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Hızlı İşlemler</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Link 
             href="/admin/makaleler"
             className="flex flex-col items-center justify-center p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
@@ -226,6 +232,13 @@ export default async function AdminDashboard() {
           >
             <Users className="w-6 h-6 text-purple-600 dark:text-purple-400 mb-2" />
             <span className="text-sm font-medium text-gray-900 dark:text-white">Kullanıcılar</span>
+          </Link>
+          <Link 
+            href="/admin/gelismis-icerik-motoru"
+            className="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+          >
+            <Brain className="w-6 h-6 text-indigo-600 dark:text-indigo-400 mb-2" />
+            <span className="text-sm font-medium text-gray-900 dark:text-white text-center">İçerik Motoru</span>
           </Link>
           <ContentEngineButton />
         </div>

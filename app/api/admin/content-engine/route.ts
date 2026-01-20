@@ -1,12 +1,30 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { processAllFeeds, processFeed, getEngineStatus } from '@/lib/content-engine'
+import { 
+  runContentEngine, 
+  getEngineStatus, 
+  ContentEngineMode 
+} from '@/lib/unified-content-engine'
 import { isImagenConfigured } from '@/lib/imagen'
 
 /**
+ * Unified Content Engine API
+ * 
  * GET /api/admin/content-engine
  * Get content engine status with detailed diagnostics
+ * 
+ * POST /api/admin/content-engine
+ * Trigger content generation with specified mode
+ * 
+ * Body options:
+ * - mode: 'quick' | 'standard' | 'preview' | 'test' (default: 'standard')
+ * - maxTopics: number (optional)
+ * - feedId: string (optional, for quick mode single feed)
+ * 
+ * @version 2.0.0
+ * @lastUpdated 20 January 2026
  */
+
 export async function GET() {
   try {
     const session = await auth()
@@ -34,7 +52,7 @@ export async function GET() {
       diagnostics,
     })
   } catch (error) {
-    console.error('Content engine status error:', error)
+    console.error('[ContentEngine API] Status error:', error)
     return NextResponse.json(
       { 
         error: 'Internal server error',
@@ -45,10 +63,6 @@ export async function GET() {
   }
 }
 
-/**
- * POST /api/admin/content-engine
- * Trigger content generation with detailed logging
- */
 export async function POST(request: Request) {
   try {
     const session = await auth()
@@ -60,54 +74,78 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check for optional feedId in request body
+    // Parse request body
+    let mode: ContentEngineMode = 'standard'
+    let maxTopics: number | undefined
     let feedId: string | undefined
+    
     try {
       const body = await request.json()
+      
+      // Support both old and new API formats
+      if (body.action) {
+        // New format: action-based
+        switch (body.action) {
+          case 'preview':
+            mode = 'preview'
+            break
+          case 'test':
+            mode = 'test'
+            break
+          case 'quick':
+            mode = 'quick'
+            break
+          case 'run':
+          default:
+            mode = body.mode || 'standard'
+        }
+      } else if (body.mode) {
+        // Direct mode specification
+        mode = body.mode
+      }
+      
+      maxTopics = body.maxTopics
       feedId = body.feedId
     } catch {
-      // No body or invalid JSON, process all feeds
+      // No body or invalid JSON, use defaults
     }
 
-    console.log('[ContentEngine API] Starting content generation...')
-    console.log('[ContentEngine API] GEMINI_API_KEY configured:', !!process.env.GEMINI_API_KEY)
+    console.log(`[ContentEngine API] Mode: ${mode}, maxTopics: ${maxTopics || 'default'}`)
     
     const startTime = Date.now()
     
-    let result
-    if (feedId) {
-      console.log(`[ContentEngine API] Processing single feed: ${feedId}`)
-      result = await processFeed(feedId)
-    } else {
-      console.log('[ContentEngine API] Processing all feeds')
-      result = await processAllFeeds()
-    }
+    // Run the unified content engine
+    const result = await runContentEngine(mode, { maxTopics, feedId })
     
     const duration = Date.now() - startTime
     
     console.log(`[ContentEngine API] Completed in ${duration}ms`)
-    console.log(`[ContentEngine API] Articles created: ${result.articlesCreated}`)
+    console.log(`[ContentEngine API] Mode: ${result.mode}`)
+    console.log(`[ContentEngine API] Articles published: ${result.articlesPublished}`)
     console.log(`[ContentEngine API] Images generated (AI): ${result.imagesGenerated}`)
     console.log(`[ContentEngine API] Images optimized (RSS): ${result.imagesOptimized}`)
-    console.log(`[ContentEngine API] Errors: ${result.errors.length}`)
     
     if (result.errors.length > 0) {
       console.error('[ContentEngine API] Errors:', result.errors)
     }
 
+    // Return response with backward-compatible fields
     return NextResponse.json({
       ...result,
+      // Backward compatibility fields
+      articlesCreated: result.articlesPublished,
       duration,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Content generation error:', error)
+    console.error('[ContentEngine API] Error:', error)
     return NextResponse.json(
       { 
         success: false,
         error: 'Internal server error',
         message: error instanceof Error ? error.message : 'Unknown error',
         articlesCreated: 0,
+        articlesPublished: 0,
         imagesGenerated: 0,
         imagesOptimized: 0,
         errors: [error instanceof Error ? error.message : 'Unknown error'],

@@ -17,12 +17,13 @@ import {
   Sparkles,
   Target,
   BookOpen,
-  Zap
+  Zap,
+  SkipForward
 } from 'lucide-react'
 
 interface PipelineStage {
   name: string
-  status: 'pending' | 'running' | 'completed' | 'failed'
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'skipped'
   startTime?: number
   endTime?: number
   details?: string
@@ -42,26 +43,31 @@ interface EngineStatus {
   isConfigured: boolean
   isResearchEnabled: boolean
   isImageGenEnabled: boolean
+  isRssImageOptEnabled: boolean
   config: {
     maxTopics: number
     minQualityScore: number
     enableResearch: boolean
     enableImageGeneration: boolean
+    enableRssImageOptimization: boolean
     parallelResearch: boolean
   }
-  lastRun: string | null
-  stats: {
-    totalArticles: number
-    articlesWithResearch: number
-    averageQuality: number
+  lastGeneration: string | null
+  activeFeeds: number
+  totalArticles: number
+  imageStats: {
+    aiGenerated: number
+    rssOptimized: number
+    placeholder: number
   }
 }
 
 interface PipelineResult {
   success: boolean
-  action: string
+  mode: string
   stages?: PipelineStage[]
   topics?: TopicPreview[]
+  topicsCollected?: number
   topicsSelected?: number
   topicsResearched?: number
   articlesGenerated?: number
@@ -77,8 +83,8 @@ interface PipelineResult {
     qualityScore: number
     imageSource: string
   }>
-  topic?: TopicPreview
-  article?: {
+  testTopic?: TopicPreview
+  testArticle?: {
     title: string
     excerpt: string
     category: string
@@ -86,7 +92,7 @@ interface PipelineResult {
     readingTime: number
     citationCount: number
   }
-  research?: {
+  testResearch?: {
     findingsCount: number
     sourcesCount: number
     summary: string
@@ -108,7 +114,7 @@ export default function AdvancedContentEnginePage() {
 
   const fetchStatus = async () => {
     try {
-      const response = await fetch('/api/admin/advanced-content-engine')
+      const response = await fetch('/api/admin/content-engine')
       const data = await response.json()
       setStatus(data)
     } catch (error) {
@@ -118,16 +124,17 @@ export default function AdvancedContentEnginePage() {
     }
   }
 
-  const runAction = async (action: 'preview' | 'test' | 'run') => {
+  const runAction = async (action: 'preview' | 'test' | 'run' | 'quick') => {
     setRunning(true)
     setResult(null)
     
     try {
-      const response = await fetch('/api/admin/advanced-content-engine', {
+      const response = await fetch('/api/admin/content-engine', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           action,
+          mode: action === 'quick' ? 'quick' : (action === 'run' ? 'standard' : action),
           maxTopics: status?.config.maxTopics || 5
         }),
       })
@@ -140,14 +147,14 @@ export default function AdvancedContentEnginePage() {
       }
       
       // Refresh status after run
-      if (action === 'run') {
+      if (action === 'run' || action === 'quick') {
         await fetchStatus()
       }
     } catch (error) {
       console.error('Action error:', error)
       setResult({
         success: false,
-        action,
+        mode: action,
         errors: ['İşlem sırasında bir hata oluştu'],
       })
     } finally {
@@ -163,6 +170,8 @@ export default function AdvancedContentEnginePage() {
         return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
       case 'failed':
         return <XCircle className="w-5 h-5 text-red-500" />
+      case 'skipped':
+        return <SkipForward className="w-5 h-5 text-gray-400" />
       default:
         return <Clock className="w-5 h-5 text-gray-400" />
     }
@@ -183,7 +192,7 @@ export default function AdvancedContentEnginePage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Brain className="w-7 h-7 text-purple-500" />
-            Gelişmiş İçerik Motoru
+            Birleşik İçerik Motoru
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             Akıllı konu seçimi, derinlemesine araştırma ve özgün içerik üretimi
@@ -221,8 +230,12 @@ export default function AdvancedContentEnginePage() {
 
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-              <Search className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+              status?.isResearchEnabled ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-100 dark:bg-gray-700'
+            }`}>
+              <Search className={`w-5 h-5 ${
+                status?.isResearchEnabled ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'
+              }`} />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Araştırma</p>
@@ -235,8 +248,12 @@ export default function AdvancedContentEnginePage() {
 
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-              <ImageIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+              status?.isImageGenEnabled ? 'bg-purple-100 dark:bg-purple-900/30' : 'bg-gray-100 dark:bg-gray-700'
+            }`}>
+              <ImageIcon className={`w-5 h-5 ${
+                status?.isImageGenEnabled ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'
+              }`} />
             </div>
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Görsel Üretimi</p>
@@ -255,7 +272,7 @@ export default function AdvancedContentEnginePage() {
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400">Toplam Makale</p>
               <p className="font-semibold text-gray-900 dark:text-white">
-                {status?.stats.totalArticles || 0}
+                {status?.totalArticles || 0}
               </p>
             </div>
           </div>
@@ -267,29 +284,37 @@ export default function AdvancedContentEnginePage() {
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           İçerik Üretim Pipeline&apos;ı
         </h2>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between overflow-x-auto pb-2">
+          <div className="flex items-center gap-4 min-w-max">
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                 <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <span className="text-xs mt-2 text-gray-600 dark:text-gray-400">Konu Seçimi</span>
             </div>
-            <div className="w-16 h-0.5 bg-gray-200 dark:bg-gray-700" />
+            <div className="w-12 h-0.5 bg-gray-200 dark:bg-gray-700" />
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                <Search className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                status?.isResearchEnabled 
+                  ? 'bg-green-100 dark:bg-green-900/30' 
+                  : 'bg-gray-100 dark:bg-gray-700'
+              }`}>
+                <Search className={`w-6 h-6 ${
+                  status?.isResearchEnabled 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-gray-400'
+                }`} />
               </div>
               <span className="text-xs mt-2 text-gray-600 dark:text-gray-400">Araştırma</span>
             </div>
-            <div className="w-16 h-0.5 bg-gray-200 dark:bg-gray-700" />
+            <div className="w-12 h-0.5 bg-gray-200 dark:bg-gray-700" />
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <span className="text-xs mt-2 text-gray-600 dark:text-gray-400">Sentez</span>
             </div>
-            <div className="w-16 h-0.5 bg-gray-200 dark:bg-gray-700" />
+            <div className="w-12 h-0.5 bg-gray-200 dark:bg-gray-700" />
             <div className="flex flex-col items-center">
               <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
                 <Sparkles className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -303,17 +328,17 @@ export default function AdvancedContentEnginePage() {
       {/* Action Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex -mb-px">
+          <nav className="flex -mb-px overflow-x-auto">
             {[
               { id: 'overview', label: 'Genel Bakış', icon: Eye },
               { id: 'preview', label: 'Konu Önizleme', icon: Target },
               { id: 'test', label: 'Test Modu', icon: TestTube },
-              { id: 'run', label: 'Tam Çalıştır', icon: Zap },
+              { id: 'run', label: 'Çalıştır', icon: Zap },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -328,9 +353,9 @@ export default function AdvancedContentEnginePage() {
 
         <div className="p-6">
           {activeTab === 'overview' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h3 className="font-semibold text-gray-900 dark:text-white">Sistem Yapılandırması</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   <p className="text-sm text-gray-500 dark:text-gray-400">Maksimum Konu Sayısı</p>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -350,11 +375,23 @@ export default function AdvancedContentEnginePage() {
                   </p>
                 </div>
                 <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Aktif RSS Kaynağı</p>
+                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {status?.activeFeeds || 0}
+                  </p>
+                </div>
+                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                   <p className="text-sm text-gray-500 dark:text-gray-400">Son Çalışma</p>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {status?.lastRun 
-                      ? new Date(status.lastRun).toLocaleString('tr-TR')
+                    {status?.lastGeneration 
+                      ? new Date(status.lastGeneration).toLocaleString('tr-TR')
                       : 'Henüz çalışmadı'}
+                  </p>
+                </div>
+                <div className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Görsel İstatistikleri</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    AI: {status?.imageStats.aiGenerated || 0} | RSS: {status?.imageStats.rssOptimized || 0}
                   </p>
                 </div>
               </div>
@@ -440,7 +477,7 @@ export default function AdvancedContentEnginePage() {
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">Test Modu</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Tek bir konu için tam pipeline&apos;ı test edin
+                    Tek bir konu için tam pipeline&apos;ı test edin (yayınlamadan)
                   </p>
                 </div>
                 <button
@@ -457,54 +494,57 @@ export default function AdvancedContentEnginePage() {
                 </button>
               </div>
 
-              {result?.action === 'test' && (
+              {result?.mode === 'test' && (
                 <div className="space-y-4">
-                  {result.topic && (
+                  {result.testTopic && (
                     <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                       <h4 className="font-medium text-blue-900 dark:text-blue-100">
                         Seçilen Konu
                       </h4>
                       <p className="text-blue-800 dark:text-blue-200 mt-1">
-                        {result.topic.title}
+                        {result.testTopic.title}
+                      </p>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                        Skor: {result.testTopic.score}/100
                       </p>
                     </div>
                   )}
 
-                  {result.research && (
+                  {result.testResearch && (
                     <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                       <h4 className="font-medium text-green-900 dark:text-green-100">
                         Araştırma Sonuçları
                       </h4>
                       <div className="mt-2 space-y-2">
                         <p className="text-sm text-green-800 dark:text-green-200">
-                          <strong>Özet:</strong> {result.research.summary}
+                          <strong>Özet:</strong> {result.testResearch.summary}
                         </p>
                         <p className="text-sm text-green-800 dark:text-green-200">
-                          <strong>Bulgular:</strong> {result.research.findingsCount} adet
+                          <strong>Bulgular:</strong> {result.testResearch.findingsCount} adet
                         </p>
                         <p className="text-sm text-green-800 dark:text-green-200">
-                          <strong>Kaynaklar:</strong> {result.research.sourcesCount} adet
+                          <strong>Kaynaklar:</strong> {result.testResearch.sourcesCount} adet
                         </p>
                       </div>
                     </div>
                   )}
 
-                  {result.article && (
+                  {result.testArticle && (
                     <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                       <h4 className="font-medium text-purple-900 dark:text-purple-100">
                         Üretilen Makale
                       </h4>
                       <div className="mt-2 space-y-2">
                         <p className="text-purple-800 dark:text-purple-200 font-medium">
-                          {result.article.title}
+                          {result.testArticle.title}
                         </p>
                         <p className="text-sm text-purple-700 dark:text-purple-300">
-                          {result.article.excerpt}
+                          {result.testArticle.excerpt}
                         </p>
                         <div className="flex items-center gap-4 text-xs text-purple-600 dark:text-purple-400">
-                          <span>Kategori: {result.article.category}</span>
-                          <span>Okuma: {result.article.readingTime} dk</span>
-                          <span>Atıflar: {result.article.citationCount}</span>
+                          <span>Kategori: {result.testArticle.category}</span>
+                          <span>Okuma: {result.testArticle.readingTime} dk</span>
+                          <span>Atıflar: {result.testArticle.citationCount}</span>
                         </div>
                       </div>
                     </div>
@@ -529,32 +569,66 @@ export default function AdvancedContentEnginePage() {
 
           {activeTab === 'run' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Tam Pipeline Çalıştır</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">İçerik Üret ve Yayınla</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Tüm aşamaları çalıştırarak içerik üretin ve yayınlayın
+                    Seçtiğiniz moda göre içerik üretin ve yayınlayın
                   </p>
                 </div>
-                <button
-                  onClick={() => runAction('run')}
-                  disabled={running}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                >
-                  {running ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Play className="w-4 h-4" />
-                  )}
-                  Çalıştır
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => runAction('quick')}
+                    disabled={running}
+                    className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50"
+                  >
+                    {running && result?.mode === 'quick' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Zap className="w-4 h-4" />
+                    )}
+                    Hızlı Mod
+                  </button>
+                  <button
+                    onClick={() => runAction('run')}
+                    disabled={running}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {running && result?.mode === 'standard' ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                    Standart Mod
+                  </button>
+                </div>
               </div>
 
-              {result?.action === 'run' && (
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                <div>
+                  <h4 className="font-medium text-yellow-700 dark:text-yellow-400 flex items-center gap-2">
+                    <Zap className="w-4 h-4" /> Hızlı Mod
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    RSS içeriklerini doğrudan makaleye dönüştürür. Araştırma yapmaz, hızlı sonuç verir.
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-green-700 dark:text-green-400 flex items-center gap-2">
+                    <Brain className="w-4 h-4" /> Standart Mod
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Tam pipeline: Konu seçimi, araştırma, sentez ve yayınlama. Daha kaliteli içerik üretir.
+                  </p>
+                </div>
+              </div>
+
+              {result && (result.mode === 'standard' || result.mode === 'quick') && (
                 <div className="space-y-4">
                   {/* Pipeline Stages */}
-                  {result.stages && (
+                  {result.stages && result.stages.length > 0 && (
                     <div className="space-y-2">
+                      <h4 className="font-medium text-gray-900 dark:text-white">Pipeline Aşamaları</h4>
                       {result.stages.map((stage, index) => (
                         <div 
                           key={index}
