@@ -5,6 +5,24 @@
 * add RSS feed seeding and improve error diagnostics ([e6d4de6](https://github.com/sata2500/habernexus-nextjs/commit/e6d4de60eeb56f6e122c588f715c43c4eb030764))
 * **content-engine:** improve topic selection error handling and duplicate detection ([fa42f08](https://github.com/sata2500/habernexus-nextjs/commit/fa42f085e0bf9a0219575af61f02ee50a8b43b44))
 * Improve trend analyzer error handling and fallback mechanism ([e4f99b6](https://github.com/sata2500/habernexus-nextjs/commit/e4f99b6416353fe821d67e74eaff4a48661e2287))
+* Resolve all ESLint warnings and errors ([ab6aa72](https://github.com/sata2500/habernexus-nextjs/commit/ab6aa72dd0c222e0f69e83903087e8011ec8c8d2))
+
+### 📚 Dokümantasyon
+
+* add ERROR-008 documentation - root cause analysis of 'No topics selected' error ([597c706](https://github.com/sata2500/habernexus-nextjs/commit/597c706c6377d83960d03178fa9053941482c5ee))
+
+### 🔧 Bakım
+
+* **release:** 5.3.2 [skip ci] ([4358e2a](https://github.com/sata2500/habernexus-nextjs/commit/4358e2ad3f7f7bed6b0f3f911ca51a7d1ab782c6))
+* **release:** 5.3.2 [skip ci] ([ac82557](https://github.com/sata2500/habernexus-nextjs/commit/ac82557108709c847799fe371da882c0b1cd7cbb))
+
+## [5.3.2](https://github.com/sata2500/habernexus-nextjs/compare/v5.3.1...v5.3.2) (2026-01-20)
+
+### 🐛 Hata Düzeltmeleri
+
+* add RSS feed seeding and improve error diagnostics ([e6d4de6](https://github.com/sata2500/habernexus-nextjs/commit/e6d4de60eeb56f6e122c588f715c43c4eb030764))
+* **content-engine:** improve topic selection error handling and duplicate detection ([fa42f08](https://github.com/sata2500/habernexus-nextjs/commit/fa42f085e0bf9a0219575af61f02ee50a8b43b44))
+* Improve trend analyzer error handling and fallback mechanism ([e4f99b6](https://github.com/sata2500/habernexus-nextjs/commit/e4f99b6416353fe821d67e74eaff4a48661e2287))
 
 ### 📚 Dokümantasyon
 
