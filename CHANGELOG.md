@@ -1,3 +1,9 @@
+## [5.2.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.2.0...v5.2.1) (2026-01-20)
+
+### 🐛 Hata Düzeltmeleri
+
+* RSS parser ve topic selector düzeltmeleri ([2a2a92b](https://github.com/sata2500/habernexus-nextjs/commit/2a2a92b232ecb1017f62ae684f5c4a152f9e129f))
+
 ## [5.2.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.1.0...v5.2.0) (2026-01-20)
 
 ### ✨ Yeni Özellikler
