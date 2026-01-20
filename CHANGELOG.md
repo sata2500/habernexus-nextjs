@@ -1,3 +1,17 @@
+## [5.0.0](https://github.com/sata2500/habernexus-nextjs/compare/v4.0.0...v5.0.0) (2026-01-20)
+
+### ⚠ BREAKING CHANGES
+
+* imagen.ts is now deprecated, use image-generator.ts instead
+
+### ✨ Yeni Özellikler
+
+* unified content engine v2.0 with Gemini 3 and Nano Banana Pro support ([e879207](https://github.com/sata2500/habernexus-nextjs/commit/e879207ce6eece8118725e8a0dac720af306bea9))
+
+### 📚 Dokümantasyon
+
+* add development report for v2.0.0 changes ([9fad443](https://github.com/sata2500/habernexus-nextjs/commit/9fad44396053cd9e38b149c22ec0b8b8e87a21ee))
+
 ## [4.0.0](https://github.com/sata2500/habernexus-nextjs/compare/v3.5.0...v4.0.0) (2026-01-20)
 
 ### ⚠ BREAKING CHANGES
