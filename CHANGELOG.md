@@ -1,3 +1,13 @@
+## [5.7.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.6.0...v5.7.0) (2026-01-21)
+
+### ✨ Yeni Özellikler
+
+* enhance admin analytics with recharts for data visualization, date range filtering and more ([2408a5c](https://github.com/sata2500/habernexus-nextjs/commit/2408a5c0b0f02519abf3ac7c7a6786b3bbf26180))
+
+### 🔧 Bakım
+
+* unignore `.gitkeep` in the generated images directory ([4cf83c7](https://github.com/sata2500/habernexus-nextjs/commit/4cf83c7cd65dafe3e5785959271baca29647429c))
+
 ## [5.6.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.5.0...v5.6.0) (2026-01-21)
 
 ### ✨ Yeni Özellikler
