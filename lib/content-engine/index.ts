@@ -35,6 +35,14 @@ export { collectFromAllFeeds, collectFromFeed } from './rss-collector'
 export { analyzeTrends } from './trend-analyzer'
 export { generateArticle, generateArticles, generateSummary } from './article-generator'
 export { handleImage, generateContentImages } from './image-handler'
+export { 
+  detectBreakingNews,
+  markAsBreakingNews,
+  unmarkAsBreakingNews,
+  getBreakingNews,
+  getBreakingNewsSettings,
+  updateBreakingNewsSettings,
+} from './breaking-news'
 
 /**
  * Get content engine settings from database
@@ -249,6 +257,31 @@ export async function runContentEngine(
       throw new Error(errorMessage)
     }
     
+    // Step 2.5: Detect breaking news (if enabled)
+    logs.push({
+      timestamp: new Date(),
+      level: 'info',
+      message: 'Step 2.5: Detecting breaking news',
+    })
+    
+    const { detectBreakingNews } = await import('./breaking-news')
+    const breakingNews = await detectBreakingNews(trendResult.selectedTopics, logs)
+    
+    if (breakingNews.length > 0) {
+      logs.push({
+        timestamp: new Date(),
+        level: 'info',
+        message: `Detected ${breakingNews.length} breaking news topics`,
+        data: {
+          topics: breakingNews.map(bn => ({
+            title: bn.topic.title,
+            priority: bn.priority,
+            reason: bn.reason,
+          })),
+        },
+      })
+    }
+    
     // Preview mode: Stop here
     if (config.mode === 'preview') {
       logs.push({
@@ -360,6 +393,23 @@ export async function runContentEngine(
             researchSources: JSON.stringify(result.content.researchSources),
           },
         })
+        
+        // Check if this article should be marked as breaking news
+        const breakingNewsTopic = breakingNews.find(
+          bn => bn.topic.title === result.topic.title
+        )
+        
+        if (breakingNewsTopic) {
+          const { markAsBreakingNews } = await import('./breaking-news')
+          await markAsBreakingNews(article.id, breakingNewsTopic.priority)
+          
+          logs.push({
+            timestamp: new Date(),
+            level: 'info',
+            message: `Marked as breaking news (priority: ${breakingNewsTopic.priority})`,
+            data: { articleId: article.id, priority: breakingNewsTopic.priority },
+          })
+        }
         
         createdArticles.push({
           id: article.id,
