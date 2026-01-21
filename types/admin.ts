@@ -1,8 +1,12 @@
 /**
- * Admin Panel Type Definitions
+ * Admin Panel Merkezi Tip Tanımları
  * 
- * Bu dosya admin panelinde kullanılan tüm tip tanımlarını içerir.
- * Tutarlılık ve tip güvenliği için merkezi bir kaynak görevi görür.
+ * Bu dosya, admin panelinde kullanılan tüm ortak tipler için tek bir kaynaktır.
+ * Kod tekrarını azaltır ve tutarlılığı sağlar.
+ * 
+ * @version 2.0.0
+ * @lastUpdated 21 Ocak 2026
+ * @note Tüm admin paneli bileşenleri bu tipler üzerinden çalışmalıdır.
  */
 
 // ============================================
