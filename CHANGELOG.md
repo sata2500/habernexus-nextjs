@@ -1,3 +1,9 @@
+## [5.4.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.4.0...v5.4.1) (2026-01-21)
+
+### ♻️ Kod İyileştirmeleri
+
+* Consolidate content generation systems ([eab37f7](https://github.com/sata2500/habernexus-nextjs/commit/eab37f7c664bb139d266a8dc5a812dcdee6de286))
+
 ## [5.4.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.3.1...v5.4.0) (2026-01-20)
 
 ### ✨ Yeni Özellikler
