@@ -50,3 +50,4 @@ ecosystem.config.js
 prisma/*.db
 prisma/*.db-journal
 /public/images/generated/*
+!/public/images/generated/.gitkeep
