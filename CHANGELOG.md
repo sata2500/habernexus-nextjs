@@ -1,3 +1,15 @@
+## [5.4.2](https://github.com/sata2500/habernexus-nextjs/compare/v5.4.1...v5.4.2) (2026-01-21)
+
+### 🐛 Hata Düzeltmeleri
+
+* Add missing environment variables to CI workflow ([4d6671e](https://github.com/sata2500/habernexus-nextjs/commit/4d6671e847dc91a53d051a602e479cf55f5cc609))
+* Add missing environment variables to Release workflow ([990d737](https://github.com/sata2500/habernexus-nextjs/commit/990d737c2f5c8b64da2f1ccd4d095f6c63076735))
+
+### 🔧 Bakım
+
+* Add security, testing, and documentation improvements ([274d428](https://github.com/sata2500/habernexus-nextjs/commit/274d428f069114141bd0d1bd6420a224ad448b61))
+* Update .gitignore to exclude SQLite database file ([22c78e5](https://github.com/sata2500/habernexus-nextjs/commit/22c78e5d120120e96f524e4b2f23346e43b5121a))
+
 ## [5.4.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.4.0...v5.4.1) (2026-01-21)
 
 ### ♻️ Kod İyileştirmeleri
