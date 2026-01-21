@@ -224,6 +224,8 @@ export async function PUT(request: NextRequest) {
     if (body.imageQuality !== undefined) updates.imageQuality = parseInt(body.imageQuality)
     if (body.imageMaxWidth !== undefined) updates.imageMaxWidth = parseInt(body.imageMaxWidth)
     if (body.summaryCacheDays !== undefined) updates.summaryCacheDays = parseInt(body.summaryCacheDays)
+    if (body.duplicateCheckDays !== undefined) updates.duplicateCheckDays = parseInt(body.duplicateCheckDays)
+    if (body.duplicateSimilarityThreshold !== undefined) updates.duplicateSimilarityThreshold = parseFloat(body.duplicateSimilarityThreshold)
     if (body.cronSchedule !== undefined) updates.cronSchedule = body.cronSchedule
     if (body.isScheduleEnabled !== undefined) updates.isScheduleEnabled = body.isScheduleEnabled
 

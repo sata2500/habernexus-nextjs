@@ -219,6 +219,12 @@ model Article {
   sourceFeedId    String?   // Source RSS feed ID
   researchSources String?   // JSON: Research sources used for article
   
+  // Breaking News fields (Added: January 2026)
+  isBreakingNews     Boolean  @default(false) // Is this a breaking news article?
+  breakingPriority   Int?     @default(0)     // 0=normal, 1=low priority, 2=medium, 3=high priority breaking news
+  lastUpdatedAt      DateTime? // Last time this article was updated (for breaking news updates)
+  updateCount        Int      @default(0)     // Number of times this breaking news article has been updated
+  
   // Relations
   author      User          @relation(fields: [authorId], references: [id])
   authorId    String
@@ -232,6 +238,8 @@ model Article {
   @@index([sentiment])
   @@index([authorId])
   @@index([sourceFeedId])
+  @@index([isBreakingNews])
+  @@index([breakingPriority])
 }
 
 // RSS Feed source model

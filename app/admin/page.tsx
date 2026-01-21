@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { getEngineStatus } from '@/lib/unified-content-engine'
+import { getEngineStatus } from '@/lib/content-engine'
 import ContentEngineButton from './components/ContentEngineButton'
 
 async function getStats() {

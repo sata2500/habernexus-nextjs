@@ -44,6 +44,8 @@ interface EngineSettings {
   imageQuality: number
   imageMaxWidth: number
   summaryCacheDays: number
+  duplicateCheckDays: number
+  duplicateSimilarityThreshold: number
   cronSchedule: string
   isScheduleEnabled: boolean
 }
@@ -69,8 +71,15 @@ const IMAGE_MODE_OPTIONS = [
 
 const MODEL_OPTIONS = {
   content: [
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Önerilen)' },
-    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+    // Gemini 3 Series (Latest - January 2026)
+    { value: 'gemini-3-flash', label: '⚡ Gemini 3 Flash (Önerilen)', badge: 'Yeni' },
+    { value: 'gemini-3-pro', label: '🧠 Gemini 3 Pro (En Akıllı)', badge: 'Yeni' },
+    
+    // Gemini 2.5 Series (Stable)
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', badge: 'Stabil' },
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', badge: 'Stabil' },
+    
+    // Gemini 2.0 Series
     { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
   ],
   image: [
@@ -79,7 +88,8 @@ const MODEL_OPTIONS = {
     { value: 'imagen-3.0-generate-001', label: 'Imagen 3.0' },
   ],
   summary: [
-    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (Önerilen)' },
+    { value: 'gemini-3-flash', label: '⚡ Gemini 3 Flash (Hızlı)', badge: 'Yeni' },
+    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (Önerilen)', badge: 'Stabil' },
     { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
   ],
 }
@@ -623,6 +633,42 @@ export default function ContentEnginePage() {
                     onChange={(e) => setSettings({ ...settings, summaryCacheDays: parseInt(e.target.value) || 30 })}
                     className="w-full max-w-xs px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
                   />
+                </div>
+              </div>
+              
+              {/* Duplicate Prevention Settings */}
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Tekrar Önleme</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                      Kontrol Süresi (gün)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={settings.duplicateCheckDays}
+                      onChange={(e) => setSettings({ ...settings, duplicateCheckDays: parseInt(e.target.value) || 30 })}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Son kaç gün içindeki makaleleri kontrol et</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                      Benzerlik Eşiği (0-1)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={settings.duplicateSimilarityThreshold}
+                      onChange={(e) => setSettings({ ...settings, duplicateSimilarityThreshold: parseFloat(e.target.value) || 0.7 })}
+                      className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">0.7 = %70 benzerlik eşiği (daha yüksek = daha sıkı)</p>
+                  </div>
                 </div>
               </div>
               

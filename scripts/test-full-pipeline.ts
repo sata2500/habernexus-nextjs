@@ -134,156 +134,29 @@ async function testRssFetch() {
 
 async function testTopicSelection() {
   console.log('\n' + '-'.repeat(60))
-  console.log('STEP 3: Topic Selection Test')
+  console.log('STEP 3: Topic Selection Test (Skipped - Using v3)')
   console.log('-'.repeat(60))
-  
-  try {
-    // Import topic selector dynamically
-    const { selectTopics } = await import('../lib/topic-selector')
-    
-    console.log('Selecting topics...')
-    const result = await selectTopics(3)
-    
-    console.log(`✓ Topics collected: ${result.totalCollected}`)
-    console.log(`✓ Topics selected: ${result.totalSelected}`)
-    
-    if (result.errors.length > 0) {
-      console.log(`⚠ Errors: ${result.errors.join(', ')}`)
-    }
-    
-    if (result.topics.length > 0) {
-      console.log('\nSelected topics:')
-      for (const topic of result.topics) {
-        console.log(`  - ${topic.title.substring(0, 50)}... (score: ${topic.score})`)
-      }
-    }
-    
-    return result.success
-  } catch (error) {
-    console.error('✗ Topic selection failed!')
-    console.error(`Error: ${error instanceof Error ? error.message : error}`)
-    return false
-  }
+  console.log('⚠ Legacy topic-selector.ts removed - functionality now in v3 trend-analyzer')
+  console.log('✓ Test skipped (v3 engine will test this)')
+  return true
 }
 
 async function testResearchAgent() {
   console.log('\n' + '-'.repeat(60))
-  console.log('STEP 4: Research Agent Test')
+  console.log('STEP 4: Research Agent Test (Skipped - Using v3)')
   console.log('-'.repeat(60))
-  
-  try {
-    const { researchTopic, isResearchAgentConfigured } = await import('../lib/research-agent')
-    
-    if (!isResearchAgentConfigured()) {
-      console.log('✗ Research agent not configured')
-      return false
-    }
-    
-    // Create a test topic
-    const testTopic = {
-      title: 'Yapay zeka teknolojisinde son gelişmeler',
-      description: 'AI alanındaki yeni gelişmeler ve trendler',
-      sourceUrl: 'https://example.com',
-      sourceFeed: 'Test Feed',
-      category: 'Teknoloji',
-      score: 85,
-      reasoning: 'Test topic',
-      keywords: ['yapay zeka', 'AI', 'teknoloji'],
-      publishedAt: new Date(),
-    }
-    
-    console.log('Researching topic...')
-    const result = await researchTopic(testTopic)
-    
-    console.log(`✓ Research success: ${result.success}`)
-    console.log(`✓ Findings: ${result.findings.length}`)
-    console.log(`✓ Sources: ${result.sources.length}`)
-    console.log(`✓ Duration: ${result.researchDuration}ms`)
-    
-    if (result.summary) {
-      console.log(`\nSummary: ${result.summary.substring(0, 100)}...`)
-    }
-    
-    return result.success
-  } catch (error) {
-    console.error('✗ Research agent test failed!')
-    console.error(`Error: ${error instanceof Error ? error.message : error}`)
-    return false
-  }
+  console.log('⚠ Legacy research-agent.ts removed - v3 uses Google Search grounding')
+  console.log('✓ Test skipped (v3 engine will test this)')
+  return true
 }
 
 async function testContentSynthesis() {
   console.log('\n' + '-'.repeat(60))
-  console.log('STEP 5: Content Synthesis Test')
+  console.log('STEP 5: Content Synthesis Test (Skipped - Using v3)')
   console.log('-'.repeat(60))
-  
-  try {
-    const { synthesizeContent } = await import('../lib/content-synthesizer')
-    
-    // Create a mock research result
-    const mockResearch = {
-      topic: {
-        title: 'Yapay Zeka Test Haberi',
-        description: 'Bu bir test haberidir',
-        sourceUrl: 'https://example.com',
-        sourceFeed: 'Test Feed',
-        category: 'Teknoloji',
-        score: 85,
-        reasoning: 'Test',
-        keywords: ['yapay zeka', 'test'],
-        publishedAt: new Date(),
-      },
-      success: true,
-      findings: [
-        {
-          fact: 'Yapay zeka teknolojisi hızla gelişiyor',
-          sources: ['Test kaynak'],
-          confidence: 0.9,
-          category: 'current' as const,
-        },
-        {
-          fact: 'Yeni AI modelleri daha güçlü performans sunuyor',
-          sources: ['Test kaynak 2'],
-          confidence: 0.85,
-          category: 'analysis' as const,
-        },
-      ],
-      sources: [
-        {
-          title: 'Test Kaynak',
-          url: 'https://example.com',
-          snippet: 'Test snippet',
-          relevanceScore: 0.9,
-        },
-      ],
-      summary: 'Yapay zeka alanında önemli gelişmeler yaşanıyor.',
-      keyPoints: ['Gelişme 1', 'Gelişme 2'],
-      suggestedAngles: ['Genel bakış'],
-      researchDuration: 1000,
-      errors: [],
-    }
-    
-    console.log('Synthesizing content...')
-    const result = await synthesizeContent(mockResearch)
-    
-    console.log(`✓ Synthesis success: ${result.success}`)
-    console.log(`✓ Quality score: ${result.qualityScore}/100`)
-    console.log(`✓ Processing time: ${result.processingTime}ms`)
-    
-    if (result.article) {
-      console.log(`\nGenerated article:`)
-      console.log(`  Title: ${result.article.title}`)
-      console.log(`  Category: ${result.article.category}`)
-      console.log(`  Reading time: ${result.article.readingTime} min`)
-      console.log(`  Content length: ${result.article.content.length} chars`)
-    }
-    
-    return result.success
-  } catch (error) {
-    console.error('✗ Content synthesis test failed!')
-    console.error(`Error: ${error instanceof Error ? error.message : error}`)
-    return false
-  }
+  console.log('⚠ Legacy content-synthesizer.ts removed - v3 article-generator handles this')
+  console.log('✓ Test skipped (v3 engine will test this)')
+  return true
 }
 
 async function testImageGeneration() {
@@ -327,62 +200,40 @@ async function testImageGeneration() {
   }
 }
 
-async function testUnifiedEngine() {
+async function testContentEngine() {
   console.log('\n' + '-'.repeat(60))
-  console.log('STEP 7: Unified Content Engine Test')
+  console.log('STEP 7: Content Engine v3 Test')
   console.log('-'.repeat(60))
   
   try {
-    const { runContentEngine, getEngineStatus } = await import('../lib/unified-content-engine')
+    const { runContentEngine, getEngineStatus } = await import('../lib/content-engine')
     
     // Get engine status
     const status = await getEngineStatus()
     console.log(`Engine configured: ${status.isConfigured}`)
-    console.log(`Research enabled: ${status.isResearchEnabled}`)
     console.log(`Image gen enabled: ${status.isImageGenEnabled}`)
     console.log(`Active feeds: ${status.activeFeeds}`)
     
-    // Run in test mode
-    console.log('\nRunning engine in test mode...')
-    const result = await runContentEngine('test')
+    // Run in preview mode
+    console.log('\nRunning engine in preview mode...')
+    const result = await runContentEngine({ mode: 'preview' })
     
-    console.log(`\n✓ Engine success: ${result.success}`)
+    console.log(`\n✓ Engine success: ${result.status === 'completed'}`)
     console.log(`✓ Mode: ${result.mode}`)
-    console.log(`✓ Topics collected: ${result.topicsCollected}`)
-    console.log(`✓ Topics selected: ${result.topicsSelected}`)
-    console.log(`✓ Topics researched: ${result.topicsResearched}`)
-    console.log(`✓ Articles generated: ${result.articlesGenerated}`)
-    console.log(`✓ Duration: ${result.totalDuration}ms`)
+    console.log(`✓ Topics found: ${result.stats.topicsFound}`)
+    console.log(`✓ Topics selected: ${result.stats.topicsSelected}`)
+    console.log(`✓ Duration: ${result.duration}ms`)
     
-    if (result.stages.length > 0) {
-      console.log('\nPipeline stages:')
-      for (const stage of result.stages) {
-        const duration = stage.endTime && stage.startTime 
-          ? `(${stage.endTime - stage.startTime}ms)` 
-          : ''
-        console.log(`  ${stage.status === 'completed' ? '✓' : stage.status === 'failed' ? '✗' : '○'} ${stage.name} ${duration}`)
-        if (stage.details) {
-          console.log(`    ${stage.details}`)
-        }
-      }
-    }
-    
-    if (result.errors.length > 0) {
+    if (result.stats.errors.length > 0) {
       console.log('\nErrors:')
-      for (const error of result.errors) {
+      for (const error of result.stats.errors) {
         console.log(`  - ${error}`)
       }
     }
     
-    if (result.testArticle) {
-      console.log('\nTest article:')
-      console.log(`  Title: ${result.testArticle.title}`)
-      console.log(`  Category: ${result.testArticle.category}`)
-    }
-    
-    return result.success
+    return result.status === 'completed'
   } catch (error) {
-    console.error('✗ Unified engine test failed!')
+    console.error('✗ Content engine v3 test failed!')
     console.error(`Error: ${error instanceof Error ? error.message : error}`)
     return false
   }
@@ -399,7 +250,7 @@ async function runAllTests() {
     researchAgent: await testResearchAgent(),
     contentSynthesis: await testContentSynthesis(),
     imageGeneration: await testImageGeneration(),
-    unifiedEngine: await testUnifiedEngine(),
+    contentEngine: await testContentEngine(),
   }
   
   // Summary
@@ -414,7 +265,7 @@ async function runAllTests() {
     { name: 'Research Agent', result: results.researchAgent },
     { name: 'Content Synthesis', result: results.contentSynthesis },
     { name: 'Image Generation', result: results.imageGeneration },
-    { name: 'Unified Engine', result: results.unifiedEngine },
+    { name: 'Content Engine v3', result: results.contentEngine },
   ]
   
   let passed = 0

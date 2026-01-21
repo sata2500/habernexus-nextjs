@@ -232,26 +232,34 @@ SEO KURALLARI:
 
 /**
  * Generate articles for multiple topics
+ * Uses parallel processing with controlled concurrency
  */
 export async function generateArticles(
   topics: ScoredTopic[],
-  maxConcurrent: number = 2,
+  maxConcurrent: number = 3,
   logs: EngineLogEntry[] = []
 ): Promise<ArticleGenerationResult[]> {
+  logs.push({
+    timestamp: new Date(),
+    level: 'info',
+    message: `Generating ${topics.length} articles with concurrency ${maxConcurrent}`,
+  })
+  
   const results: ArticleGenerationResult[] = []
   
-  // Process in batches to avoid rate limits
+  // Process topics in batches for controlled parallelization
   for (let i = 0; i < topics.length; i += maxConcurrent) {
     const batch = topics.slice(i, i + maxConcurrent)
     
     logs.push({
       timestamp: new Date(),
-      level: 'info',
-      message: `Processing batch ${Math.floor(i / maxConcurrent) + 1}/${Math.ceil(topics.length / maxConcurrent)}`,
+      level: 'debug',
+      message: `Processing batch ${Math.floor(i / maxConcurrent) + 1}: ${batch.length} articles`,
     })
     
+    // Generate articles in parallel within batch
     const batchResults = await Promise.all(
-      batch.map((topic) => generateArticle(topic, logs))
+      batch.map(topic => generateArticle(topic, logs))
     )
     
     results.push(...batchResults)

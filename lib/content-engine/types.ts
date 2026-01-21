@@ -244,6 +244,10 @@ export interface ContentEngineSettings {
   // Cache settings
   summaryCacheDays: number
   
+  // Duplicate prevention settings
+  duplicateCheckDays: number // How many days back to check for duplicates (default: 30)
+  duplicateSimilarityThreshold: number // 0-1, higher = stricter matching (default: 0.7)
+  
   // Schedule settings
   cronSchedule: string
   isScheduleEnabled: boolean
@@ -253,10 +257,10 @@ export interface ContentEngineSettings {
  * Default settings
  */
 export const DEFAULT_SETTINGS: ContentEngineSettings = {
-  // AI Models
-  contentModel: 'gemini-2.5-flash',
+  // AI Models - Updated to Gemini 3 (January 2026)
+  contentModel: 'gemini-3-flash', // Changed from gemini-2.5-flash
   imageModel: 'imagen-4.0-fast-generate-001',
-  summaryModel: 'gemini-2.5-flash-lite',
+  summaryModel: 'gemini-3-flash', // Changed from gemini-2.5-flash-lite
   
   // Generation settings
   defaultTopicsPerFeed: 2,
@@ -269,6 +273,10 @@ export const DEFAULT_SETTINGS: ContentEngineSettings = {
   
   // Cache settings
   summaryCacheDays: 30,
+  
+  // Duplicate prevention settings
+  duplicateCheckDays: 30, // Check last 30 days
+  duplicateSimilarityThreshold: 0.7, // 70% similarity threshold
   
   // Schedule settings
   cronSchedule: '0 */6 * * *', // Every 6 hours

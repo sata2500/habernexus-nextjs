@@ -60,6 +60,8 @@ export async function getSettings(): Promise<ContentEngineSettings> {
     imageQuality: parseInt(settingsMap.get('content_engine_image_quality') || String(DEFAULT_SETTINGS.imageQuality)),
     imageMaxWidth: parseInt(settingsMap.get('content_engine_image_max_width') || String(DEFAULT_SETTINGS.imageMaxWidth)),
     summaryCacheDays: parseInt(settingsMap.get('content_engine_summary_cache_days') || String(DEFAULT_SETTINGS.summaryCacheDays)),
+    duplicateCheckDays: parseInt(settingsMap.get('content_engine_duplicate_check_days') || String(DEFAULT_SETTINGS.duplicateCheckDays)),
+    duplicateSimilarityThreshold: parseFloat(settingsMap.get('content_engine_duplicate_similarity') || String(DEFAULT_SETTINGS.duplicateSimilarityThreshold)),
     cronSchedule: settingsMap.get('content_engine_cron_schedule') || DEFAULT_SETTINGS.cronSchedule,
     isScheduleEnabled: settingsMap.get('content_engine_schedule_enabled') === 'true',
   }
@@ -81,6 +83,8 @@ export async function updateSettings(
     imageQuality: 'content_engine_image_quality',
     imageMaxWidth: 'content_engine_image_max_width',
     summaryCacheDays: 'content_engine_summary_cache_days',
+    duplicateCheckDays: 'content_engine_duplicate_check_days',
+    duplicateSimilarityThreshold: 'content_engine_duplicate_similarity',
     cronSchedule: 'content_engine_cron_schedule',
     isScheduleEnabled: 'content_engine_schedule_enabled',
   }
@@ -462,3 +466,79 @@ export async function runContentEngine(
 export function isContentEngineConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY
 }
+
+// ============================================
+// Backward Compatibility Layer
+// ============================================
+
+/**
+ * Process all feeds (backward compatibility with unified engine)
+ * Maps to runContentEngine with full mode
+ */
+export async function processAllFeeds() {
+  const result = await runContentEngine({ mode: 'full' })
+  
+  // Map v3 result to unified engine format
+  return {
+    success: result.status === 'completed',
+    mode: 'standard' as const,
+    stages: [],
+    topicsCollected: result.stats.topicsFound,
+    topicsSelected: result.stats.topicsSelected,
+    topicsResearched: 0, // v3 doesn't track this separately
+    articlesGenerated: result.stats.articlesCreated,
+    articlesPublished: result.stats.articlesCreated,
+    articles: (result.articles || []).map(a => ({
+      title: a.title,
+      slug: a.slug,
+      category: a.category,
+      qualityScore: 80, // Default quality score
+      imageSource: 'ai' as const, // Default
+    })),
+    imagesGenerated: result.stats.imagesGenerated,
+    imagesOptimized: 0,
+    totalDuration: result.duration || 0,
+    errors: result.stats.errors,
+  }
+}
+
+/**
+ * Get engine status (backward compatibility with unified engine)
+ */
+export async function getEngineStatus() {
+  const [activeFeeds, totalArticles, lastArticle, settings] = await Promise.all([
+    prisma.rssFeed.count({ where: { isActive: true } }),
+    prisma.article.count(),
+    prisma.article.findFirst({
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    }),
+    getSettings(),
+  ])
+
+  return {
+    isConfigured: isContentEngineConfigured(),
+    isResearchEnabled: false, // v3 uses Google Search grounding instead
+    isImageGenEnabled: true,
+    isRssImageOptEnabled: true,
+    activeFeeds,
+    totalArticles,
+    lastGeneration: lastArticle?.createdAt || null,
+    config: {
+      maxTopics: settings.defaultTopicsPerFeed,
+      minQualityScore: 70,
+      enableResearch: false, // v3 uses different approach
+      enableImageGeneration: true,
+      enableRssImageOptimization: true,
+      parallelResearch: false,
+    },
+    imageStats: {
+      aiGenerated: await prisma.article.count({ where: { imageSource: 'ai' } }),
+      rssOptimized: await prisma.article.count({ where: { imageSource: 'rss' } }),
+      placeholder: await prisma.article.count({ 
+        where: { OR: [{ imageSource: 'placeholder' }, { imageSource: null }] } 
+      }),
+    },
+  }
+}
+

@@ -1,6 +1,6 @@
 import cron, { ScheduledTask } from 'node-cron'
 import { prisma } from '@/lib/prisma'
-import { processAllFeeds } from '@/lib/unified-content-engine'
+import { processAllFeeds } from '@/lib/content-engine'
 
 /**
  * Content Generation Scheduler
