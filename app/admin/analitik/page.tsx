@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { BarChart3, Users, Newspaper, Eye, Bookmark, ThumbsUp, TrendingUp, Calendar, AlertCircle, Mail } from 'lucide-react'
+import { BarChart3, Users, Newspaper, Eye, Bookmark, ThumbsUp, TrendingUp, Calendar, AlertCircle, Mail, Download } from 'lucide-react'
+import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface AnalyticsData {
   totalUsers: number
@@ -20,6 +21,7 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [dateRange, setDateRange] = useState<'today' | '7days' | '30days' | 'all'>('7days')
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -163,16 +165,62 @@ export default function AnalyticsPage() {
     USER: 'Kullanıcı'
   }
 
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+
+  const exportToCSV = () => {
+    if (!data) return
+    
+    const csv = [
+      ['Metric', 'Value'],
+      ['Total Users', data.totalUsers],
+      ['Total Articles', data.totalArticles],
+      ['Total Views', data.totalViews],
+      ['Total Bookmarks', data.totalBookmarks],
+      ['Total Votes', data.totalVotes],
+      ['Newsletter Subscribers', data.totalNewsletterSubs],
+    ].map(row => row.join(',')).join('\n')
+    
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `analytics-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
-          <BarChart3 className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+            <BarChart3 className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analitik</h1>
+            <p className="text-sm text-gray-500">Platform istatistikleri ve metrikleri</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analitik</h1>
-          <p className="text-sm text-gray-500">Platform istatistikleri ve metrikleri</p>
+        
+        {/* Date Range & Export */}
+        <div className="flex items-center gap-3">
+          <select
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value as typeof dateRange)}
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+          >
+            <option value="today">Bugün</option>
+            <option value="7days">Son 7 Gün</option>
+            <option value="30days">Son 30 Gün</option>
+            <option value="all">Tüm Zamanlar</option>
+          </select>
+          <button
+            onClick={exportToCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
         </div>
       </div>
 
@@ -233,46 +281,58 @@ export default function AnalyticsPage() {
 
       {/* Charts Row */}
       <div className="grid md:grid-cols-2 gap-6">
-        {/* User Distribution */}
+        {/* User Distribution - Pie Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kullanıcı Dağılımı</h2>
-          <div className="space-y-3">
-            {data.usersByRole.map(({ role, count }) => (
-              <div key={role} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">{roleLabels[role] || role}</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${(count / data.totalUsers) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white w-8 text-right">{count}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={data.usersByRole.map((item, index) => ({
+                  name: roleLabels[item.role] || item.role,
+                  value: item.count
+                }))}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {data.usersByRole.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Category Distribution */}
+        {/* Category Distribution - Pie Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kategori Dağılımı</h2>
-          <div className="space-y-3">
-            {data.articlesByCategory.slice(0, 6).map(({ category, count }) => (
-              <div key={category} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">{category}</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div
-                      className="bg-green-600 h-2 rounded-full"
-                      style={{ width: `${(count / data.totalArticles) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white w-8 text-right">{count}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={data.articlesByCategory.slice(0, 6).map(item => ({
+                  name: item.category,
+                  value: item.count
+                }))}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {data.articlesByCategory.slice(0, 6).map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -312,28 +372,18 @@ export default function AnalyticsPage() {
             <Calendar className="w-5 h-5" />
             Son 7 Günlük Aktivite
           </h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="text-xs text-gray-500 dark:text-gray-400 uppercase">
-                  <th className="text-left py-2">Tarih</th>
-                  <th className="text-right py-2">Kullanıcı</th>
-                  <th className="text-right py-2">Makale</th>
-                  <th className="text-right py-2">Görüntülenme</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {data.recentActivity.map((day, index) => (
-                  <tr key={index} className="border-t border-gray-100 dark:border-gray-700">
-                    <td className="py-2 text-gray-600 dark:text-gray-400">{day.date}</td>
-                    <td className="py-2 text-right text-gray-900 dark:text-white">{day.users}</td>
-                    <td className="py-2 text-right text-gray-900 dark:text-white">{day.articles}</td>
-                    <td className="py-2 text-right text-gray-900 dark:text-white">{day.views}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data.recentActivity}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="articles" stroke="#10b981" name="Makaleler" strokeWidth={2} />
+              <Line type="monotone" dataKey="users" stroke="#3b82f6" name="Kullanıcılar" strokeWidth={2} />
+              <Line type="monotone" dataKey="views" stroke="#8b5cf6" name="Görüntülenme" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
           {data.recentActivity.every(d => d.users === 0 && d.articles === 0) && (
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
               Son 7 günde yeni aktivite yok

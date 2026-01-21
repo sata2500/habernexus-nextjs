@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { getEngineStatus } from '@/lib/content-engine'
 import ContentEngineButton from './components/ContentEngineButton'
+import DashboardStatsClient from './components/DashboardStatsClient'
 
 async function getStats() {
   const [articleCount, userCount, feedCount, totalViews] = await Promise.all([
@@ -51,13 +52,6 @@ export default async function AdminDashboard() {
     getEngineStatus(),
   ])
 
-  const statCards = [
-    { name: 'Toplam Makale', value: stats.articleCount.toLocaleString('tr-TR'), icon: Newspaper },
-    { name: 'Toplam Kullanıcı', value: stats.userCount.toLocaleString('tr-TR'), icon: Users },
-    { name: 'Toplam Görüntülenme', value: stats.totalViews.toLocaleString('tr-TR'), icon: Eye },
-    { name: 'Aktif RSS Kaynağı', value: stats.feedCount.toLocaleString('tr-TR'), icon: Rss },
-  ]
-
   const systemStatus = [
     { 
       name: 'AI İçerik Motoru', 
@@ -93,28 +87,8 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statCards.map((stat) => {
-          const Icon = stat.icon
-          return (
-            <div
-              key={stat.name}
-              className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{stat.name}</p>
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      {/* Real-time Stats Grid */}
+      <DashboardStatsClient initialStats={stats} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Articles */}
