@@ -1,3 +1,13 @@
+## [5.5.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.4.2...v5.5.0) (2026-01-21)
+
+### ✨ Yeni Özellikler
+
+* Content Engine v3 migration and modernization ([2b70638](https://github.com/sata2500/habernexus-nextjs/commit/2b70638a27932630930a1f7bf962fa0aed61a72e))
+
+### 🔧 Bakım
+
+* Set up dev environment, fix db config and update dependencies ([2265084](https://github.com/sata2500/habernexus-nextjs/commit/2265084cff9b9fc3c45cf8ffa56065221f908222))
+
 ## [5.4.2](https://github.com/sata2500/habernexus-nextjs/compare/v5.4.1...v5.4.2) (2026-01-21)
 
 ### 🐛 Hata Düzeltmeleri
