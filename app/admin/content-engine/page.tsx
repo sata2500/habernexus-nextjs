@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { 
   Play, 
   Settings,
@@ -53,6 +53,8 @@ interface EngineSettings {
 interface EngineStatus {
   isConfigured: boolean
   isRunning: boolean
+  isStale?: boolean
+  staleMinutes?: number
   lastRun: LastRun | null
   settings: EngineSettings
   diagnostics: {
@@ -110,8 +112,18 @@ export default function ContentEnginePage() {
     errors?: string[]
   } | null>(null)
 
-  const fetchStatus = useCallback(async () => {
+  // Use ref to track isRunning without triggering useEffect re-runs
+  const isRunningRef = useRef(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Sync ref with state
+  useEffect(() => {
+    isRunningRef.current = isRunning
+  }, [isRunning])
+
+  const fetchStatus = useCallback(async (showLoadingState = false) => {
     try {
+      if (showLoadingState) setIsLoading(true)
       const response = await fetch('/api/admin/content-engine')
       if (!response.ok) throw new Error('Failed to fetch status')
       const data = await response.json()
@@ -128,17 +140,22 @@ export default function ContentEnginePage() {
   }, [])
 
   useEffect(() => {
-    fetchStatus()
+    // Initial fetch
+    fetchStatus(true)
     
-    // Poll status every 5 seconds if running
-    const interval = setInterval(() => {
-      if (isRunning) {
-        fetchStatus()
+    // Poll status every 5 seconds - only actually fetches if isRunning
+    intervalRef.current = setInterval(() => {
+      if (isRunningRef.current) {
+        fetchStatus(false)
       }
     }, 5000)
     
-    return () => clearInterval(interval)
-  }, [fetchStatus, isRunning])
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [fetchStatus]) // Removed isRunning from dependencies
 
   const handleRun = async (mode: 'full' | 'preview') => {
     setIsRunning(true)
@@ -201,6 +218,27 @@ export default function ContentEnginePage() {
     }
   }
 
+  const handleForceCancel = async () => {
+    if (!confirm('Çalışmakta olan işlemi iptal etmek istediğinize emin misiniz?')) {
+      return
+    }
+    
+    try {
+      const response = await fetch('/api/admin/content-engine', {
+        method: 'DELETE',
+      })
+      
+      if (!response.ok) {
+        throw new Error('İptal işlemi başarısız')
+      }
+      
+      setIsRunning(false)
+      await fetchStatus(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'İptal işlemi başarısız')
+    }
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('tr-TR')
   }
@@ -210,6 +248,7 @@ export default function ContentEnginePage() {
     if (seconds < 3600) return `${Math.floor(seconds / 60)} dakika ${seconds % 60} saniye`
     return `${Math.floor(seconds / 3600)} saat ${Math.floor((seconds % 3600) / 60)} dakika`
   }
+
 
   if (isLoading) {
     return (
@@ -238,7 +277,7 @@ export default function ContentEnginePage() {
             Ayarlar
           </button>
           <button
-            onClick={fetchStatus}
+            onClick={() => fetchStatus(true)}
             className="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             <RefreshCw className="w-4 h-4 mr-2" />
@@ -262,6 +301,35 @@ export default function ContentEnginePage() {
           <p className="text-yellow-800 dark:text-yellow-200">
             İçerik motoru yapılandırılmamış. Lütfen GEMINI_API_KEY ortam değişkenini ayarlayın.
           </p>
+        </div>
+      )}
+
+      {/* Stale Run Warning */}
+      {status?.isStale && (
+        <div className="bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              <div>
+                <p className="text-orange-800 dark:text-orange-200 font-medium">
+                  İçerik motoru uzun süredir çalışıyor
+                </p>
+                <p className="text-orange-700 dark:text-orange-300 text-sm">
+                  {status.staleMinutes && status.staleMinutes > 60 
+                    ? `${Math.floor(status.staleMinutes / 60)} saat ${status.staleMinutes % 60} dakikadır çalışıyor`
+                    : `${status.staleMinutes || 30}+ dakikadır çalışıyor`
+                  }. İşlem takılmış olabilir.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleForceCancel}
+              className="inline-flex items-center px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+            >
+              <XCircle className="w-4 h-4 mr-1" />
+              İptal Et
+            </button>
+          </div>
         </div>
       )}
 

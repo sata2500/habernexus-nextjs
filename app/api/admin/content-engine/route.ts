@@ -8,6 +8,7 @@ import {
   isEngineRunning,
   isContentEngineConfigured,
 } from '@/lib/content-engine'
+import { prisma } from '@/lib/prisma'
 import type { EngineConfig, ContentEngineSettings } from '@/lib/content-engine'
 
 /**
@@ -48,6 +49,23 @@ export async function GET() {
       Promise.resolve(isContentEngineConfigured()),
     ])
 
+    // Check for stale runs (running for more than 30 minutes)
+    let isStale = false
+    let staleMinutes = 0
+    
+    if (running) {
+      const runningRun = await prisma.contentEngineRun.findFirst({
+        where: { status: 'running' },
+        orderBy: { startedAt: 'desc' },
+      })
+      
+      if (runningRun) {
+        const runningTime = Date.now() - runningRun.startedAt.getTime()
+        staleMinutes = Math.floor(runningTime / 60000)
+        isStale = staleMinutes >= 30
+      }
+    }
+
     // Diagnostic information
     const diagnostics = {
       geminiApiKey: !!process.env.GEMINI_API_KEY,
@@ -58,6 +76,8 @@ export async function GET() {
     return NextResponse.json({
       isConfigured: configured,
       isRunning: running,
+      isStale,
+      staleMinutes,
       lastRun,
       settings,
       diagnostics,
@@ -239,6 +259,60 @@ export async function PUT(request: NextRequest) {
     })
   } catch (error) {
     console.error('[ContentEngine API] Update settings error:', error)
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * DELETE /api/admin/content-engine
+ * Force cancel a stuck/stale engine run
+ */
+export async function DELETE() {
+  try {
+    const session = await auth()
+    
+    if (!session?.user || session.user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Find and update any running runs to failed status
+    const runningRuns = await prisma.contentEngineRun.findMany({
+      where: { status: 'running' },
+    })
+
+    if (runningRuns.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No running engine found',
+        cancelledCount: 0,
+      })
+    }
+
+    // Mark all running runs as failed
+    await prisma.contentEngineRun.updateMany({
+      where: { status: 'running' },
+      data: {
+        status: 'failed',
+        completedAt: new Date(),
+        errorMessage: 'Manually cancelled by admin',
+      },
+    })
+
+    console.log(`[ContentEngine API] Force cancelled ${runningRuns.length} running run(s)`)
+
+    return NextResponse.json({
+      success: true,
+      message: `Cancelled ${runningRuns.length} running run(s)`,
+      cancelledCount: runningRuns.length,
+    })
+  } catch (error) {
+    console.error('[ContentEngine API] Force cancel error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

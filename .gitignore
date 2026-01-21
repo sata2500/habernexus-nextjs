@@ -49,3 +49,4 @@ ecosystem.config.js
 *.db-journal
 prisma/*.db
 prisma/*.db-journal
+/public/images/generated/*
