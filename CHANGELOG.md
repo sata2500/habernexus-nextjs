@@ -1,3 +1,13 @@
+## [5.6.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.5.0...v5.6.0) (2026-01-21)
+
+### ✨ Yeni Özellikler
+
+* Content Engine v3 migration and modernization ([19eebb0](https://github.com/sata2500/habernexus-nextjs/commit/19eebb08ec0b9d617d8c92795ca09a77002e95c4))
+
+### ♻️ Kod İyileştirmeleri
+
+* **admin:** fix content engine infinite loop and add stale run detection ([86c5a56](https://github.com/sata2500/habernexus-nextjs/commit/86c5a56938724d0f49fd6e2df7c88c7fe859bec1))
+
 ## [5.5.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.4.2...v5.5.0) (2026-01-21)
 
 ### ✨ Yeni Özellikler
