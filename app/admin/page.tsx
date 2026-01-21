@@ -234,11 +234,11 @@ export default async function AdminDashboard() {
             <span className="text-sm font-medium text-gray-900 dark:text-white">Kullanıcılar</span>
           </Link>
           <Link 
-            href="/admin/gelismis-icerik-motoru"
+            href="/admin/content-engine"
             className="flex flex-col items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
           >
             <Brain className="w-6 h-6 text-indigo-600 dark:text-indigo-400 mb-2" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white text-center">İçerik Motoru</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white text-center">AI Motoru</span>
           </Link>
           <ContentEngineButton />
         </div>

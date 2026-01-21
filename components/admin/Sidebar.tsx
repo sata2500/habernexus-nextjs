@@ -74,8 +74,7 @@ const menuGroups: MenuGroup[] = [
     name: 'AI & Analiz',
     icon: Bot,
     items: [
-      { name: 'İçerik Motoru', href: '/admin/content-engine', icon: Sparkles, badge: 'Yeni' },
-      { name: 'İçerik Üretim Merkezi', href: '/admin/icerik-merkezi', icon: Bot },
+      { name: 'İçerik Motoru', href: '/admin/content-engine', icon: Sparkles, badge: 'Ana' },
       { name: 'Testler', href: '/admin/testler', icon: FlaskConical },
       { name: 'Duygu Analizi', href: '/admin/duygu-analizi', icon: Sparkles },
     ],
