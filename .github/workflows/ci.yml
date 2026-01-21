@@ -44,6 +44,10 @@ jobs:
           AUTH_URL: "http://localhost:3000"
           NEXTAUTH_URL: "http://localhost:3000"
           NEXTAUTH_SECRET: "test-secret-for-ci-build-only"
+          GOOGLE_API_KEY: "test-api-key-for-ci"
+          GOOGLE_CLIENT_ID: "test-client-id-for-ci"
+          GOOGLE_CLIENT_SECRET: "test-client-secret-for-ci"
+          GEMINI_API_KEY: "test-gemini-key-for-ci"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
