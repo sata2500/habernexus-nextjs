@@ -45,4 +45,7 @@ ecosystem.config.js
 # Media uploads
 /public/media/*
 !/public/media/.gitkeep
-prisma/data.db
+*.db
+*.db-journal
+prisma/*.db
+prisma/*.db-journal

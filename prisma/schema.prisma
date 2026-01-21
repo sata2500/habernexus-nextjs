@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./prisma/data.db"
+  url      = env("DATABASE_URL")
 }
 
 // User roles enum
