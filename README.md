@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://habernexus.com">
-    <img src="https://raw.githubusercontent.com/sata2500/habernexus-nextjs/main/public/logo.png" alt="HaberNexus Logo" width="120" height="120">
+    <img src="https://raw.githubusercontent.com/sata2500/habernexus-nextjs/master/public/logo.png" alt="HaberNexus Logo" width="120" height="120">
   </a>
 </p>
 
