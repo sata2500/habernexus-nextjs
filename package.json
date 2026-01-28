@@ -13,7 +13,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed": "node --loader ts-node/esm prisma/seed.ts",
+    "seed:reset": "npx prisma migrate reset --force"
   },
   "repository": {
     "type": "git",
@@ -49,6 +51,7 @@
     "prisma": "^6.19.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-is": "^19.2.4",
     "recharts": "^3.7.0",
     "rss-parser": "^3.13.0",
     "sharp": "^0.34.5",
