@@ -44,13 +44,17 @@ jobs:
           # CI build environment variables
           DATABASE_URL: "file:./test.db"
           AUTH_SECRET: "test-secret-for-ci-build-only"
-          AUTH_URL: "http://localhost:3000"
           NEXTAUTH_URL: "http://localhost:3000"
           NEXTAUTH_SECRET: "test-secret-for-ci-build-only"
+          AUTH_GOOGLE_ID: "test-client-id-for-ci"
+          AUTH_GOOGLE_SECRET: "test-client-secret-for-ci"
           GOOGLE_API_KEY: "test-api-key-for-ci"
           GOOGLE_CLIENT_ID: "test-client-id-for-ci"
           GOOGLE_CLIENT_SECRET: "test-client-secret-for-ci"
           GEMINI_API_KEY: "test-gemini-key-for-ci"
+          AUTH_TRUST_HOST: "true"
+          NEXT_PUBLIC_SITE_URL: "http://localhost:3000"
+          NEXT_PUBLIC_SITE_NAME: "HaberNexus"
 
       - name: Semantic Release
         env:

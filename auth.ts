@@ -9,6 +9,12 @@ import type { JWT } from "next-auth/jwt"
  * Auth.js v5 Main Configuration
  * This file includes the Prisma adapter and exports auth functions
  * Use this file everywhere except middleware (which uses auth.config.ts)
+ * 
+ * Features:
+ * - JWT-based sessions for Edge compatibility
+ * - Automatic ADMIN role assignment for first user
+ * - Role-based access control
+ * - Google OAuth integration
  */
 
 // Custom JWT type with role
@@ -35,26 +41,32 @@ declare module "next-auth" {
  * If so, they should be assigned ADMIN role automatically
  */
 async function checkAndAssignFirstUserAdmin(userId: string): Promise<Role> {
-  // Count total users in the system
-  const userCount = await prisma.user.count()
-  
-  // If this is the first user (count is 1, meaning only this user exists)
-  if (userCount === 1) {
-    // Update the user to ADMIN role
-    await prisma.user.update({
+  try {
+    // Count total users in the system
+    const userCount = await prisma.user.count()
+    
+    // If this is the first user (count is 1, meaning only this user exists)
+    if (userCount === 1) {
+      // Update the user to ADMIN role
+      await prisma.user.update({
+        where: { id: userId },
+        data: { role: "ADMIN" },
+      })
+      console.log(`✅ First user ${userId} assigned ADMIN role`)
+      return "ADMIN"
+    }
+    
+    // Otherwise, fetch the current role from database
+    const dbUser = await prisma.user.findUnique({
       where: { id: userId },
-      data: { role: "ADMIN" },
+      select: { role: true },
     })
-    return "ADMIN"
+    
+    return dbUser?.role ?? "USER"
+  } catch (error) {
+    console.error("❌ Error checking/assigning first user admin:", error)
+    return "USER"
   }
-  
-  // Otherwise, fetch the current role from database
-  const dbUser = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  })
-  
-  return dbUser?.role ?? "USER"
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
