@@ -1,3 +1,9 @@
+## [5.11.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.11.0...v5.11.1) (2026-01-28)
+
+### 🐛 Hata Düzeltmeleri
+
+* **content-engine:** critical fixes for scheduling and image validation ([cfa19f7](https://github.com/sata2500/habernexus-nextjs/commit/cfa19f7a7017b404b67356fe11ec07bc07f7cbcb))
+
 ## [5.11.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.10.0...v5.11.0) (2026-01-28)
 
 ### ✨ Yeni Özellikler
