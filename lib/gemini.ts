@@ -135,17 +135,24 @@ KURALLAR:
 
   try {
     // Use Google Search grounding for real-time web research
+    // Temperature: Gemini 3 requires 1.0, others can use 0.7
+    const temperature = modelName.includes('gemini-3') ? 1.0 : 0.7
+    
+    // Thinking level: Gemini 3 only, varies by use case
+    const thinkingLevel = modelName.includes('gemini-3') ? 'high' : undefined
+    
     const response = await genAI.models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
-        temperature: 0.7,
+        temperature,
+        ...(thinkingLevel && { thinkingLevel }),
         topP: 0.9,
         topK: 40,
         maxOutputTokens: 4096,
         responseMimeType: 'application/json', // Force JSON output
         tools: [{ googleSearch: {} }],
-      },
+      } as Record<string, unknown>,
     })
 
     const text = response.text || ''
@@ -342,15 +349,22 @@ GÖREV:
 }`
 
   try {
+    // Temperature: Gemini 3 requires 1.0, others can use lower values
+    const temperature = modelName.includes('gemini-3') ? 1.0 : (modelName.includes('pro') ? 0.7 : 0.5)
+    
+    // Thinking level: Gemini 3 only, use 'low' for summary to minimize latency
+    const thinkingLevel = modelName.includes('gemini-3') ? 'low' : undefined
+    
     const response = await genAI.models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
-        temperature: modelName.includes('pro') ? 0.7 : 0.5,
+        temperature,
+        ...(thinkingLevel && { thinkingLevel }),
         topP: 0.9,
         maxOutputTokens: 2048, 
         responseMimeType: 'application/json',
-      },
+      } as Record<string, unknown>,
     })
 
     const text = response.text || ''

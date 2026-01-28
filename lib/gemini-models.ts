@@ -2,13 +2,14 @@
  * Gemini Model Configuration
  * Defines all available Gemini models and their properties
  * 
- * @version 2.1.0
- * @lastUpdated 24 January 2026
+ * @version 2.2.0
+ * @lastUpdated 28 January 2026
  * 
- * Changes in v2.1.0:
- * - Focused on Gemini 3.0 and 2.5 series
- * - Removed Gemini 2.0 models
- * - Prioritized Gemini 3 Flash and Pro
+ * Changes in v2.2.0:
+ * - Fixed Nano Banana model IDs (gemini-2.5-flash-image)
+ * - Added Nano Banana Pro (gemini-3-pro-image-preview)
+ * - Added image capabilities and specifications
+ * - Updated model descriptions
  */
 
 /**
@@ -45,7 +46,7 @@ export interface GeminiModelConfig {
 
 /**
  * All available Gemini models
- * Updated: 20 January 2026
+ * Updated: 28 January 2026
  * 
  * Model Categories:
  * - Gemini 3: Latest generation, best performance
@@ -128,35 +129,44 @@ export const GEMINI_MODELS: Record<string, GeminiModelConfig> = {
   },
 }
 
-
-
 /**
- * Nano Banana Image Generation Models
+ * Nano Banana Image Generation Models Configuration
  * Separate from text models for clarity
  */
-export const NANO_BANANA_MODELS: Record<string, {
+export interface GeminiImageModelConfig {
   id: string
   name: string
   description: string
   tier: ModelTier
   isRecommended: boolean
-  avgDuration: number // ms
-}> = {
-  'gemini-2.5-flash-preview-native-audio-dialog': {
-    id: 'gemini-2.5-flash-preview-native-audio-dialog',
+  avgDuration: number
+  capabilities: string[]
+  maxResolution: string
+  supportedAspectRatios: string[]
+}
+
+export const NANO_BANANA_MODELS: Record<string, GeminiImageModelConfig> = {
+  'gemini-2.5-flash-image': {
+    id: 'gemini-2.5-flash-image',
     name: 'Nano Banana (Gemini 2.5 Flash Image)',
-    description: 'Gemini tabanlı görsel üretimi - Hızlı ve kaliteli',
+    description: 'Gemini 2.5 tabanlı hızlı görsel üretimi - Hızlı ve kaliteli',
     tier: 'standard',
     isRecommended: true,
     avgDuration: 8000,
+    capabilities: ['text-to-image', 'image-editing', 'multi-turn'],
+    maxResolution: '2K',
+    supportedAspectRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
   },
   'gemini-3-pro-image-preview': {
     id: 'gemini-3-pro-image-preview',
     name: 'Nano Banana Pro (Gemini 3 Pro Image)',
-    description: 'En yüksek kalite görsel üretimi - Gemini 3 Pro tabanlı',
+    description: 'Gemini 3 Pro tabanlı profesyonel görsel üretimi - En yüksek kalite',
     tier: 'premium',
     isRecommended: false,
     avgDuration: 12000,
+    capabilities: ['text-to-image', 'image-editing', 'multi-turn', 'reference-images', '4k', 'thinking'],
+    maxResolution: '4K',
+    supportedAspectRatios: ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'],
   },
 }
 
