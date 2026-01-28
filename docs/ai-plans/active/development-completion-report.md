@@ -157,22 +157,16 @@ Güncellenmiş Dosyalar:
 
 ### Environment Variables
 
-```env
-# Authentication
-AUTH_SECRET=/ri5ISLdB2Dws6IHhofpHO+afcVlJXLB3uyx5Elqe7U=
-AUTH_TRUST_HOST=true
-NEXTAUTH_URL=http://localhost:3000
+**⚠️ Güvenlik Notu:** Tüm API anahtarları ve gizli bilgiler `.env` dosyasında güvenli bir şekilde saklanmaktadır ve GitHub'a push'lanmamaktadır. Ayrıntılı bilgi için `GOOGLE_OAUTH_SETUP.md` dosyasına bakınız.
 
-# Google OAuth
-GOOGLE_CLIENT_ID=74027371954-06002eq8ohp1gkf5semclaiien5medm8.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
-AUTH_GOOGLE_ID=74027371954-06002eq8ohp1gkf5semclaiien5medm8.apps.googleusercontent.com
-AUTH_GOOGLE_SECRET=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
-
-# Google APIs
-GOOGLE_API_KEY=AIzaSyAD-ULoobxpCyhShXmiqpnSAajMgBY6Mh8
-GEMINI_API_KEY=AIzaSyAD-ULoobxpCyhShXmiqpnSAajMgBY6Mh8
-```
+Gerekli Environment Variables:
+- `AUTH_SECRET` - NextAuth.js gizli anahtarı
+- `AUTH_TRUST_HOST` - Host güvenilirliği ayarı
+- `NEXTAUTH_URL` - NextAuth.js URL'si
+- `GOOGLE_CLIENT_ID` - Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth Client Secret
+- `GOOGLE_API_KEY` - Google API Key
+- `GEMINI_API_KEY` - Gemini API Key
 
 ### Build Bilgileri
 

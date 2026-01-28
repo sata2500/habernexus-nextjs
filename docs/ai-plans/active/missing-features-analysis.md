@@ -87,11 +87,8 @@
 - Production ortamı için ayarlar yok
 
 **Mevcut Ayarlar:**
-```env
-GOOGLE_CLIENT_ID="test-client-id"
-GOOGLE_CLIENT_SECRET="test-client-secret"
-GEMINI_API_KEY="test-gemini-key"
-```
+
+⚠️ Güvenlik Notu: Test ve production API anahtar bilgileri `.env` dosyasında güvenli bir şekilde saklanmaktadır. Bkz. `GOOGLE_OAUTH_SETUP.md`
 
 **Çözüm Adımları:**
 1. `.env.example` dosyasını güncelle
