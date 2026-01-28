@@ -1,3 +1,9 @@
+## [5.11.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.10.0...v5.11.0) (2026-01-28)
+
+### ✨ Yeni Özellikler
+
+* **validation:** add model validation and health check system ([392b858](https://github.com/sata2500/habernexus-nextjs/commit/392b858a2cfbb3d78cbae8bc1ed86717c5dd57d9))
+
 ## [5.10.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.9.0...v5.10.0) (2026-01-28)
 
 ### ✨ Yeni Özellikler
