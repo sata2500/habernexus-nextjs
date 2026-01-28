@@ -1,3 +1,19 @@
+## [5.13.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.12.0...v5.13.0) (2026-01-28)
+
+### ✨ Yeni Özellikler
+
+* add category management, rate limiting, and input validation ([d3aab4d](https://github.com/sata2500/habernexus-nextjs/commit/d3aab4dead54cb0315ab4089107a6335689f271e))
+* add database seed and comprehensive project analysis ([2407c1e](https://github.com/sata2500/habernexus-nextjs/commit/2407c1e1d3a699bfd99c317d7b892e438149f3e3))
+
+### 🐛 Hata Düzeltmeleri
+
+* improve authentication and GitHub Actions workflows ([82bc762](https://github.com/sata2500/habernexus-nextjs/commit/82bc762336fcc26b54d7aeb644044b3d1f7e91d3))
+* resolve GitHub Actions npm ci failure and remove sensitive credentials from reports ([f8563f4](https://github.com/sata2500/habernexus-nextjs/commit/f8563f42829610e8f0e2859748633eb486d6973c))
+
+### 📚 Dokümantasyon
+
+* add comprehensive development completion report ([416337b](https://github.com/sata2500/habernexus-nextjs/commit/416337bcf566abc1e299e72a2d7c6a75a23f1a3f))
+
 ## [5.12.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.11.1...v5.12.0) (2026-01-28)
 
 ### ✨ Yeni Özellikler
