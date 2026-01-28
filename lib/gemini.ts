@@ -178,20 +178,20 @@ KURALLAR:
     // Clean and parse the response
     const cleanText = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim()
     
-    let result: any
+    let result: Record<string, unknown> | null = null
     try {
       // 1. Try direct parsing
-      result = JSON.parse(cleanText)
-    } catch (e) {
+      result = JSON.parse(cleanText) as Record<string, unknown>
+    } catch {
       try {
         // 2. Try extracting JSON object with regex
         const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
         if (jsonMatch) {
-          result = JSON.parse(jsonMatch[0])
+          result = JSON.parse(jsonMatch[0]) as Record<string, unknown>
         } else {
           throw new Error('No JSON object found')
         }
-      } catch (e2) {
+      } catch {
         // 3. Fallback: Regex extraction for individual fields (Best Effort)
         console.warn('[Gemini] JSON parse failed, attempting regex fallback extraction')
         
@@ -225,10 +225,10 @@ KURALLAR:
     console.log(`[Gemini] Article generated with ${sources.length} sources, ${searchQueries.length} search queries`)
     
     return {
-      title: result.title || sourceTitle,
-      content: result.content || sourceContent,
-      excerpt: result.excerpt || sourceTitle.substring(0, 160),
-      slug: result.slug || generateSlug(result.title || sourceTitle),
+      title: String(result?.title) || sourceTitle,
+      content: String(result?.content) || sourceContent,
+      excerpt: String(result?.excerpt) || sourceTitle.substring(0, 160),
+      slug: String(result?.slug) || generateSlug(String(result?.title) || sourceTitle),
       sources: sources.length > 0 ? sources : undefined,
       searchQueries: searchQueries.length > 0 ? searchQueries : undefined,
     }

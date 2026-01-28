@@ -287,9 +287,9 @@ export default function AnalyticsPage() {
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
-                data={data.usersByRole.map((item, index) => ({
+                data={data.usersByRole.map((item) => ({
                   name: roleLabels[item.role] || item.role,
-                  value: item.count
+                  value: item.count,
                 }))}
                 cx="50%"
                 cy="50%"
