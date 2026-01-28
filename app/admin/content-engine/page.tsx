@@ -57,6 +57,11 @@ interface EngineStatus {
   staleMinutes?: number
   lastRun: LastRun | null
   settings: EngineSettings
+  availableModels: {
+    content: { value: string; label: string; badge?: string }[]
+    summary: { value: string; label: string; badge?: string }[]
+    image: { value: string; label: string; badge?: string }[]
+  }
   diagnostics: {
     geminiApiKey: boolean
     nodeEnv: string
@@ -71,30 +76,7 @@ const IMAGE_MODE_OPTIONS = [
   { value: 'ai_similar', label: 'AI ile Benzer Görsel' },
 ]
 
-const MODEL_OPTIONS = {
-  content: [
-    // Gemini 3 Series (Latest - January 2026)
-    { value: 'gemini-3-flash', label: '⚡ Gemini 3 Flash (Önerilen)', badge: 'Yeni' },
-    { value: 'gemini-3-pro', label: '🧠 Gemini 3 Pro (En Akıllı)', badge: 'Yeni' },
-    
-    // Gemini 2.5 Series (Stable)
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', badge: 'Stabil' },
-    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', badge: 'Stabil' },
-    
-    // Gemini 2.0 Series
-    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-  ],
-  image: [
-    { value: 'imagen-4.0-fast-generate-001', label: 'Imagen 4.0 Fast (Önerilen)' },
-    { value: 'imagen-4.0-generate-001', label: 'Imagen 4.0' },
-    { value: 'imagen-3.0-generate-001', label: 'Imagen 3.0' },
-  ],
-  summary: [
-    { value: 'gemini-3-flash', label: '⚡ Gemini 3 Flash (Hızlı)', badge: 'Yeni' },
-    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (Önerilen)', badge: 'Stabil' },
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-  ],
-}
+
 
 export default function ContentEnginePage() {
   const [status, setStatus] = useState<EngineStatus | null>(null)
@@ -579,9 +561,15 @@ export default function ContentEnginePage() {
                       onChange={(e) => setSettings({ ...settings, contentModel: e.target.value })}
                       className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
                     >
-                      {MODEL_OPTIONS.content.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
+                      {status?.availableModels?.content ? (
+                        status.availableModels.content.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label} {opt.badge ? `(${opt.badge})` : ''}
+                          </option>
+                        ))
+                      ) : (
+                        <option value={settings.contentModel}>{settings.contentModel}</option>
+                      )}
                     </select>
                   </div>
                   <div>
@@ -591,9 +579,15 @@ export default function ContentEnginePage() {
                       onChange={(e) => setSettings({ ...settings, imageModel: e.target.value })}
                       className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
                     >
-                      {MODEL_OPTIONS.image.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
+                      {status?.availableModels?.image ? (
+                        status.availableModels.image.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label} {opt.badge ? `(${opt.badge})` : ''}
+                          </option>
+                        ))
+                      ) : (
+                        <option value={settings.imageModel}>{settings.imageModel}</option>
+                      )}
                     </select>
                   </div>
                   <div>
@@ -603,9 +597,15 @@ export default function ContentEnginePage() {
                       onChange={(e) => setSettings({ ...settings, summaryModel: e.target.value })}
                       className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm"
                     >
-                      {MODEL_OPTIONS.summary.map((opt) => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
+                      {status?.availableModels?.summary ? (
+                        status.availableModels.summary.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label} {opt.badge ? `(${opt.badge})` : ''}
+                          </option>
+                        ))
+                      ) : (
+                        <option value={settings.summaryModel}>{settings.summaryModel}</option>
+                      )}
                     </select>
                   </div>
                 </div>

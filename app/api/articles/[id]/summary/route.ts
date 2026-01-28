@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { GoogleGenAI } from '@google/genai'
+import { generateStructuredSummary } from '@/lib/gemini'
 import { getSettings } from '@/lib/content-engine'
-
-// Initialize the Gemini client
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-})
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -77,6 +72,8 @@ export async function GET(
       // Return excerpt as fallback
       return NextResponse.json({
         summary: article.excerpt || article.content.substring(0, 300) + '...',
+        keyPoints: [],
+        readingTime: '3 dakika',
         source: 'excerpt',
       })
     }
@@ -85,58 +82,12 @@ export async function GET(
     const settings = await getSettings()
     const modelName = settings.summaryModel || 'gemini-2.5-flash-lite'
 
-    // Generate AI summary
-    const prompt = `Sen profesyonel bir haber editörüsün. Aşağıdaki haber makalesini okuyucular için kısa ve öz bir şekilde özetle.
-
-BAŞLIK: ${article.title}
-
-İÇERİK:
-${article.content.substring(0, 4000)}
-
-GÖREV:
-- Makalenin ana noktalarını 3-4 maddede özetle
-- Her madde 1-2 cümle olsun
-- Tarafsız ve bilgilendirici ol
-- Türkçe yaz
-
-ÇIKTI FORMATI (JSON):
-{
-  "summary": "Genel özet (2-3 cümle)",
-  "keyPoints": ["Madde 1", "Madde 2", "Madde 3"],
-  "readingTime": "X dakika"
-}`
-
-    const response = await genAI.models.generateContent({
-      model: modelName,
-      contents: prompt,
-      config: {
-        temperature: 0.5,
-        topP: 0.9,
-        maxOutputTokens: 512,
-      },
-    })
-
-    const text = response.text || ''
-    
-    // Parse JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-      // Return excerpt as fallback
-      return NextResponse.json({
-        summary: article.excerpt || article.content.substring(0, 300) + '...',
-        keyPoints: [],
-        source: 'excerpt',
-      })
-    }
-
-    const result = JSON.parse(jsonMatch[0])
-    
-    // Prepare response data
-    const responseData = {
-      summary: result.summary || article.excerpt,
-      keyPoints: result.keyPoints || [],
-      readingTime: result.readingTime || '3 dakika',
-    }
+    // Use unified system for summary generation
+    const responseData = await generateStructuredSummary(
+      article.title, 
+      article.content, 
+      modelName
+    )
     
     // Cache the summary
     await prisma.article.update({

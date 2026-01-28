@@ -117,7 +117,7 @@ KURALLAR:
 - Konuyu derinlemesine araştır ve zenginleştir
 - Güncel ve doğrulanmış bilgiler kullan
 
-ÇIKTI FORMATI (JSON):
+ÇIKTI FORMATI:
 {
   "title": "Başlık burada",
   "content": "Makale içeriği burada (paragraflar \\n\\n ile ayrılmış)",
@@ -143,6 +143,7 @@ KURALLAR:
         topP: 0.9,
         topK: 40,
         maxOutputTokens: 4096,
+        responseMimeType: 'application/json', // Force JSON output
         tools: [{ googleSearch: {} }],
       },
     })
@@ -174,20 +175,51 @@ KURALLAR:
       }
     }
     
-    // Clean markdown code blocks and parse JSON
+    // Clean and parse the response
     const cleanText = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim()
     
-    // Try direct parse first
-    let result
+    let result: any
     try {
+      // 1. Try direct parsing
       result = JSON.parse(cleanText)
-    } catch {
-      // Fallback to regex extraction
-      const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) {
-        throw new Error('Invalid response format from Gemini')
+    } catch (e) {
+      try {
+        // 2. Try extracting JSON object with regex
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          result = JSON.parse(jsonMatch[0])
+        } else {
+          throw new Error('No JSON object found')
+        }
+      } catch (e2) {
+        // 3. Fallback: Regex extraction for individual fields (Best Effort)
+        console.warn('[Gemini] JSON parse failed, attempting regex fallback extraction')
+        
+        const titleMatch = cleanText.match(/"title"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/)
+        const contentMatch = cleanText.match(/"content"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/)
+        const excerptMatch = cleanText.match(/"excerpt"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/)
+        const slugMatch = cleanText.match(/"slug"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/)
+        
+        if (titleMatch || contentMatch) {
+          result = {
+            title: titleMatch ? titleMatch[1].replace(/\\"/g, '"') : sourceTitle,
+            content: contentMatch ? contentMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"') : sourceContent,
+            excerpt: excerptMatch ? excerptMatch[1] : undefined,
+            slug: slugMatch ? slugMatch[1] : undefined
+          }
+        } else {
+          // 4. Last Resort: Treat whole text as content if it doesn't look like JSON at all
+          // But check if it starts with "{" to avoid using the raw JSON string
+          if (!cleanText.trim().startsWith('{')) {
+             result = {
+               title: sourceTitle,
+               content: cleanText,
+             }
+          } else {
+             throw new Error('Failed to parse response')
+          }
+        }
       }
-      result = JSON.parse(jsonMatch[0])
     }
     
     console.log(`[Gemini] Article generated with ${sources.length} sources, ${searchQueries.length} search queries`)
@@ -196,7 +228,7 @@ KURALLAR:
       title: result.title || sourceTitle,
       content: result.content || sourceContent,
       excerpt: result.excerpt || sourceTitle.substring(0, 160),
-      slug: result.slug || generateSlug(sourceTitle),
+      slug: result.slug || generateSlug(result.title || sourceTitle),
       sources: sources.length > 0 ? sources : undefined,
       searchQueries: searchQueries.length > 0 ? searchQueries : undefined,
     }
@@ -213,7 +245,147 @@ KURALLAR:
 }
 
 /**
- * Generate article summary
+ * Generate article summary with key points and reading time
+ * Returns structured data for the UI
+ */
+export async function generateStructuredSummary(
+  title: string,
+  content: string,
+  modelOverride?: string
+): Promise<{ summary: string; keyPoints: string[]; readingTime: string }> {
+  const modelName = modelOverride && isValidModel(modelOverride)
+    ? modelOverride
+    : await getConfiguredModel('summary')
+
+  // Model-specific configuration
+  // Defaulting to the user-preferred "Lite" style (Concise, Social Media focused)
+  let config = {
+    role: 'Sen sosyal medya odaklı profesyonel bir özet asistanısın.',
+    wordCount: '150', // Keep it punchy
+    bulletCount: '3',
+    depth: 'Sadece manşetlik bilgileri ver. Çok kısa ve öz tut.',
+    readingTime: '1 dakika',
+    style: 'Basit, çarpıcı ve net'
+  }
+
+  // Customize QUALITY/INTELLIGENCE based on model, but keep the STYLE/FORMAT consistent
+  switch (modelName) {
+    case 'gemini-3-pro':
+    case 'gemini-3-pro-001':
+      config = {
+        role: 'Sen ödüllü bir haber stratejistisin.',
+        wordCount: '200',
+        bulletCount: '4', // Slightly more detail
+        depth: 'Haberin "neden önemli olduğunu" ve "perde arkasını" analiz et. Sadece ne olduğunu değil, ne anlama geldiğini de yaz. Ama kısa tut.',
+        readingTime: '2 dakika',
+        style: 'Özgün, vurucu ve içgörü dolu'
+      }
+      break
+    
+    case 'gemini-3-flash':
+      config = {
+        role: 'Sen kıdemli bir haber editörüsün.',
+        wordCount: '180',
+        bulletCount: '3',
+        depth: 'Haberin en can alıcı noktalarını seç. Okuyucunun vaktini alma, direkt konuya gir.',
+        readingTime: '1 dakika',
+        style: 'Hızlı, dinamik ve net'
+      }
+      break
+
+    case 'gemini-2.5-pro':
+      config = {
+        role: 'Sen teknik ve detaycı bir analiz asistanısın.',
+        wordCount: '200',
+        bulletCount: '4',
+        depth: 'Haberdeki en kritik verileri ve olguları süz. Spekülasyon yapma, net gerçekleri yaz.',
+        readingTime: '2 dakika',
+        style: 'Bilgi yoğunluğu yüksek ama kısa'
+      }
+      break
+
+    case 'gemini-2.5-flash':
+    case 'gemini-2.5-flash-lite':
+    default:
+      // Keep the "Lite" style that the user loved
+      config = {
+        role: 'Sen sosyal medya odaklı bir özet asistanısın.',
+        wordCount: '150',
+        bulletCount: '3',
+        depth: 'Sadece manşetlik bilgileri ver. Çok kısa ve öz tut. En basit haliyle anlat.',
+        readingTime: '1 dakika',
+        style: 'Basit, kısa ve maddeler halinde'
+      }
+      break
+  }
+
+  const prompt = `${config.role} Aşağıdaki haber makalesini "${config.style}" bir dille okuyucular için özetle.
+
+BAŞLIK: ${title}
+
+İÇERİK:
+${content.substring(0, 8000)}
+
+GÖREV:
+1. ${config.depth}
+2. Genel özet yaklaşık ${config.wordCount} kelime olsun.
+3. Makalenin en kritik noktalarını ${config.bulletCount} madde halinde listele.
+4. Her madde açıklayıcı olsun (sadece başlık değil).
+5. Tarafsız ve profesyonel bir dil kullan.
+6. Türkçe yaz.
+
+ÇIKTI FORMATI (JSON):
+{
+  "summary": "<h2>Çarpıcı Bir Başlık</h2><p>Genel özet metni buraya (HTML formatında paragraflar).</p>",
+  "keyPoints": ["Madde 1", "Madde 2", "Madde 3"],
+  "readingTime": "${config.readingTime}"
+}`
+
+  try {
+    const response = await genAI.models.generateContent({
+      model: modelName,
+      contents: prompt,
+      config: {
+        temperature: modelName.includes('pro') ? 0.7 : 0.5,
+        topP: 0.9,
+        maxOutputTokens: 2048, 
+        responseMimeType: 'application/json',
+      },
+    })
+
+    const text = response.text || ''
+    const cleanText = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim()
+    let result
+
+    try {
+      result = JSON.parse(cleanText)
+    } catch {
+       const jsonMatch = cleanText.match(/\{[\s\S]*\}/)
+       if (jsonMatch) {
+         result = JSON.parse(jsonMatch[0])
+       } else {
+         throw new Error('JSON parsing failed')
+       }
+    }
+
+    return {
+      summary: result.summary || 'Özet oluşturulamadı',
+      keyPoints: result.keyPoints || [],
+      readingTime: result.readingTime || config.readingTime,
+    }
+  } catch (error) {
+    console.error('Gemini structured summary error:', error)
+    // Fallback
+    return {
+      summary: content.substring(0, 300) + '...',
+      keyPoints: [],
+      readingTime: '3 dakika'
+    }
+  }
+}
+
+/**
+ * Generate article summary (Simple version for backward compatibility)
  * Now uses customizable prompts from database
  */
 export async function generateSummary(
@@ -309,6 +481,7 @@ KRİTERLER:
       config: {
         temperature: 0.3,
         maxOutputTokens: 256,
+        responseMimeType: 'application/json',
       },
     })
 

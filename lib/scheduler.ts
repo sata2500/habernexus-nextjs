@@ -42,25 +42,44 @@ class ContentScheduler {
   /**
    * Start the scheduler with the configured cron schedule
    */
+  /**
+   * Start the scheduler with the configured cron schedule
+   */
   async start(): Promise<void> {
     try {
-      // Get schedule from database
-      const setting = await prisma.systemSetting.findUnique({
-        where: { key: 'cron_schedule' },
-      })
+      // Get settings from database
+      const [scheduleSetting, enabledSetting] = await Promise.all([
+        prisma.systemSetting.findUnique({ where: { key: 'content_engine_cron_schedule' } }),
+        prisma.systemSetting.findUnique({ where: { key: 'content_engine_schedule_enabled' } }),
+      ])
 
-      const schedule = setting?.value || '0 */6 * * *' // Default: every 6 hours
+      // Check if legacy setting exists if new one is missing
+      const legacySchedule = !scheduleSetting ? await prisma.systemSetting.findUnique({ where: { key: 'cron_schedule' } }) : null
+
+      const schedule = scheduleSetting?.value || legacySchedule?.value || '0 */6 * * *' // Default: every 6 hours
+      const isEnabled = enabledSetting?.value === 'true'
+
+      // Log status
+      console.log(`[Scheduler] Configuration - Enabled: ${isEnabled}, Schedule: ${schedule}`)
+
+      // Stop existing task if running
+      if (this.task) {
+        this.task.stop()
+        this.task = null
+      }
+
+      // If not enabled, don't start
+      if (!isEnabled) {
+        console.log('[Scheduler] Schedule is disabled, not starting automatic generation.')
+        this.currentSchedule = ''
+        return
+      }
 
       // Validate cron expression
       if (!cron.validate(schedule)) {
         console.error(`[Scheduler] Invalid cron expression: ${schedule}`)
         this.lastError = `Invalid cron expression: ${schedule}`
         return
-      }
-
-      // Stop existing task if running
-      if (this.task) {
-        this.task.stop()
       }
 
       // Create new scheduled task

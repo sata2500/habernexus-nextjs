@@ -10,6 +10,8 @@ import {
 } from '@/lib/content-engine'
 import { prisma } from '@/lib/prisma'
 import type { EngineConfig, ContentEngineSettings } from '@/lib/content-engine'
+import { getActiveModels } from '@/lib/gemini-models'
+import { IMAGEN_MODELS } from '@/lib/imagen'
 
 /**
  * Content Engine v3.0 API
@@ -73,6 +75,36 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     }
 
+    // Get available models for UI
+    const activeGeminiModels = getActiveModels()
+    
+    const availableModels = {
+      content: activeGeminiModels
+        .filter(m => m.useCases.includes('content') || m.useCases.includes('all'))
+        .sort((a, b) => b.name.localeCompare(a.name)) // Sort by newest (approx)
+        .map(m => ({
+          value: m.id,
+          label: m.name,
+          badge: m.isExperimental ? 'Beta' : (m.tier === 'premium' ? 'Pro' : (m.isRecommended ? 'Önerilen' : undefined))
+        })),
+        
+      summary: activeGeminiModels
+        .filter(m => m.useCases.includes('summary') || m.useCases.includes('all'))
+        .sort((a, b) => b.name.localeCompare(a.name))
+        .map(m => ({
+          value: m.id,
+          label: m.name,
+          badge: m.tier === 'lite' ? 'Hızlı' : undefined
+        })),
+        
+      image: Object.entries(IMAGEN_MODELS)
+        .map(([id, config]) => ({
+          value: id,
+          label: config.name,
+          badge: config.status === 'stable' ? (config.isDefault ? 'Önerilen' : 'Stabil') : 'Önizleme'
+        }))
+    }
+
     return NextResponse.json({
       isConfigured: configured,
       isRunning: running,
@@ -80,6 +112,7 @@ export async function GET() {
       staleMinutes,
       lastRun,
       settings,
+      availableModels,
       diagnostics,
     })
   } catch (error) {

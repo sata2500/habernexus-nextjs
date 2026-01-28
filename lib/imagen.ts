@@ -13,20 +13,10 @@ import * as path from 'path'
  * @version 4.0.0
  * @lastUpdated 14 January 2026
  * 
- * Changes in v4.0.0:
- * - Updated to use Imagen 4.0 models (Imagen 3.0 deprecated)
- * - Added all 5 working Imagen models with metadata
- * - Added model status tracking (stable/preview)
- * - Added shutdown date warnings for preview models
- * - Added average duration and size info for each model
- * 
- * Changes in v3.0.0:
- * - Improved error handling and logging
- * - Added detailed API response validation
- * - Fixed base64 image decoding issues
- * - Added retry mechanism for transient failures
- * - Added image validation before saving
- * - Improved directory creation and file handling
+ * Changes in v4.1.0:
+ * - Removed deprecated Imagen 3.0 models
+ * - Removed Imagen 4.0 Preview models (shutting down Feb 2026)
+ * - Standardized on Imagen 4.0 Stable models
  */
 
 // Initialize the Gemini client lazily to avoid issues when API key is not set
@@ -548,25 +538,6 @@ export const IMAGEN_MODELS = {
     status: 'stable',
     avgDuration: 10000,
     avgSize: 1300,
-  },
-  // Preview Models - Will be shut down Feb 17, 2026
-  'imagen-4.0-generate-preview-06-06': {
-    name: 'Imagen 4.0 Preview',
-    description: 'Önizleme modeli - 17 Şubat 2026\'da kapanacak',
-    isDefault: false,
-    status: 'preview',
-    avgDuration: 8000,
-    avgSize: 1200,
-    shutdownDate: '2026-02-17',
-  },
-  'imagen-4.0-ultra-generate-preview-06-06': {
-    name: 'Imagen 4.0 Ultra Preview',
-    description: 'Ultra önizleme modeli - 17 Şubat 2026\'da kapanacak',
-    isDefault: false,
-    status: 'preview',
-    avgDuration: 10000,
-    avgSize: 1500,
-    shutdownDate: '2026-02-17',
   },
 }
 

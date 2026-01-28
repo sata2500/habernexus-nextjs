@@ -86,9 +86,11 @@ export default function AISummary({ articleId, className }: AISummaryProps) {
         <div className="px-4 pb-4 space-y-4 border-t border-purple-200 dark:border-purple-800">
           {/* Summary */}
           <div className="pt-4">
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              {summaryData.summary}
-            </p>
+            {/* Summary Text (HTML Rendered) */}
+            <div 
+              className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 mb-6"
+              dangerouslySetInnerHTML={{ __html: summaryData.summary }}
+            />
           </div>
 
           {/* Key Points */}

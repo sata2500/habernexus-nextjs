@@ -2,15 +2,13 @@
  * Gemini Model Configuration
  * Defines all available Gemini models and their properties
  * 
- * @version 2.0.0
- * @lastUpdated 20 January 2026
+ * @version 2.1.0
+ * @lastUpdated 24 January 2026
  * 
- * Changes in v2.0.0:
- * - Removed deprecated Gemini 1.5 models
- * - Added Gemini 3 Pro and Flash stable versions
- * - Added Nano Banana image generation models
- * - Improved model grouping and categorization
- * - Added image generation capability flag
+ * Changes in v2.1.0:
+ * - Focused on Gemini 3.0 and 2.5 series
+ * - Removed Gemini 2.0 models
+ * - Prioritized Gemini 3 Flash and Pro
  */
 
 /**
@@ -128,37 +126,9 @@ export const GEMINI_MODELS: Record<string, GeminiModelConfig> = {
     isDeprecated: false,
     isRecommended: false,
   },
-
-  // ============================================
-  // Gemini 2.0 Series (Previous Generation)
-  // ============================================
-  'gemini-2.0-flash': {
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
-    description: 'Stabil workhorse - Güvenilir genel kullanım',
-    tier: 'standard',
-    contextWindow: 1000000,
-    outputTokens: 8192,
-    useCases: ['content', 'sentiment', 'category', 'summary', 'all'],
-    capabilities: ['text', 'multimodal'],
-    isExperimental: false,
-    isDeprecated: false,
-    isRecommended: false,
-  },
-  'gemini-2.0-flash-lite': {
-    id: 'gemini-2.0-flash-lite',
-    name: 'Gemini 2.0 Flash-Lite',
-    description: 'Hızlı ve ekonomik - Basit görevler için',
-    tier: 'lite',
-    contextWindow: 1000000,
-    outputTokens: 8192,
-    useCases: ['category', 'summary'],
-    capabilities: ['text'],
-    isExperimental: false,
-    isDeprecated: false,
-    isRecommended: false,
-  },
 }
+
+
 
 /**
  * Nano Banana Image Generation Models
@@ -295,14 +265,6 @@ export const MODEL_GROUPS = {
   recommended: {
     title: 'Gemini 2.5 Serisi (Önerilen)',
     models: ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'],
-    badge: 'Önerilen',
-    badgeColor: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  },
-  stable: {
-    title: 'Gemini 2.0 Serisi (Stabil)',
-    models: ['gemini-2.0-flash', 'gemini-2.0-flash-lite'],
-    badge: 'Stabil',
-    badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   },
 }
 
@@ -313,6 +275,5 @@ export function getModelGroupsArray() {
   return [
     MODEL_GROUPS.latest,
     MODEL_GROUPS.recommended,
-    MODEL_GROUPS.stable,
   ]
 }
