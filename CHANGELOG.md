@@ -1,3 +1,9 @@
+## [5.8.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.8.0...v5.8.1) (2026-01-28)
+
+### 🐛 Hata Düzeltmeleri
+
+* **code-quality:** resolve TypeScript and ESLint errors ([1f8b79d](https://github.com/sata2500/habernexus-nextjs/commit/1f8b79d8d65b7fed518b96ae6659ff48662c1596))
+
 ## [5.8.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.7.0...v5.8.0) (2026-01-28)
 
 ### ✨ Yeni Özellikler
