@@ -1,3 +1,9 @@
+## [5.12.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.11.1...v5.12.0) (2026-01-28)
+
+### ✨ Yeni Özellikler
+
+* **image-system:** add unified image optimizer and mode handler ([d1b5e3a](https://github.com/sata2500/habernexus-nextjs/commit/d1b5e3a6299ce81465aea2b536aa2243e4c81e0e))
+
 ## [5.11.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.11.0...v5.11.1) (2026-01-28)
 
 ### 🐛 Hata Düzeltmeleri
