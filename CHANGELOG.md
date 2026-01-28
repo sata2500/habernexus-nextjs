@@ -1,3 +1,9 @@
+## [5.10.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.9.0...v5.10.0) (2026-01-28)
+
+### ✨ Yeni Özellikler
+
+* **admin:** add model info cards and prompt management system ([e51a3ee](https://github.com/sata2500/habernexus-nextjs/commit/e51a3ee3096f32c238855cd36def6060582613e3))
+
 ## [5.9.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.8.1...v5.9.0) (2026-01-28)
 
 ### ✨ Yeni Özellikler
