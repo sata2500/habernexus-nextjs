@@ -1,3 +1,9 @@
+## [5.8.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.7.0...v5.8.0) (2026-01-28)
+
+### ✨ Yeni Özellikler
+
+* **ai:** enhance summary logic with model-specific personas and fix HTML rendering ([69d6d90](https://github.com/sata2500/habernexus-nextjs/commit/69d6d903c14d9ef1e2ad839011fa605fc6b40a31))
+
 ## [5.7.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.6.0...v5.7.0) (2026-01-21)
 
 ### ✨ Yeni Özellikler
