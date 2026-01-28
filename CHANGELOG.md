@@ -1,3 +1,9 @@
+## [5.9.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.8.1...v5.9.0) (2026-01-28)
+
+### ✨ Yeni Özellikler
+
+* **gemini:** implement critical API improvements for Gemini 3 ([c202fb3](https://github.com/sata2500/habernexus-nextjs/commit/c202fb3bda6a2faeb2d81cee8817e45419db1128))
+
 ## [5.8.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.8.0...v5.8.1) (2026-01-28)
 
 ### 🐛 Hata Düzeltmeleri
