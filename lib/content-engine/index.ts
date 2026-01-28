@@ -18,6 +18,7 @@ import { collectFromAllFeeds, collectFromFeed } from './rss-collector'
 import { analyzeTrends } from './trend-analyzer'
 import { generateArticles } from './article-generator'
 import { handleImage } from './image-handler'
+import { isValidImageForPublishing, logImageValidationFailure } from './image-validation'
 import {
   DEFAULT_SETTINGS,
   type EngineConfig,
@@ -346,6 +347,30 @@ export async function runContentEngine(
         const imageResult = config.skipImageGeneration
           ? { success: true, imageUrl: '/images/placeholder-news.webp', imageSource: 'placeholder' as const, mode: 'auto' as const, generationDuration: 0 }
           : await handleImage(result.topic, result.content.slug, logs)
+        
+        // CRITICAL: Validate image before publishing
+        if (!isValidImageForPublishing(imageResult)) {
+          logImageValidationFailure(
+            result.content.title,
+            imageResult.imageUrl,
+            imageResult.imageSource,
+            'Placeholder veya gecersiz gorsel'
+          )
+          
+          logs.push({
+            timestamp: new Date(),
+            level: 'error',
+            message: `Article skipped - Invalid image: ${result.content.title}`,
+            data: {
+              reason: 'Placeholder or invalid image',
+              imageUrl: imageResult.imageUrl,
+              imageSource: imageResult.imageSource,
+            },
+          })
+          
+          stats.errors.push(`Article skipped (invalid image): ${result.content.title}`)
+          continue
+        }
         
         if (imageResult.success && imageResult.imageSource !== 'placeholder') {
           stats.imagesGenerated++

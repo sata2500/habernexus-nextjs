@@ -284,11 +284,19 @@ export async function PUT(request: NextRequest) {
 
     await updateSettings(updates)
 
+    // If schedule settings changed, restart the scheduler
+    if (updates.isScheduleEnabled !== undefined || updates.cronSchedule !== undefined) {
+      console.log('[ContentEngine API] Schedule settings changed, restarting scheduler...')
+      const { updateScheduler } = await import('@/lib/scheduler')
+      await updateScheduler()
+    }
+
     const settings = await getSettings()
 
     return NextResponse.json({
       success: true,
       settings,
+      message: 'Ayarlar kaydedildi',
     })
   } catch (error) {
     console.error('[ContentEngine API] Update settings error:', error)

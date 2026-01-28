@@ -56,6 +56,20 @@ export async function POST(request: Request) {
         })
 
       case 'trigger':
+        // Check if schedule is enabled
+        const { getSettings } = await import('@/lib/content-engine')
+        const settings = await getSettings()
+        
+        if (!settings.isScheduleEnabled) {
+          return NextResponse.json(
+            { 
+              success: false, 
+              message: 'Zamanlama sistemi devre dışı bırakılmış. Lütfen ayarlardan etkinleştirin.' 
+            },
+            { status: 400 }
+          )
+        }
+        
         const result = await triggerContentGeneration()
         return NextResponse.json(result)
 

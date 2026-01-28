@@ -119,6 +119,12 @@ class ContentScheduler {
    * Run content generation manually
    */
   async runContentGeneration(): Promise<{ success: boolean; message: string }> {
+    // Check if scheduling is enabled
+    if (!this.task) {
+      console.log('[Scheduler] Scheduler is not active (schedule disabled or not started)')
+      return { success: false, message: 'Scheduler is not active' }
+    }
+
     // Prevent concurrent runs
     if (this.isProcessing) {
       console.log('[Scheduler] Content generation already in progress, skipping...')
