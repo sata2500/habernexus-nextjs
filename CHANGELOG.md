@@ -1,3 +1,9 @@
+## [5.13.4](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.3...v5.13.4) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* API key güncellemesinden sonra process.env'i dinamik olarak güncelle ([2692cbf](https://github.com/sata2500/habernexus-nextjs/commit/2692cbf26f42b75d484b34d5388d1ea875cfcc35))
+
 ## [5.13.3](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.2...v5.13.3) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
