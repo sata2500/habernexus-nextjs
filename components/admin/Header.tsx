@@ -3,11 +3,15 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { useTheme } from 'next-themes'
 import { 
   Menu,
   ChevronRight,
   ExternalLink,
-  Home
+  Home,
+  Sun,
+  Moon
 } from 'lucide-react'
 
 
@@ -71,7 +75,13 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
+  // Hydration hatası önleme
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const breadcrumbs = getBreadcrumbs(pathname)
   const pageTitle = getPageTitle(pathname)
@@ -129,7 +139,21 @@ export function Header({ onMenuClick }: HeaderProps) {
             </span>
           )}
 
-
+          {/* Dark mode toggle - Tema değiştirme butonu */}
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 touch-manipulation transition-colors"
+              title={theme === 'dark' ? 'Açık Tema' : 'Koyu Tema'}
+              aria-label={theme === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç'}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </button>
+          )}
 
           {/* Siteyi görüntüle - Masaüstü */}
           <Link
