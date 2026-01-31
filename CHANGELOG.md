@@ -1,3 +1,9 @@
+## [5.13.2](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.1...v5.13.2) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* npm ci'ı --legacy-peer-deps flag'ı ile çalıştır ([7d1e479](https://github.com/sata2500/habernexus-nextjs/commit/7d1e4796632aa7146e76e5673654ae25a69fa7bf))
+
 ## [5.13.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.0...v5.13.1) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
