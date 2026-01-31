@@ -1,3 +1,9 @@
+## [5.13.8](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.7...v5.13.8) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* Add .env file to PM2 ecosystem config for production env variables ([25601e5](https://github.com/sata2500/habernexus-nextjs/commit/25601e5f752a4e578f9347eca2abb98ef415a224))
+
 ## [5.13.7](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.6...v5.13.7) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
