@@ -110,7 +110,16 @@ export function sanitizeString(input: string, maxLength: number = 1000): string 
 /**
  * Validate and sanitize article input
  */
-export function validateArticleInput(data: any) {
+export interface ArticleInputData {
+  title?: string
+  content?: string
+  category?: string
+  slug?: string
+  imageUrl?: string
+  excerpt?: string
+}
+
+export function validateArticleInput(data: ArticleInputData) {
   const errors: ValidationError[] = []
 
   // Validate title
@@ -154,9 +163,9 @@ export function validateArticleInput(data: any) {
 
   // Sanitize strings
   return {
-    title: sanitizeString(data.title, 500),
-    content: sanitizeString(data.content, 50000),
-    category: sanitizeString(data.category, 100),
+    title: data.title ? sanitizeString(data.title, 500) : '',
+    content: data.content ? sanitizeString(data.content, 50000) : '',
+    category: data.category ? sanitizeString(data.category, 100) : '',
     slug: data.slug ? sanitizeString(data.slug, 200) : undefined,
     imageUrl: data.imageUrl ? sanitizeString(data.imageUrl, 2048) : undefined,
     excerpt: data.excerpt ? sanitizeString(data.excerpt, 500) : undefined,
@@ -166,7 +175,11 @@ export function validateArticleInput(data: any) {
 /**
  * Validate and sanitize comment input
  */
-export function validateCommentInput(data: any) {
+export interface CommentInputData {
+  content?: string
+}
+
+export function validateCommentInput(data: CommentInputData) {
   const errors: ValidationError[] = []
 
   // Validate content
@@ -187,7 +200,7 @@ export function validateCommentInput(data: any) {
   }
 
   return {
-    content: sanitizeString(data.content, 5000),
+    content: data.content ? sanitizeString(data.content, 5000) : '',
   }
 }
 
@@ -214,11 +227,11 @@ export function validateSearchQuery(query: string): string {
 /**
  * Validate pagination parameters
  */
-export function validatePaginationParams(page: any, limit: any) {
+export function validatePaginationParams(page: string | number, limit: string | number) {
   const errors: ValidationError[] = []
 
-  const pageNum = parseInt(page, 10)
-  const limitNum = parseInt(limit, 10)
+  const pageNum = parseInt(String(page), 10)
+  const limitNum = parseInt(String(limit), 10)
 
   if (isNaN(pageNum) || pageNum < 1) {
     errors.push(

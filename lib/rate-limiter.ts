@@ -12,6 +12,11 @@ interface RateLimitConfig {
   message?: string // Custom error message
 }
 
+interface RateLimitError extends Error {
+  status: number
+  resetTime: number
+}
+
 interface RateLimitStore {
   [key: string]: {
     count: number
@@ -119,9 +124,9 @@ export function createRateLimitMiddleware(config: RateLimitConfig) {
     const result = checkRateLimit(identifier, config)
     
     if (!result.allowed) {
-      const error = new Error(config.message || 'Rate limit exceeded')
-      ;(error as any).status = 429
-      ;(error as any).resetTime = result.resetTime
+      const error = new Error(config.message || 'Rate limit exceeded') as unknown as RateLimitError
+      error.status = 429
+      error.resetTime = result.resetTime
       throw error
     }
 
@@ -137,7 +142,6 @@ export function getRateLimitHeaders(
   config: RateLimitConfig
 ): Record<string, string> {
   const result = checkRateLimit(identifier, config)
-  const resetDate = new Date(result.resetTime)
 
   return {
     'X-RateLimit-Limit': String(config.maxRequests),
