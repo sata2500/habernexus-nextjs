@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
+import { prisma } from '@/lib/prisma'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -275,6 +276,15 @@ export async function POST(request: NextRequest) {
     // process.env'e ekle
     process.env[key] = value || ''
 
+    // Database'e de kaydet
+    try {
+      await prisma.systemSetting.create({
+        data: { key, value: value || '' },
+      })
+    } catch (dbError) {
+      console.warn(`[ENV] Database yazma hatası: ${key}`, dbError)
+    }
+
     console.log(`[ENV] Yeni değişken eklendi: ${key}`)
 
     const response = NextResponse.json({ 
@@ -356,6 +366,17 @@ export async function PUT(request: NextRequest) {
 
     // process.env'i güncelle
     process.env[key] = value
+
+    // Database'e de kaydet (production ortamında kullanılmak için)
+    try {
+      await prisma.systemSetting.upsert({
+        where: { key },
+        update: { value },
+        create: { key, value },
+      })
+    } catch (dbError) {
+      console.warn(`[ENV] Database yazma hatası: ${key}`, dbError)
+    }
 
     if (SENSITIVE_KEYS.includes(key)) {
       console.log(`[ENV] Hassas değişken güncellendi: ${key}`)
@@ -444,6 +465,15 @@ export async function DELETE(request: NextRequest) {
 
     // process.env'den sil
     delete process.env[key]
+
+    // Database'den de sil
+    try {
+      await prisma.systemSetting.delete({
+        where: { key },
+      })
+    } catch (dbError) {
+      console.warn(`[ENV] Database silme hatası: ${key}`, dbError)
+    }
 
     console.log(`[ENV] Değişken silindi: ${key}`)
 
