@@ -1,3 +1,9 @@
+## [5.13.9](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.8...v5.13.9) (2026-01-31)
+
+### ♻️ Kod İyileştirmeleri
+
+* **admin:** remove redundant theme toggle from header ([8b2476d](https://github.com/sata2500/habernexus-nextjs/commit/8b2476d4202990cbb69411afff9483534a864ac7))
+
 ## [5.13.8](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.7...v5.13.8) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
