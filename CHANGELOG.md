@@ -1,3 +1,9 @@
+## [5.13.7](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.6...v5.13.7) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* Read API keys from database at runtime for admin panel updates ([a3c58fb](https://github.com/sata2500/habernexus-nextjs/commit/a3c58fbe34a6662cd4fc526ed9b582fe1314bc16))
+
 ## [5.13.6](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.5...v5.13.6) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
