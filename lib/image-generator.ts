@@ -110,17 +110,12 @@ export const ALL_IMAGE_MODELS = [
 // Client Initialization
 // ============================================
 
-let genAI: GoogleGenAI | null = null
-
 function getGenAIClient(): GoogleGenAI {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY environment variable is not set')
-    }
-    genAI = new GoogleGenAI({ apiKey })
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY environment variable is not set')
   }
-  return genAI
+  return new GoogleGenAI({ apiKey })
 }
 
 // ============================================

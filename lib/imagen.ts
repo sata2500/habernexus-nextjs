@@ -19,18 +19,13 @@ import * as path from 'path'
  * - Standardized on Imagen 4.0 Stable models
  */
 
-// Initialize the Gemini client lazily to avoid issues when API key is not set
-let genAI: GoogleGenAI | null = null
-
+// Initialize the Gemini client dynamically to support runtime API key changes
 function getGenAIClient(): GoogleGenAI {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY environment variable is not set')
-    }
-    genAI = new GoogleGenAI({ apiKey })
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY environment variable is not set')
   }
-  return genAI
+  return new GoogleGenAI({ apiKey })
 }
 
 // Default model for image generation
