@@ -1,3 +1,13 @@
+## [5.13.10](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.9...v5.13.10) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* **admin:** restore theme toggle and fix HMR error ([59e84ef](https://github.com/sata2500/habernexus-nextjs/commit/59e84efff8a8e40f90322f92f1dca43a0c6c0038))
+
+### 🔧 Bakım
+
+* sync local changes before rebase ([49791fe](https://github.com/sata2500/habernexus-nextjs/commit/49791fee479486b72a720a7cac84242d2693b051))
+
 ## [5.13.9](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.8...v5.13.9) (2026-01-31)
 
 ### ♻️ Kod İyileştirmeleri
