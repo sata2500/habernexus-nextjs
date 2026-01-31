@@ -17,10 +17,12 @@ import { PromptType } from '@prisma/client'
  * - Enhanced prompts for better article quality
  */
 
-// Initialize the Gemini client
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-})
+// Initialize the Gemini client dynamically to support runtime API key changes
+function getGenAI() {
+  return new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || '',
+  })
+}
 
 /**
  * Get the configured model for a specific use case from system settings
@@ -141,7 +143,7 @@ KURALLAR:
     // Thinking level: Gemini 3 only, varies by use case
     const thinkingLevel = modelName.includes('gemini-3') ? 'high' : undefined
     
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -355,7 +357,7 @@ GÖREV:
     // Thinking level: Gemini 3 only, use 'low' for summary to minimize latency
     const thinkingLevel = modelName.includes('gemini-3') ? 'low' : undefined
     
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -425,7 +427,7 @@ Sadece özeti yaz, başka bir şey ekleme.`
   const prompt = interpolatePrompt(promptTemplate, { content })
 
   try {
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -489,7 +491,7 @@ KRİTERLER:
   })
 
   try {
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
@@ -624,7 +626,7 @@ Sadece kategori adını yaz, başka bir şey ekleme.`
   })
 
   try {
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: modelName,
       contents: prompt,
       config: {

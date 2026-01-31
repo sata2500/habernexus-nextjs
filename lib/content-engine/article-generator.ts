@@ -17,10 +17,12 @@ import type {
   EngineLogEntry,
 } from './types'
 
-// Initialize Gemini client
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-})
+// Initialize Gemini client dynamically to support runtime API key changes
+function getGenAI() {
+  return new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || '',
+  })
+}
 
 /**
  * Generate URL-friendly slug from title
@@ -141,7 +143,7 @@ SEO KURALLARI:
 }`
 
     // Generate content with Google Search grounding
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: 'gemini-2.5-flash',
       contents: contentPrompt,
       config: {
@@ -289,7 +291,7 @@ ${content.substring(0, 3000)}
 
 ÖZET:`
 
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: 'gemini-2.5-flash-lite',
       contents: prompt,
       config: {

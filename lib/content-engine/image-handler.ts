@@ -22,10 +22,12 @@ import type {
   EngineLogEntry,
 } from './types'
 
-// Initialize Gemini client
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-})
+// Initialize Gemini client dynamically to support runtime API key changes
+function getGenAI() {
+  return new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || '',
+  })
+}
 
 // Image output directory
 const IMAGE_OUTPUT_DIR = path.join(process.cwd(), 'public', 'images', 'generated')
@@ -120,7 +122,7 @@ async function generateWithImagen(
   aspectRatio: string = '16:9'
 ): Promise<{ path: string; size: number; width: number; height: number } | null> {
   try {
-    const response = await genAI.models.generateImages({
+    const response = await getGenAI().models.generateImages({
       model: 'imagen-4.0-fast-generate-001',
       prompt,
       config: {
@@ -181,7 +183,7 @@ async function generateWithNanoBanana(
   slug: string
 ): Promise<{ path: string; size: number; width: number; height: number } | null> {
   try {
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: [prompt],
       config: {
@@ -260,7 +262,7 @@ KARAR KRİTERLERİ:
 
 Sadece "rss", "ai_original" veya "ai_similar" olarak yanıt ver.`
 
-    const response = await genAI.models.generateContent({
+    const response = await getGenAI().models.generateContent({
       model: 'gemini-2.5-flash-lite',
       contents: prompt,
       config: {

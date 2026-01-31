@@ -18,10 +18,12 @@ import type {
   EngineLogEntry,
 } from './types'
 
-// Initialize Gemini client
-const genAI = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || '',
-})
+// Initialize Gemini client dynamically to support runtime API key changes
+function getGenAI() {
+  return new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || '',
+  })
+}
 
 /**
  * Convert RSS items to topics
@@ -241,7 +243,7 @@ SEÇİM KRİTERLERİ:
       let selectedCount = 0
       
       try {
-        const response = await genAI.models.generateContent({
+        const response = await getGenAI().models.generateContent({
           model: 'gemini-2.5-flash',
           contents: prompt,
           config: {
