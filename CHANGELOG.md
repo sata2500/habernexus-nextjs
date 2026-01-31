@@ -1,3 +1,9 @@
+## [5.13.6](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.5...v5.13.6) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* Env değişkenleri database'e de kaydet (production ortamı için) ([d07e0ed](https://github.com/sata2500/habernexus-nextjs/commit/d07e0edfdead8a89d986752faab680a4320e934d))
+
 ## [5.13.5](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.4...v5.13.5) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
