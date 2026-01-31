@@ -1,3 +1,9 @@
+## [5.13.5](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.4...v5.13.5) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* Env güncellemesinden sonra server'ı restart et ve .env dosyasını oluştur ([eab3b83](https://github.com/sata2500/habernexus-nextjs/commit/eab3b838e4ece104cd8a51540621967d15e216e2))
+
 ## [5.13.4](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.3...v5.13.4) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
