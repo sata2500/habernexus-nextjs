@@ -1,3 +1,10 @@
+## [5.13.1](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.0...v5.13.1) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* API key değişiklikleri runtime'da uygulanmadığı sorunu düzelt ([ea488b0](https://github.com/sata2500/habernexus-nextjs/commit/ea488b02ec1132f28cf164e2c74188b9d9d4f502))
+* API key ve env değişkenlerini runtime'da dinamik hale getir ([eb7d8c6](https://github.com/sata2500/habernexus-nextjs/commit/eb7d8c67bbb33a90b4d2cac3ff765c1be941716a))
+
 ## [5.13.0](https://github.com/sata2500/habernexus-nextjs/compare/v5.12.0...v5.13.0) (2026-01-28)
 
 ### ✨ Yeni Özellikler
