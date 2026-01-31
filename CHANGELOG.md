@@ -1,3 +1,9 @@
+## [5.13.3](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.2...v5.13.3) (2026-01-31)
+
+### 🐛 Hata Düzeltmeleri
+
+* ESLint hataları - any type'ları kaldır ve type safety'i artır ([1b8c2cb](https://github.com/sata2500/habernexus-nextjs/commit/1b8c2cbda4724468a935e66b58cb27c83b75c007))
+
 ## [5.13.2](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.1...v5.13.2) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
