@@ -9,6 +9,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai'
+import { prisma } from '@/lib/prisma'
 import type {
   ScoredTopic,
   GeneratedContent,
@@ -18,9 +19,25 @@ import type {
 } from './types'
 
 // Initialize Gemini client dynamically to support runtime API key changes
-function getGenAI() {
+// First tries database (for admin panel updates), then falls back to process.env
+async function getGenAI() {
+  let apiKey = process.env.GEMINI_API_KEY || ''
+  
+  // Try to get API key from database (updated via admin panel)
+  try {
+    const dbSetting = await prisma.systemSetting.findUnique({
+      where: { key: 'GEMINI_API_KEY' },
+    })
+    if (dbSetting?.value) {
+      apiKey = dbSetting.value
+    }
+  } catch {
+    // If database read fails, fall back to process.env
+    console.warn('[ArticleGenerator] Failed to read API key from database, using process.env')
+  }
+  
   return new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY || '',
+    apiKey,
   })
 }
 
@@ -143,7 +160,7 @@ SEO KURALLARI:
 }`
 
     // Generate content with Google Search grounding
-    const response = await getGenAI().models.generateContent({
+    const response = await (await getGenAI()).models.generateContent({
       model: 'gemini-2.5-flash',
       contents: contentPrompt,
       config: {
@@ -291,7 +308,7 @@ ${content.substring(0, 3000)}
 
 ÖZET:`
 
-    const response = await getGenAI().models.generateContent({
+    const response = await (await getGenAI()).models.generateContent({
       model: 'gemini-2.5-flash-lite',
       contents: prompt,
       config: {

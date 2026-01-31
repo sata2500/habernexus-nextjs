@@ -12,6 +12,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai'
+import { prisma } from '@/lib/prisma'
 import sharp from 'sharp'
 import path from 'path'
 import fs from 'fs/promises'
@@ -23,9 +24,25 @@ import type {
 } from './types'
 
 // Initialize Gemini client dynamically to support runtime API key changes
-function getGenAI() {
+// First tries database (for admin panel updates), then falls back to process.env
+async function getGenAI() {
+  let apiKey = process.env.GEMINI_API_KEY || ''
+  
+  // Try to get API key from database (updated via admin panel)
+  try {
+    const dbSetting = await prisma.systemSetting.findUnique({
+      where: { key: 'GEMINI_API_KEY' },
+    })
+    if (dbSetting?.value) {
+      apiKey = dbSetting.value
+    }
+  } catch {
+    // If database read fails, fall back to process.env
+    console.warn('[ImageHandler] Failed to read API key from database, using process.env')
+  }
+  
   return new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY || '',
+    apiKey,
   })
 }
 
@@ -122,7 +139,7 @@ async function generateWithImagen(
   aspectRatio: string = '16:9'
 ): Promise<{ path: string; size: number; width: number; height: number } | null> {
   try {
-    const response = await getGenAI().models.generateImages({
+    const response = await (await getGenAI()).models.generateImages({
       model: 'imagen-4.0-fast-generate-001',
       prompt,
       config: {
@@ -183,7 +200,7 @@ async function generateWithNanoBanana(
   slug: string
 ): Promise<{ path: string; size: number; width: number; height: number } | null> {
   try {
-    const response = await getGenAI().models.generateContent({
+    const response = await (await getGenAI()).models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: [prompt],
       config: {
@@ -262,7 +279,7 @@ KARAR KRİTERLERİ:
 
 Sadece "rss", "ai_original" veya "ai_similar" olarak yanıt ver.`
 
-    const response = await getGenAI().models.generateContent({
+    const response = await (await getGenAI()).models.generateContent({
       model: 'gemini-2.5-flash-lite',
       contents: prompt,
       config: {
