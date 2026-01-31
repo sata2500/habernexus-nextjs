@@ -260,6 +260,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // process.env'e ekle
+    process.env[key] = value || ''
+
+    console.log(`[ENV] Yeni değişken eklendi: ${key}`)
+
     return NextResponse.json({ 
       success: true,
       message: `${key} değişkeni başarıyla eklendi`,
@@ -329,6 +334,15 @@ export async function PUT(request: NextRequest) {
         { error: '.env dosyası güncellenemedi' },
         { status: 500 }
       )
+    }
+
+    // process.env'i güncelle
+    process.env[key] = value
+
+    if (SENSITIVE_KEYS.includes(key)) {
+      console.log(`[ENV] Hassas değişken güncellendi: ${key}`)
+    } else {
+      console.log(`[ENV] Değişken güncellendi: ${key}=${value}`)
     }
 
     return NextResponse.json({ 
@@ -403,6 +417,11 @@ export async function DELETE(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // process.env'den sil
+    delete process.env[key]
+
+    console.log(`[ENV] Değişken silindi: ${key}`)
 
     return NextResponse.json({ 
       success: true,
