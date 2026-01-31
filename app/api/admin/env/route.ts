@@ -28,6 +28,18 @@ interface EnvVariable {
 }
 
 /**
+ * Server'i gracefully restart et
+ */
+function restartServer() {
+  try {
+    console.log('[ENV] Server restart baslatiliyor...')
+    process.exit(0)
+  } catch (error) {
+    console.error('[ENV] Server restart hatasi:', error)
+  }
+}
+
+/**
  * .env dosyasını parse eder ve değişkenleri döndürür
  */
 function parseEnvFile(): { variables: EnvVariable[]; rawContent: string } {
@@ -265,10 +277,16 @@ export async function POST(request: NextRequest) {
 
     console.log(`[ENV] Yeni değişken eklendi: ${key}`)
 
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
       success: true,
-      message: `${key} değişkeni başarıyla eklendi`,
+      message: `${key} değişkeni başarıyla eklendi. Server yeniden başlatılıyor...`,
     })
+
+    setTimeout(() => {
+      restartServer()
+    }, 100)
+
+    return response
   } catch (error) {
     console.error('.env değişkeni eklenemedi:', error)
     return NextResponse.json(
@@ -345,10 +363,16 @@ export async function PUT(request: NextRequest) {
       console.log(`[ENV] Değişken güncellendi: ${key}=${value}`)
     }
 
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
       success: true,
-      message: `${key} değişkeni başarıyla güncellendi`,
+      message: `${key} değişkeni başarıyla güncellendi. Server yeniden başlatılıyor...`,
     })
+
+    setTimeout(() => {
+      restartServer()
+    }, 100)
+
+    return response
   } catch (error) {
     console.error('.env değişkeni güncellenemedi:', error)
     return NextResponse.json(
@@ -423,10 +447,16 @@ export async function DELETE(request: NextRequest) {
 
     console.log(`[ENV] Değişken silindi: ${key}`)
 
-    return NextResponse.json({ 
+    const response = NextResponse.json({ 
       success: true,
-      message: `${key} değişkeni başarıyla silindi`,
+      message: `${key} değişkeni başarıyla silindi. Server yeniden başlatılıyor...`,
     })
+
+    setTimeout(() => {
+      restartServer()
+    }, 100)
+
+    return response
   } catch (error) {
     console.error('.env değişkeni silinemedi:', error)
     return NextResponse.json(
