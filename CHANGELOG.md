@@ -1,3 +1,9 @@
+## [5.13.11](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.10...v5.13.11) (2026-01-31)
+
+### ♻️ Kod İyileştirmeleri
+
+* remove non-functional theme button from admin header ([adb2ea7](https://github.com/sata2500/habernexus-nextjs/commit/adb2ea7e709e18f60a9fa777604bba360e087486))
+
 ## [5.13.10](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.9...v5.13.10) (2026-01-31)
 
 ### 🐛 Hata Düzeltmeleri
