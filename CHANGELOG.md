@@ -1,3 +1,12 @@
+## [5.13.17](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.16...v5.13.17) (2026-03-09)
+
+### 🐛 Hata Düzeltmeleri
+
+* API kategori normalizasyonu eklendi ([64fd238](https://github.com/sata2500/habernexus-nextjs/commit/64fd23810b2288c538defd8e0ba37459c2fa1162))
+* next.js fetch caching sorunu çözüldü ([e33e5aa](https://github.com/sata2500/habernexus-nextjs/commit/e33e5aa0e3de9ac9a5710ad3af6b357a8a28aa89))
+* Preference filter UI state and duplicate logic fixes ([5217aef](https://github.com/sata2500/habernexus-nextjs/commit/5217aef85ba0651ad5cbdc6aaf7c875af3c81116))
+* tercih filtreleme sistemi düzeltildi ([279e410](https://github.com/sata2500/habernexus-nextjs/commit/279e4100e1e364822ae70d8a21961ce5da9cf538))
+
 ## [5.13.16](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.15...v5.13.16) (2026-03-09)
 
 ### 🐛 Hata Düzeltmeleri

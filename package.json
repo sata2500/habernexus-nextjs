@@ -1,6 +1,6 @@
 {
   "name": "habernexus-nextjs",
-  "version": "5.13.16",
+  "version": "5.13.17",
   "description": "Yeni Nesil HaberNexus: AI destekli, tam otomatik haber agregasyon platformu",
   "scripts": {
     "dev": "next dev",
