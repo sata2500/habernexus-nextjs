@@ -33,28 +33,29 @@ export async function GET(request: NextRequest) {
           : []
 
         // Build where clause based on preferences
-        if (favoriteCategories.length > 0 || excludedCategories.length > 0) {
-          const andConditions: Record<string, unknown>[] = []
-
+        if (favoriteCategories.length > 0) {
           // If favorite categories are set, ONLY show those
-          if (favoriteCategories.length > 0) {
-            andConditions.push({
-              category: { in: favoriteCategories }
-            })
-          }
-
-          // ALWAYS exclude the excluded categories (if any)
           if (excludedCategories.length > 0) {
-            andConditions.push({
-              category: { notIn: excludedCategories }
-            })
+            // Both favorites and excluded: show favorites BUT exclude the excluded ones
+            whereClause = {
+              AND: [
+                { category: { in: favoriteCategories } },
+                { category: { notIn: excludedCategories } }
+              ]
+            }
+          } else {
+            // Only favorites: show only those
+            whereClause = {
+              category: { in: favoriteCategories }
+            }
           }
-
-          // Use AND to combine all conditions
-          whereClause = andConditions.length > 0 
-            ? { AND: andConditions }
-            : {}
+        } else if (excludedCategories.length > 0) {
+          // Only excluded: show everything EXCEPT excluded
+          whereClause = {
+            category: { notIn: excludedCategories }
+          }
         }
+        // If neither: show all (whereClause stays as {})
       }
 
       // Also consider user's reading history for better recommendations

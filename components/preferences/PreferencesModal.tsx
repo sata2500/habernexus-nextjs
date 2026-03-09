@@ -129,13 +129,13 @@ export default function PreferencesModal({ isOpen, onClose, onSave }: Preference
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   {CATEGORIES.map((category) => {
-                    const isSelected = selectedCategories.includes(category.slug)
-                    const isExcluded = excludedCategories.includes(category.slug)
+                    const isSelected = selectedCategories.includes(category.name)
+                    const isExcluded = excludedCategories.includes(category.name)
                     
                     return (
                       <button
                         key={category.id}
-                        onClick={() => handleCategoryToggle(category.slug)}
+                        onClick={() => handleCategoryToggle(category.name)}
                         disabled={isExcluded}
                         className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${
                           isSelected
@@ -171,13 +171,13 @@ export default function PreferencesModal({ isOpen, onClose, onSave }: Preference
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {CATEGORIES.map((category) => {
-                    const isExcluded = excludedCategories.includes(category.slug)
-                    const isFavorite = selectedCategories.includes(category.slug)
+                    const isExcluded = excludedCategories.includes(category.name)
+                    const isFavorite = selectedCategories.includes(category.name)
                     
                     return (
                       <button
                         key={category.id}
-                        onClick={() => handleExcludeToggle(category.slug)}
+                        onClick={() => handleExcludeToggle(category.name)}
                         disabled={isFavorite}
                         className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                           isExcluded
