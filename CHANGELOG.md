@@ -1,3 +1,9 @@
+## [5.13.13](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.12...v5.13.13) (2026-03-09)
+
+### 🐛 Hata Düzeltmeleri
+
+* Image bileşeninde onError handler sorunu - ImageWithFallback Client Component'i oluştur ([f45d055](https://github.com/sata2500/habernexus-nextjs/commit/f45d05528c3f657469eb757fa47080a8ac4bd4ce))
+
 ## [5.13.12](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.11...v5.13.12) (2026-03-09)
 
 ### 🐛 Hata Düzeltmeleri
