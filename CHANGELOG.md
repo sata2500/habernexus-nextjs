@@ -1,3 +1,9 @@
+## [5.13.12](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.11...v5.13.12) (2026-03-09)
+
+### 🐛 Hata Düzeltmeleri
+
+* Server Component'te event handler sorunu - CategoryFilter Client Component'i oluştur ([fca1971](https://github.com/sata2500/habernexus-nextjs/commit/fca19719f027d910f7b08752fa86cd1ddd3f072f))
+
 ## [5.13.11](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.10...v5.13.11) (2026-01-31)
 
 ### ♻️ Kod İyileştirmeleri
