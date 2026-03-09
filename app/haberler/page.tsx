@@ -1,10 +1,10 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Clock, Eye, ChevronLeft, ChevronRight, Newspaper } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { formatDateShort } from '@/lib/utils'
 import CategoryFilter from '@/components/articles/CategoryFilter'
+import ImageWithFallback from '@/components/common/ImageWithFallback'
 
 export const metadata: Metadata = {
   title: 'Tüm Haberler | HaberNexus',
@@ -101,15 +101,12 @@ export default async function AllNewsPage({ searchParams }: PageProps) {
                 {/* Image */}
                 <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-700">
                   {article.imageUrl ? (
-                    <Image
+                    <ImageWithFallback
                       src={article.imageUrl}
                       alt={article.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        const img = e.target as HTMLImageElement
-                        img.src = '/images/placeholder.jpg'
-                      }}
+                      fallbackSrc="/images/placeholder.jpg"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600">
