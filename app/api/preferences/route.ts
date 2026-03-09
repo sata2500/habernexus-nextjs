@@ -38,8 +38,8 @@ export async function GET() {
       })
     }
 
-    const rawFavs = preferences.favoriteCategories ? preferences.favoriteCategories.split(',').filter(Boolean) : []
-    const rawExcls = preferences.excludedCategories ? preferences.excludedCategories.split(',').filter(Boolean) : []
+    const rawFavs = preferences.favoriteCategories ? preferences.favoriteCategories.split(',').map(c => c.trim()).filter(Boolean) : []
+    const rawExcls = preferences.excludedCategories ? preferences.excludedCategories.split(',').map(c => c.trim()).filter(Boolean) : []
 
     return NextResponse.json({
       favoriteCategories: rawFavs.map(normalizeCategory),
