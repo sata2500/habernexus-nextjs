@@ -34,23 +34,26 @@ export async function GET(request: NextRequest) {
 
         // Build where clause based on preferences
         if (favoriteCategories.length > 0 || excludedCategories.length > 0) {
-          const conditions: Record<string, unknown>[] = []
+          const andConditions: Record<string, unknown>[] = []
 
+          // If favorite categories are set, ONLY show those
           if (favoriteCategories.length > 0) {
-            conditions.push({
+            andConditions.push({
               category: { in: favoriteCategories }
             })
           }
 
+          // ALWAYS exclude the excluded categories (if any)
           if (excludedCategories.length > 0) {
-            conditions.push({
+            andConditions.push({
               category: { notIn: excludedCategories }
             })
           }
 
-          whereClause = conditions.length > 1 
-            ? { AND: conditions }
-            : conditions[0]
+          // Use AND to combine all conditions
+          whereClause = andConditions.length > 0 
+            ? { AND: andConditions }
+            : {}
         }
       }
 
