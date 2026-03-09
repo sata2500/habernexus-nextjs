@@ -1,10 +1,10 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Clock, Eye, ChevronLeft, ChevronRight, Filter, Newspaper } from 'lucide-react'
+import { Clock, Eye, ChevronLeft, ChevronRight, Newspaper } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import { formatDateShort } from '@/lib/utils'
-import { CATEGORIES } from '@/lib/constants'
+import CategoryFilter from '@/components/articles/CategoryFilter'
 
 export const metadata: Metadata = {
   title: 'Tüm Haberler | HaberNexus',
@@ -84,28 +84,7 @@ export default async function AllNewsPage({ searchParams }: PageProps) {
           </div>
           
           {/* Category Filter */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-500" />
-            <select
-              defaultValue={category || ''}
-              onChange={(e) => {
-                const value = e.target.value
-                if (value) {
-                  window.location.href = `/haberler?category=${encodeURIComponent(value)}`
-                } else {
-                  window.location.href = '/haberler'
-                }
-              }}
-              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Tüm Kategoriler</option>
-              {CATEGORIES.map((cat) => (
-                <option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <CategoryFilter currentCategory={category} />
         </div>
       </section>
 
