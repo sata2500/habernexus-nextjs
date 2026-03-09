@@ -1,3 +1,9 @@
+## [5.13.18](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.17...v5.13.18) (2026-03-09)
+
+### 🐛 Hata Düzeltmeleri
+
+* Preferences API - Kategori adlarındaki boşlukları temizle ([ac91dbd](https://github.com/sata2500/habernexus-nextjs/commit/ac91dbd35ef348bd489b6b2d3009cdb6367e094b))
+
 ## [5.13.17](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.16...v5.13.17) (2026-03-09)
 
 ### 🐛 Hata Düzeltmeleri
