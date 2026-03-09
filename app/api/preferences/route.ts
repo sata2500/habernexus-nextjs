@@ -5,6 +5,12 @@ import { CATEGORIES } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
+// Helper: Normalize incoming strings (e.g. "gundem" or "ekonomi") to their proper Names ("Gündem", "Ekonomi")
+const normalizeCategory = (input: string) => {
+  const cat = CATEGORIES.find(c => c.slug === input || c.id === input || c.name.toLowerCase() === input.toLowerCase() || c.name === input)
+  return cat ? cat.name : input
+}
+
 /**
  * GET /api/preferences
  * Get current user's preferences
@@ -32,13 +38,12 @@ export async function GET() {
       })
     }
 
+    const rawFavs = preferences.favoriteCategories ? preferences.favoriteCategories.split(',').filter(Boolean) : []
+    const rawExcls = preferences.excludedCategories ? preferences.excludedCategories.split(',').filter(Boolean) : []
+
     return NextResponse.json({
-      favoriteCategories: preferences.favoriteCategories 
-        ? preferences.favoriteCategories.split(',').filter(Boolean)
-        : [],
-      excludedCategories: preferences.excludedCategories 
-        ? preferences.excludedCategories.split(',').filter(Boolean)
-        : [],
+      favoriteCategories: rawFavs.map(normalizeCategory),
+      excludedCategories: rawExcls.map(normalizeCategory),
     })
   } catch (error) {
     console.error('Error fetching preferences:', error)
@@ -75,26 +80,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Helper: Normalize incoming strings (e.g. "gundem" or "ekonomi") to their proper Names ("Gündem", "Ekonomi")
-    const normalizeCategory = (input: string) => {
-      const cat = CATEGORIES.find(c => c.slug === input || c.id === input || c.name.toLowerCase() === input.toLowerCase() || c.name === input)
-      return cat ? cat.name : input
-    }
-    
     // Convert all incoming categories to their Normalized names
-    const normalizedFavs = favoriteCategories.map(c => typeof c === 'string' ? normalizeCategory(c) : c)
-    const normalizedExcls = Array.isArray(excludedCategories) ? excludedCategories.map(c => typeof c === 'string' ? normalizeCategory(c) : c) : []
+    const normalizedFavsList = favoriteCategories.map((c: string) => normalizeCategory(c))
+    const normalizedExclsList = Array.isArray(excludedCategories) ? excludedCategories.map((c: string) => normalizeCategory(c)) : []
+
+    // 1. Remove duplicates using Set
+    // 2. Ensure logical consistency: if a category is excluded, it CANNOT be a favorite.
+    const uniqueExcls = [...new Set(normalizedExclsList)]
+    const uniqueFavs = [...new Set(normalizedFavsList)].filter(cat => !uniqueExcls.includes(cat))
 
     const preferences = await prisma.userPreferences.upsert({
       where: { userId: session.user.id },
       update: {
-        favoriteCategories: normalizedFavs.length > 0 ? normalizedFavs.join(',') : null,
-        excludedCategories: normalizedExcls.length > 0 ? normalizedExcls.join(',') : null,
+        favoriteCategories: uniqueFavs.length > 0 ? uniqueFavs.join(',') : null,
+        excludedCategories: uniqueExcls.length > 0 ? uniqueExcls.join(',') : null,
       },
       create: {
         userId: session.user.id,
-        favoriteCategories: normalizedFavs.length > 0 ? normalizedFavs.join(',') : null,
-        excludedCategories: normalizedExcls.length > 0 ? normalizedExcls.join(',') : null,
+        favoriteCategories: uniqueFavs.length > 0 ? uniqueFavs.join(',') : null,
+        excludedCategories: uniqueExcls.length > 0 ? uniqueExcls.join(',') : null,
       },
     })
 
