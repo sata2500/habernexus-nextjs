@@ -39,26 +39,26 @@ export default function PreferencesModal({ isOpen, onClose, onSave }: Preference
     }
   }
 
-  const handleCategoryToggle = (categorySlug: string) => {
+  const handleCategoryToggle = (categoryName: string) => {
     setSelectedCategories(prev => {
-      if (prev.includes(categorySlug)) {
-        return prev.filter(c => c !== categorySlug)
+      if (prev.includes(categoryName)) {
+        return prev.filter(c => c !== categoryName)
       } else {
         // Remove from excluded if adding to favorites
-        setExcludedCategories(ex => ex.filter(c => c !== categorySlug))
-        return [...prev, categorySlug]
+        setExcludedCategories(ex => ex.filter(c => c !== categoryName))
+        return [...prev, categoryName]
       }
     })
   }
 
-  const handleExcludeToggle = (categorySlug: string) => {
+  const handleExcludeToggle = (categoryName: string) => {
     setExcludedCategories(prev => {
-      if (prev.includes(categorySlug)) {
-        return prev.filter(c => c !== categorySlug)
+      if (prev.includes(categoryName)) {
+        return prev.filter(c => c !== categoryName)
       } else {
         // Remove from favorites if excluding
-        setSelectedCategories(sel => sel.filter(c => c !== categorySlug))
-        return [...prev, categorySlug]
+        setSelectedCategories(sel => sel.filter(c => c !== categoryName))
+        return [...prev, categoryName]
       }
     })
   }
