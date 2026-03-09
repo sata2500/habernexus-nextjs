@@ -50,7 +50,7 @@ export default function PersonalizedNews() {
   const fetchArticles = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/personalized?limit=6')
+      const response = await fetch(`/api/personalized?limit=6&t=${Date.now()}`, { cache: 'no-store' })
       if (response.ok) {
         const data: PersonalizedNewsResponse = await response.json()
         setArticles(data.articles)

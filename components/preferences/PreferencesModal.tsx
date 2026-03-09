@@ -26,7 +26,7 @@ export default function PreferencesModal({ isOpen, onClose, onSave }: Preference
   const fetchPreferences = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/preferences')
+      const response = await fetch(`/api/preferences?t=${Date.now()}`, { cache: 'no-store' })
       if (response.ok) {
         const data = await response.json()
         setSelectedCategories(data.favoriteCategories || [])
