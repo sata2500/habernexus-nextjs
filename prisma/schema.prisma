@@ -137,7 +137,7 @@ model VerificationToken {
 model UserPreferences {
   id                String   @id @default(cuid())
   userId            String   @unique
-  favoriteCategories String  // Comma-separated category slugs (e.g., "teknoloji,ekonomi,spor")
+  favoriteCategories String? // Nullable: null = hiç tercih seçilmemiş, boş dizi gibi davranır
   excludedCategories String? // Categories to exclude from feed
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt

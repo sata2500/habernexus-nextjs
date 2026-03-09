@@ -33,21 +33,19 @@ export async function GET(request: NextRequest) {
           : []
 
         // Build where clause based on preferences
-        if (favoriteCategories.length > 0) {
-          // If favorite categories are set, ONLY show those
-          if (excludedCategories.length > 0) {
-            // Both favorites and excluded: show favorites BUT exclude the excluded ones
-            whereClause = {
-              AND: [
-                { category: { in: favoriteCategories } },
-                { category: { notIn: excludedCategories } }
-              ]
-            }
-          } else {
-            // Only favorites: show only those
-            whereClause = {
-              category: { in: favoriteCategories }
-            }
+        // IMPORTANT: Never send { in: [] } to Prisma — it returns zero results
+        if (favoriteCategories.length > 0 && excludedCategories.length > 0) {
+          // Both favorites and excluded: show favorites BUT exclude the excluded ones
+          whereClause = {
+            AND: [
+              { category: { in: favoriteCategories } },
+              { category: { notIn: excludedCategories } }
+            ]
+          }
+        } else if (favoriteCategories.length > 0) {
+          // Only favorites: show only those categories
+          whereClause = {
+            category: { in: favoriteCategories }
           }
         } else if (excludedCategories.length > 0) {
           // Only excluded: show everything EXCEPT excluded

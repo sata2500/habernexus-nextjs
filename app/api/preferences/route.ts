@@ -75,13 +75,13 @@ export async function POST(request: NextRequest) {
     const preferences = await prisma.userPreferences.upsert({
       where: { userId: session.user.id },
       update: {
-        favoriteCategories: favoriteCategories.join(','),
-        excludedCategories: excludedCategories?.join(',') || null,
+        favoriteCategories: favoriteCategories.length > 0 ? favoriteCategories.join(',') : null,
+        excludedCategories: excludedCategories?.length > 0 ? excludedCategories.join(',') : null,
       },
       create: {
         userId: session.user.id,
-        favoriteCategories: favoriteCategories.join(','),
-        excludedCategories: excludedCategories?.join(',') || null,
+        favoriteCategories: favoriteCategories.length > 0 ? favoriteCategories.join(',') : null,
+        excludedCategories: excludedCategories?.length > 0 ? excludedCategories.join(',') : null,
       },
     })
 
