@@ -1,3 +1,9 @@
+## [5.13.14](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.13...v5.13.14) (2026-03-09)
+
+### 🐛 Hata Düzeltmeleri
+
+* Tercihlerimi Düzenle - Kategori filtreleme sorununu çöz ([e4192e4](https://github.com/sata2500/habernexus-nextjs/commit/e4192e42bc788f3ba8051205edbd070b5a4b6004))
+
 ## [5.13.13](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.12...v5.13.13) (2026-03-09)
 
 ### 🐛 Hata Düzeltmeleri
