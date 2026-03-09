@@ -1,3 +1,9 @@
+## [5.13.16](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.15...v5.13.16) (2026-03-09)
+
+### 🐛 Hata Düzeltmeleri
+
+* PreferencesModal - Kategori adı parametrelerini düzelt ([39a22d1](https://github.com/sata2500/habernexus-nextjs/commit/39a22d1a4092210949e9bb64e29e422e97be5a37))
+
 ## [5.13.15](https://github.com/sata2500/habernexus-nextjs/compare/v5.13.14...v5.13.15) (2026-03-09)
 
 ### 🐛 Hata Düzeltmeleri
