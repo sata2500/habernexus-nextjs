@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { CATEGORIES } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { favoriteCategories, excludedCategories } = body
 
-    // Validate input
+    // Validasyon
     if (!Array.isArray(favoriteCategories)) {
       return NextResponse.json(
         { error: 'favoriteCategories bir dizi olmalıdır' },
@@ -74,16 +75,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Helper: Normalize incoming strings (e.g. "gundem" or "ekonomi") to their proper Names ("Gündem", "Ekonomi")
+    const normalizeCategory = (input: string) => {
+      const cat = CATEGORIES.find(c => c.slug === input || c.id === input || c.name.toLowerCase() === input.toLowerCase() || c.name === input)
+      return cat ? cat.name : input
+    }
+    
+    // Convert all incoming categories to their Normalized names
+    const normalizedFavs = favoriteCategories.map(c => typeof c === 'string' ? normalizeCategory(c) : c)
+    const normalizedExcls = Array.isArray(excludedCategories) ? excludedCategories.map(c => typeof c === 'string' ? normalizeCategory(c) : c) : []
+
     const preferences = await prisma.userPreferences.upsert({
       where: { userId: session.user.id },
       update: {
-        favoriteCategories: favoriteCategories.length > 0 ? favoriteCategories.join(',') : null,
-        excludedCategories: excludedCategories?.length > 0 ? excludedCategories.join(',') : null,
+        favoriteCategories: normalizedFavs.length > 0 ? normalizedFavs.join(',') : null,
+        excludedCategories: normalizedExcls.length > 0 ? normalizedExcls.join(',') : null,
       },
       create: {
         userId: session.user.id,
-        favoriteCategories: favoriteCategories.length > 0 ? favoriteCategories.join(',') : null,
-        excludedCategories: excludedCategories?.length > 0 ? excludedCategories.join(',') : null,
+        favoriteCategories: normalizedFavs.length > 0 ? normalizedFavs.join(',') : null,
+        excludedCategories: normalizedExcls.length > 0 ? normalizedExcls.join(',') : null,
       },
     })
 
